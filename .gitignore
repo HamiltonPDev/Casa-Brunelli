@@ -137,3 +137,40 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# ─── macOS ────────────────────────────────────────────────────
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ─── Prisma ───────────────────────────────────────────────────
+prisma/migrations/
+# Keep schema.prisma tracked, ignore generated client
+# (generated in node_modules, no need to ignore separately)
+
+# ─── Vercel ───────────────────────────────────────────────────
+.vercel
+
+# ─── Testing ──────────────────────────────────────────────────
+/coverage
+/playwright-report
+/test-results
+/e2e/.auth
+
+# ─── Editor ───────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── Sentry (if added later) ──────────────────────────────────
+.sentryclirc
+
+# ─── Agent reference files (Claude Code context only) ─────────
+Interactive Web Prototypes casa brunelly/
+CASA_BRUNELLI_CLAUDE_CODE_PROMPT.md
+NEXTJS_PROJECT_PROMPT_UPDATED.xml
