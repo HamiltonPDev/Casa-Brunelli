@@ -1,0 +1,307 @@
+// Casa Brunelli — Prisma Schema
+// Source of truth: Notion Technical Documentation
+// 10 tables, exact fields and relationships as documented
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 1 — Booking
+// Created ONLY after admin approves a ContactMessage (Messages-First)
+// ═══════════════════════════════════════════════════════════════
+model Booking {
+  id               String               @id @default(cuid())
+  checkIn          DateTime
+  checkOut         DateTime
+  numberOfNights   Int
+  guestCount       Int
+  guestName        String
+  guestEmail       String
+  guestPhone       String?
+  totalPrice       Decimal              @db.Decimal(10, 2)
+  depositAmount    Decimal              @db.Decimal(10, 2)
+  depositPaid      Boolean              @default(false)
+  balancePaid      Boolean              @default(false)
+  status           BookingStatus        @default(PENDING)
+  specialRequests  String?              @db.Text
+  /// Most recent Stripe session ID
+  stripeSessionId  String?              @unique
+  /// Stripe session for the 30% deposit payment
+  depositSessionId String?
+  /// Stripe session for the 70% balance payment
+  balanceSessionId String?
+  approvedBy       String?
+  approvedAt       DateTime?
+  guestUserId      String?
+  guestUser        GuestUser?           @relation(fields: [guestUserId], references: [id])
+  payments         PaymentTransaction[]
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  @@index([guestEmail])
+  @@index([checkIn])
+  @@index([status])
+  @@index([guestUserId])
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 2 — ContactMessage
+// ALL inquiries enter here first — booking requests included
+// Messages-First: No Booking created until admin approves
+// ═══════════════════════════════════════════════════════════════
+model ContactMessage {
+  id         String        @id @default(cuid())
+  type       MessageType   @default(GENERAL)
+  name       String
+  email      String
+  phone      String?
+  subject    String
+  message    String        @db.Text
+  status     MessageStatus @default(UNREAD)
+  /// Booking request metadata — only for BOOKING_REQUEST type
+  checkIn    DateTime?
+  checkOut   DateTime?
+  guestCount Int?
+  totalPrice Decimal?      @db.Decimal(10, 2)
+  repliedBy  String?
+  admin      AdminUser?    @relation(fields: [repliedBy], references: [id])
+  repliedAt  DateTime?
+  createdAt  DateTime      @default(now())
+
+  @@index([email])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@index([repliedBy])
+}
+
+enum MessageType {
+  GENERAL
+  BOOKING_REQUEST
+  QUESTION
+  COMPLAINT
+}
+
+enum MessageStatus {
+  UNREAD
+  READ
+  REPLIED
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 3 — Season
+// Seasonal pricing rules with priority-based conflict resolution
+// Higher priority wins when seasons overlap
+// ═══════════════════════════════════════════════════════════════
+model Season {
+  id           String        @id @default(cuid())
+  name         String
+  colorTag     String
+  startDate    DateTime      @db.Date
+  endDate      DateTime      @db.Date
+  baseRate     Decimal       @db.Decimal(10, 2)
+  minStay      Int
+  /// Higher number wins when seasons overlap
+  priority     Int
+  status       SeasonStatus  @default(ACTIVE)
+  notes        String?       @db.Text
+  dowOverrides DowOverride[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([startDate, endDate])
+  @@index([priority])
+  @@index([status])
+}
+
+enum SeasonStatus {
+  ACTIVE
+  INACTIVE
+  ARCHIVED
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 4 — DowOverride
+// Day-of-week pricing adjustments (e.g., Friday +€50)
+// Cascade deletes when parent Season is deleted
+// ═══════════════════════════════════════════════════════════════
+model DowOverride {
+  id        String       @id @default(cuid())
+  seasonId  String
+  season    Season       @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  /// 0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday
+  dayOfWeek Int
+  type      OverrideType
+  amount    Decimal      @db.Decimal(10, 2)
+  createdAt DateTime     @default(now())
+
+  @@index([seasonId])
+}
+
+enum OverrideType {
+  ADD
+  SUBTRACT
+  CUSTOM
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 5 — AdminUser
+// Admin authentication and access control
+// ═══════════════════════════════════════════════════════════════
+model AdminUser {
+  id               String           @id @default(cuid())
+  email            String           @unique
+  passwordHash     String
+  name             String
+  role             AdminRole        @default(ADMIN)
+  lastLoginAt      DateTime?
+  messages         ContactMessage[]
+  unavailableDates UnavailableDate[]
+  emailTemplates   EmailTemplate[]
+  auditLogs        AuditLog[]
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+
+  @@index([email])
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  VIEWER
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 6 — UnavailableDate
+// Manual calendar blocks — owner blocks specific dates
+// ═══════════════════════════════════════════════════════════════
+model UnavailableDate {
+  id        String     @id @default(cuid())
+  date      DateTime   @db.Date
+  reason    String?
+  createdBy String?
+  admin     AdminUser? @relation(fields: [createdBy], references: [id])
+  createdAt DateTime   @default(now())
+
+  @@unique([date])
+  @@index([date])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 7 — GuestUser
+// Track repeat guests and booking history
+// ═══════════════════════════════════════════════════════════════
+model GuestUser {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String
+  phone         String?
+  totalBookings Int       @default(0)
+  lastBookingAt DateTime?
+  notes         String?   @db.Text
+  bookings      Booking[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([email])
+  @@index([lastBookingAt])
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 8 — EmailTemplate
+// Canned responses for the Messages module
+// ═══════════════════════════════════════════════════════════════
+model EmailTemplate {
+  id        String        @id @default(cuid())
+  name      String
+  subject   String
+  body      String        @db.Text
+  category  EmailCategory
+  isActive  Boolean       @default(true)
+  createdBy String?
+  admin     AdminUser?    @relation(fields: [createdBy], references: [id])
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+
+  @@index([category])
+  @@index([isActive])
+}
+
+enum EmailCategory {
+  BOOKING_CONFIRMATION
+  DEPOSIT_RECEIVED
+  EARLY_CHECKIN
+  PARKING
+  REFUND
+  GENERAL
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 9 — PaymentTransaction
+// Separate payment history — tracks DEPOSIT (30%) and BALANCE (70%)
+// Distinct from Booking to allow full payment history
+// ═══════════════════════════════════════════════════════════════
+model PaymentTransaction {
+  id              String        @id @default(cuid())
+  bookingId       String
+  booking         Booking       @relation(fields: [bookingId], references: [id])
+  stripePaymentId String        @unique
+  amount          Decimal       @db.Decimal(10, 2)
+  currency        String        @default("EUR")
+  status          PaymentStatus
+  type            PaymentType
+  processedAt     DateTime?
+  createdAt       DateTime      @default(now())
+
+  @@index([bookingId])
+  @@index([stripePaymentId])
+  @@index([status])
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+enum PaymentType {
+  DEPOSIT
+  BALANCE
+  REFUND
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TABLE 10 — AuditLog
+// Track all admin actions for security and compliance
+// ═══════════════════════════════════════════════════════════════
+model AuditLog {
+  id          String    @id @default(cuid())
+  adminUserId String
+  admin       AdminUser @relation(fields: [adminUserId], references: [id])
+  action      String
+  entityType  String
+  entityId    String
+  /// JSON string with before/after values
+  changes     String?   @db.Text
+  ipAddress   String?
+  userAgent   String?
+  createdAt   DateTime  @default(now())
+
+  @@index([adminUserId])
+  @@index([entityType])
+  @@index([createdAt])
+}
