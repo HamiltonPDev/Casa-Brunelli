@@ -6,10 +6,11 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Eye, EyeOff, Lock, Mail, LogIn } from "lucide-react";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ─────────────────────────────────────────────────
-// Fixed positions to avoid Math.random() in render (ESLint: purity rule)
+// Fixed positions — no Math.random() in render (SSR/hydration safety)
 const PARTICLES = [
   { left: "15%", top: "20%" },
   { left: "75%", top: "35%" },
@@ -59,6 +60,11 @@ export default function AdminLoginPage() {
     setLoading(false);
 
     if (result?.error) {
+      // Toast top-right con animación de sonner
+      toast.error("Invalid credentials", {
+        description: "Please check your email and password",
+      });
+      // También marcar los campos con error
       setErrors({
         email: "Invalid email or password",
         password: "Invalid email or password",
@@ -66,6 +72,9 @@ export default function AdminLoginPage() {
       return;
     }
 
+    toast.success("Welcome back!", {
+      description: "Successfully logged in to Casa Brunelli Admin",
+    });
     router.push("/admin");
   }
 
@@ -83,11 +92,11 @@ export default function AdminLoginPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/80 backdrop-blur-sm" />
       </div>
 
-      {/* ── Floating particles ───────────────────────────────── */}
+      {/* ── Floating particles — z-20 so they sit above overlay ─ */}
       {PARTICLES.map((pos, i) => (
         <motion.div
           key={i}
-          className="absolute w-1 h-1 rounded-full bg-white/20"
+          className="absolute w-1 h-1 rounded-full bg-admin-sage/20 z-20 pointer-events-none"
           style={{ left: pos.left, top: pos.top }}
           animate={{ y: [-10, 10, -10], opacity: [0.1, 0.3, 0.1] }}
           transition={{
@@ -233,6 +242,26 @@ export default function AdminLoginPage() {
                 )}
               </AnimatePresence>
             </div>
+
+            {/* Demo Credentials — exactly as in the Figma prototype */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="bg-admin-sage/5 rounded-xl p-3 border border-admin-sage/10"
+            >
+              <p className="text-admin-sage text-xs font-medium mb-1.5">
+                Demo Credentials:
+              </p>
+              <div className="space-y-0.5">
+                <p className="text-dark-forest/70 text-xs font-mono">
+                  admin@casabrunelli.com
+                </p>
+                <p className="text-dark-forest/70 text-xs font-mono">
+                  admin123
+                </p>
+              </div>
+            </motion.div>
 
             {/* Submit */}
             <button
