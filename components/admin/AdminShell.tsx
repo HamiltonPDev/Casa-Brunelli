@@ -16,6 +16,7 @@ import {
   LogOut,
   Search,
   CalendarDays,
+  User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getInitials } from "@/lib/utils";
@@ -101,8 +102,8 @@ export function AdminShell({ children, user }: AdminShellProps) {
                   "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150",
                   collapsed ? "justify-center" : "",
                   active
-                    ? "bg-[#1a4a3a] text-white shadow-sm"
-                    : "text-gray-600 hover:bg-gray-100 hover:text-gray-900"
+                    ? "bg-admin-sage text-white shadow-sm"
+                    : "text-gray-700 hover:bg-gray-100"
                 )}
                 title={collapsed ? item.label : undefined}
               >
@@ -123,10 +124,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
               collapsed ? "justify-center" : ""
             )}
           >
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0"
-              style={{ backgroundColor: "var(--terracotta)" }}
-            >
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 bg-admin-sage">
               {getInitials(user.name)}
             </div>
             {!collapsed && (
@@ -142,14 +140,14 @@ export function AdminShell({ children, user }: AdminShellProps) {
           <button
             onClick={() => signOut({ callbackUrl: "/admin/login" })}
             className={cn(
-              "w-full flex items-center gap-3 px-3 py-2 rounded-lg",
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg",
               "text-sm text-gray-600 hover:bg-red-50 hover:text-red-600 transition-colors",
               collapsed ? "justify-center" : ""
             )}
             title={collapsed ? "Sign out" : undefined}
           >
             <LogOut className="w-4 h-4 shrink-0" />
-            {!collapsed && <span>Sign out</span>}
+            {!collapsed && <span className="font-medium">Logout</span>}
           </button>
         </div>
       </aside>
@@ -157,22 +155,29 @@ export function AdminShell({ children, user }: AdminShellProps) {
       {/* ── Main Content ─────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
-        <header className="h-16 bg-white border-b border-gray-200 px-6 flex items-center justify-between shrink-0">
-          <h1 className="text-sm font-semibold text-gray-500 hidden md:block">
-            Admin Dashboard
+        <header className="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between shrink-0">
+          <h1 className="font-semibold text-gray-900">
+            Casa Brunelli Admin
           </h1>
 
-          {/* Search */}
-          <div className="relative ml-auto">
-            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search…"
-              className={cn(
-                "pl-9 pr-4 py-2 text-sm border border-gray-300 rounded-lg w-56",
-                "focus:outline-none focus:ring-2 focus:ring-[#1a4a3a]/20 focus:border-[#1a4a3a]"
-              )}
-            />
+          <div className="flex items-center gap-4">
+            {/* Search */}
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search..."
+                className={cn(
+                  "pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg w-64",
+                  "focus:outline-none focus:ring-2 focus:ring-admin-sage/20 focus:border-admin-sage"
+                )}
+              />
+            </div>
+
+            {/* User Avatar */}
+            <button className="w-10 h-10 bg-admin-avatar rounded-full flex items-center justify-center text-white hover:opacity-90 transition-opacity">
+              <User className="w-5 h-5" />
+            </button>
           </div>
         </header>
 

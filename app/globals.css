@@ -77,6 +77,10 @@
   --admin-sidebar-bg: var(--dark-forest);
   --admin-sidebar-text: #d4d9d2;
   --admin-sidebar-active: var(--sage-variant);
+  /* Admin brand colors — matches Figma prototype exactly */
+  --admin-sage: #6B705C;           /* Primary admin accent (nav active, buttons) */
+  --admin-sage-hover: #5A5F4D;     /* Hover state */
+  --admin-avatar: #CB997E;         /* Guest/user avatar background */
 
   /* ─── Typography ─────────────────────────────────────────── */
   --font-display: var(--font-playfair);
@@ -153,6 +157,9 @@
   --color-muted-green-gray: var(--muted-green-gray);
   --color-sage-variant: var(--sage-variant);
   --color-mint-tint: var(--mint-tint);
+  --color-admin-sage: var(--admin-sage);
+  --color-admin-sage-hover: var(--admin-sage-hover);
+  --color-admin-avatar: var(--admin-avatar);
 
   --color-terracotta: var(--terracotta);
   --color-burnt-orange: var(--burnt-orange);
