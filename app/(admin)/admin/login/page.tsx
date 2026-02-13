@@ -50,7 +50,7 @@ export default function AdminLoginPage() {
           >
             Casa Brunelli
           </h1>
-          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+          <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>
             Admin Dashboard
           </p>
         </div>

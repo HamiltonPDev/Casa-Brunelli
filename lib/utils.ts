@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]): string {
  * @example formatCurrency(1250) → "€1,250.00"
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-EU", {
+  return new Intl.NumberFormat("de-DE", {
     style: "currency",
     currency: "EUR",
     minimumFractionDigits: 2,
