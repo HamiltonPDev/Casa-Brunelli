@@ -197,6 +197,81 @@ The Casa Brunelli Team`,
   },
 ];
 
+// ─── Sample Contact Messages ───────────────────────────────────
+
+const SEED_MESSAGES = [
+  {
+    type: "BOOKING_REQUEST" as const,
+    name: "Sophie Müller",
+    email: "sophie.mueller@gmail.com",
+    phone: "+49 151 23456789",
+    subject: "Booking request: Aug 10–17, 4 guests",
+    message:
+      "Hello, we are a family of 4 (2 adults + 2 children, ages 8 and 11) interested in staying at Casa Brunelli from August 10th to 17th. Could you confirm availability? We are celebrating our 15th anniversary and would love to make it special. Do you have any special arrangements for anniversaries?",
+    status: "UNREAD" as const,
+    checkIn: new Date("2026-08-10"),
+    checkOut: new Date("2026-08-17"),
+    guestCount: 4,
+    totalPrice: 5250,
+  },
+  {
+    type: "BOOKING_REQUEST" as const,
+    name: "James & Claire Thornton",
+    email: "j.thornton@outlook.com",
+    phone: "+44 7700 900123",
+    subject: "Enquiry for September 2026 — 2 weeks",
+    message:
+      "Good morning. My wife and I are looking to book Casa Brunelli for two weeks in September, ideally September 5th to 19th. We've been following the property for a while and it looks absolutely stunning. We'd also like to know about restaurant recommendations in the area. Many thanks.",
+    status: "UNREAD" as const,
+    checkIn: new Date("2026-09-05"),
+    checkOut: new Date("2026-09-19"),
+    guestCount: 2,
+    totalPrice: 8400,
+  },
+  {
+    type: "GENERAL" as const,
+    name: "Marco Benedetti",
+    email: "m.benedetti@studio.it",
+    phone: "+39 333 1234567",
+    subject: "Domanda sulle attività nelle vicinanze",
+    message:
+      "Buongiorno, siamo interessati a una settimana a luglio. Vorremmo sapere se ci sono attività di wine tasting o tour delle cantine nelle vicinanze. Siamo appassionati di vini toscani. Grazie mille.",
+    status: "READ" as const,
+    checkIn: null,
+    checkOut: null,
+    guestCount: null,
+    totalPrice: null,
+  },
+  {
+    type: "BOOKING_REQUEST" as const,
+    name: "Isabelle Fontaine",
+    email: "isabelle.fontaine@orange.fr",
+    phone: null,
+    subject: "Réservation juin 2026 — groupe de 6",
+    message:
+      "Bonjour, nous sommes un groupe de 6 amis qui cherchons une villa pour notre semaine de vacances en Toscane. Nous serions intéressés par la semaine du 20 au 27 juin. Pourriez-vous nous confirmer la disponibilité et le prix total? Merci d'avance.",
+    status: "REPLIED" as const,
+    checkIn: new Date("2026-06-20"),
+    checkOut: new Date("2026-06-27"),
+    guestCount: 6,
+    totalPrice: 3850,
+  },
+  {
+    type: "QUESTION" as const,
+    name: "Lars Andersen",
+    email: "lars.andersen@proton.me",
+    phone: "+47 900 12345",
+    subject: "Question about the pool and accessibility",
+    message:
+      "Hi, we're planning a family holiday and one of our group uses a wheelchair. Could you tell us more about the accessibility features at Casa Brunelli? Also, is the pool area accessible? We would love to visit but want to make sure it's suitable. Thank you.",
+    status: "UNREAD" as const,
+    checkIn: null,
+    checkOut: null,
+    guestCount: null,
+    totalPrice: null,
+  },
+];
+
 // ─── Main ──────────────────────────────────────────────────────
 
 async function main() {
@@ -287,6 +362,38 @@ async function main() {
     } else {
       console.log(`⏭  Email template already exists: ${t.name}`);
     }
+  }
+
+  // ── 4. Sample Contact Messages ──────────────────────────────
+  const existingMessages = await prisma.contactMessage.count();
+
+  if (existingMessages === 0) {
+    for (const m of SEED_MESSAGES) {
+      await prisma.contactMessage.create({
+        data: {
+          type: m.type,
+          name: m.name,
+          email: m.email,
+          phone: m.phone ?? null,
+          subject: m.subject,
+          message: m.message,
+          status: m.status,
+          checkIn: m.checkIn ?? null,
+          checkOut: m.checkOut ?? null,
+          guestCount: m.guestCount ?? null,
+          totalPrice: m.totalPrice ?? null,
+          ...(m.status === "REPLIED" && {
+            repliedBy: admin.id,
+            repliedAt: new Date(Date.now() - 1000 * 60 * 60 * 24), // 1 day ago
+          }),
+        },
+      });
+      console.log(`✅ Message: "${m.subject}" (${m.status})`);
+    }
+  } else {
+    console.log(
+      `⏭  Skipped messages — ${existingMessages} already exist`
+    );
   }
 
   console.log("\n🎉 Seed complete!");

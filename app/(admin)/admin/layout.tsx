@@ -15,6 +15,9 @@ interface AdminLayoutProps {
 export default async function AdminLayout({ children }: AdminLayoutProps) {
   const session = await auth();
 
+  // Middleware handles the redirect, but we double-check here.
+  // /admin/login is excluded from this layout via the middleware matcher,
+  // but if it somehow reaches here without a session, redirect.
   if (!session?.user) {
     redirect("/admin/login");
   }

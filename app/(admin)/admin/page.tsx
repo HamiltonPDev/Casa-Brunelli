@@ -1,6 +1,5 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import type { Booking } from "@/types";
 import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminBadge } from "@/components/admin/AdminBadge";
 import { formatCurrency, formatDateRange } from "@/lib/utils";
@@ -153,7 +152,7 @@ export default async function AdminDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {(recentBookings as Booking[]).map((booking) => (
+                {recentBookings.map((booking) => (
                   <tr
                     key={booking.id}
                     className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
