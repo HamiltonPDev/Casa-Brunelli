@@ -29,7 +29,9 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>(
+    {}
+  );
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -80,7 +82,6 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-
       {/* ── Background: Tuscan photo + dark overlay ─────────── */}
       <div className="absolute inset-0 z-0">
         {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -116,7 +117,6 @@ export default function AdminLoginPage() {
         className="relative z-10 w-full max-w-md mx-4"
       >
         <div className="bg-white/80 backdrop-blur-2xl rounded-3xl shadow-xl border border-white/40 overflow-hidden">
-
           {/* Header */}
           <div className="px-8 py-10 text-center">
             <motion.div
@@ -139,7 +139,6 @@ export default function AdminLoginPage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="px-8 pb-8 space-y-5">
-
             {/* Email */}
             <div className="space-y-2">
               <label

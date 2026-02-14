@@ -16,8 +16,10 @@ import {
 } from "lucide-react";
 
 // ─── Admin Dashboard Page ──────────────────────────────────────
-// Server Component — fetches KPIs, recent bookings, and upcoming
-// check-ins server-side. All data is fresh on every request.
+/*
+  Server Component — fetches KPIs, recent bookings, and upcoming
+  heck-ins server-side. All data is fresh on every request. 
+*/
 
 export const dynamic = "force-dynamic";
 
@@ -27,7 +29,11 @@ export default async function AdminDashboardPage() {
   // ── Fetch all data in parallel ────────────────────────────
   const today = new Date();
   const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-  const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const startOfLastMonth = new Date(
+    today.getFullYear(),
+    today.getMonth() - 1,
+    1
+  );
   const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
 
   const [
@@ -109,9 +115,8 @@ export default async function AdminDashboardPage() {
   // ── Derived values ────────────────────────────────────────
   const revenue = Number(monthlyRevenue._sum.totalPrice ?? 0);
   const lastRevenue = Number(lastMonthRevenue._sum.totalPrice ?? 0);
-  const revenueTrend = lastRevenue > 0
-    ? ((revenue - lastRevenue) / lastRevenue) * 100
-    : null;
+  const revenueTrend =
+    lastRevenue > 0 ? ((revenue - lastRevenue) / lastRevenue) * 100 : null;
 
   // Serialize Decimal → number for CalendarWidget (Client Component)
   const calendarData: CalendarBooking[] = calendarBookings.map((b) => ({
@@ -138,9 +143,12 @@ export default async function AdminDashboardPage() {
       label: "Monthly Revenue",
       value: formatCurrency(revenue),
       icon: Euro,
-      change: revenueTrend !== null
-        ? `${revenueTrend > 0 ? "+" : ""}${revenueTrend.toFixed(0)}% vs last month`
-        : null,
+      change:
+        revenueTrend !== null
+          ? `${revenueTrend > 0 ? "+" : ""}${revenueTrend.toFixed(
+              0
+            )}% vs last month`
+          : null,
       trend: revenueTrend !== null && revenueTrend >= 0 ? "up" : "down",
     },
     {
@@ -218,7 +226,8 @@ export default async function AdminDashboardPage() {
           >
             {recentBookings.length === 0 ? (
               <p className="text-sm text-gray-500 text-center py-8">
-                No bookings yet. They will appear here once guests submit requests.
+                No bookings yet. They will appear here once guests submit
+                requests.
               </p>
             ) : (
               <div className="overflow-x-auto -mx-6 -mb-6">
@@ -318,7 +327,8 @@ export default async function AdminDashboardPage() {
                       </div>
                       <div className="flex items-center justify-between">
                         <span>
-                          {booking.numberOfNights} nights · {booking.guestCount} guests
+                          {booking.numberOfNights} nights · {booking.guestCount}{" "}
+                          guests
                         </span>
                         <span className="font-medium text-gray-900">
                           {formatCurrency(Number(booking.totalPrice))}

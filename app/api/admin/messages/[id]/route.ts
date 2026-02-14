@@ -13,7 +13,10 @@ export async function PATCH(
 ) {
   const session = await auth();
   if (!session) {
-    return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    return Response.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   const { id } = await params;
@@ -21,9 +24,17 @@ export async function PATCH(
   const { status } = body as { status: string };
 
   const validStatuses = Object.values(MESSAGE_STATUS);
-  if (!status || !validStatuses.includes(status as typeof MESSAGE_STATUS[keyof typeof MESSAGE_STATUS])) {
+  if (
+    !status ||
+    !validStatuses.includes(
+      status as (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS]
+    )
+  ) {
     return Response.json(
-      { success: false, error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` },
+      {
+        success: false,
+        error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+      },
       { status: 400 }
     );
   }
@@ -32,7 +43,7 @@ export async function PATCH(
     const updated = await prisma.contactMessage.update({
       where: { id },
       data: {
-        status: status as typeof MESSAGE_STATUS[keyof typeof MESSAGE_STATUS],
+        status: status as (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS],
         ...(status === MESSAGE_STATUS.REPLIED && {
           repliedBy: session.user.id,
           repliedAt: new Date(),

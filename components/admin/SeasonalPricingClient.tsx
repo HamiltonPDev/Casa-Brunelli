@@ -1,0 +1,640 @@
+"use client";
+
+// ─── Imports ───────────────────────────────────────────────────
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  Plus,
+  Calendar,
+  Table as TableIcon,
+  Edit,
+  Copy,
+  Archive,
+  X,
+} from "lucide-react";
+import { AdminCard } from "@/components/admin/AdminCard";
+import { AdminButton } from "@/components/admin/AdminButton";
+import { AdminBadge } from "@/components/admin/AdminBadge";
+import { AdminField } from "@/components/admin/AdminField";
+import { cn } from "@/lib/utils";
+
+// ─── Types ─────────────────────────────────────────────────────
+interface DowOverride {
+  id: string;
+  dayOfWeek: number;
+  type: "ADD" | "SUBTRACT" | "CUSTOM";
+  amount: number;
+}
+
+interface Season {
+  id: string;
+  name: string;
+  colorTag: string;
+  startDate: string;
+  endDate: string;
+  baseRate: number;
+  minStay: number;
+  priority: number;
+  status: string;
+  notes?: string;
+  updatedAt: string;
+  dowOverrides: DowOverride[];
+}
+
+interface SeasonalPricingClientProps {
+  initialSeasons: Season[];
+}
+
+// ─── Constants ─────────────────────────────────────────────────
+const DOW_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+
+const EMPTY_FORM = {
+  name: "",
+  colorTag: "#6B705C",
+  startDate: "",
+  endDate: "",
+  baseRate: "",
+  minStay: "7",
+  priority: "1",
+  notes: "",
+};
+
+// ─── Component ─────────────────────────────────────────────────
+export function SeasonalPricingClient({
+  initialSeasons,
+}: SeasonalPricingClientProps) {
+  const [seasons, setSeasons] = useState<Season[]>(initialSeasons);
+  const [view, setView] = useState<"table" | "calendar">("table");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [showModal, setShowModal] = useState(false);
+  const [editingSeason, setEditingSeason] = useState<Season | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [form, setForm] = useState(EMPTY_FORM);
+
+  function openAdd() {
+    setEditingSeason(null);
+    setForm(EMPTY_FORM);
+    setShowModal(true);
+  }
+
+  function openEdit(season: Season) {
+    setEditingSeason(season);
+    setForm({
+      name: season.name,
+      colorTag: season.colorTag,
+      startDate: season.startDate.split("T")[0],
+      endDate: season.endDate.split("T")[0],
+      baseRate: String(season.baseRate),
+      minStay: String(season.minStay),
+      priority: String(season.priority),
+      notes: season.notes ?? "",
+    });
+    setShowModal(true);
+  }
+
+  async function handleSave() {
+    if (!form.name || !form.startDate || !form.endDate || !form.baseRate) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const body = {
+        name: form.name,
+        colorTag: form.colorTag,
+        startDate: form.startDate,
+        endDate: form.endDate,
+        baseRate: Number(form.baseRate),
+        minStay: Number(form.minStay),
+        priority: Number(form.priority),
+        notes: form.notes || undefined,
+      };
+
+      if (editingSeason) {
+        const res = await fetch(`/api/admin/seasons/${editingSeason.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const json = (await res.json()) as { success: boolean; data: Season };
+        if (json.success) {
+          setSeasons((prev) =>
+            prev.map((s) => (s.id === editingSeason.id ? json.data : s))
+          );
+          toast.success("Season updated");
+        }
+      } else {
+        const res = await fetch("/api/admin/seasons", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const json = (await res.json()) as { success: boolean; data: Season };
+        if (json.success) {
+          setSeasons((prev) => [...prev, json.data]);
+          toast.success("Season created");
+        }
+      }
+      setShowModal(false);
+    } catch {
+      toast.error("Failed to save season");
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleDuplicate(season: Season) {
+    try {
+      const res = await fetch("/api/admin/seasons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: `${season.name} (Copy)`,
+          colorTag: season.colorTag,
+          startDate: season.startDate.split("T")[0],
+          endDate: season.endDate.split("T")[0],
+          baseRate: season.baseRate,
+          minStay: season.minStay,
+          priority: season.priority,
+          notes: season.notes,
+        }),
+      });
+      const json = (await res.json()) as { success: boolean; data: Season };
+      if (json.success) {
+        setSeasons((prev) => [...prev, json.data]);
+        toast.success("Season duplicated");
+      }
+    } catch {
+      toast.error("Failed to duplicate season");
+    }
+  }
+
+  async function handleArchive(seasonId: string) {
+    try {
+      const res = await fetch(`/api/admin/seasons/${seasonId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ARCHIVED" }),
+      });
+      const json = (await res.json()) as { success: boolean };
+      if (json.success) {
+        setSeasons((prev) =>
+          prev.map((s) =>
+            s.id === seasonId ? { ...s, status: "ARCHIVED" } : s
+          )
+        );
+        toast.success("Season archived");
+      }
+    } catch {
+      toast.error("Failed to archive season");
+    }
+  }
+
+  async function handleBulkActivate() {
+    for (const id of selectedIds) {
+      await fetch(`/api/admin/seasons/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "ACTIVE" }),
+      });
+    }
+    setSeasons((prev) =>
+      prev.map((s) =>
+        selectedIds.includes(s.id) ? { ...s, status: "ACTIVE" } : s
+      )
+    );
+    toast.success(`${selectedIds.length} seasons activated`);
+    setSelectedIds([]);
+  }
+
+  function toggleSelect(id: string) {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
+    );
+  }
+
+  // ── Render ────────────────────────────────────────────────
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-gray-900">
+            Seasonal Pricing
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Define seasons and dynamic nightly rates
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* View toggle */}
+          <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+            {(["table", "calendar"] as const).map((v) => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={cn(
+                  "px-3 py-1.5 rounded-md text-sm font-medium transition-colors capitalize flex items-center gap-1.5",
+                  view === v
+                    ? "bg-white text-gray-900 shadow-sm"
+                    : "text-gray-500 hover:text-gray-700"
+                )}
+              >
+                {v === "table" ? (
+                  <TableIcon className="w-4 h-4" />
+                ) : (
+                  <Calendar className="w-4 h-4" />
+                )}
+                {v.charAt(0).toUpperCase() + v.slice(1)}
+              </button>
+            ))}
+          </div>
+          <AdminButton
+            variant="primary"
+            onClick={openAdd}
+            icon={<Plus className="w-4 h-4" />}
+          >
+            Add Season
+          </AdminButton>
+        </div>
+      </div>
+
+      {/* Bulk actions */}
+      {selectedIds.length > 0 && (
+        <div className="bg-admin-sage/10 border border-admin-sage/30 rounded-lg px-4 py-3 flex items-center justify-between">
+          <span className="text-sm font-medium text-gray-900">
+            {selectedIds.length} season{selectedIds.length > 1 ? "s" : ""}{" "}
+            selected
+          </span>
+          <div className="flex items-center gap-2">
+            <AdminButton
+              variant="secondary"
+              size="sm"
+              onClick={handleBulkActivate}
+            >
+              Activate
+            </AdminButton>
+            <AdminButton
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds([])}
+            >
+              Clear
+            </AdminButton>
+          </div>
+        </div>
+      )}
+
+      {/* Table view */}
+      {view === "table" && (
+        <AdminCard>
+          <div className="overflow-x-auto -mx-6 -mb-6">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200">
+                  <th className="px-6 py-3 text-left">
+                    <input
+                      type="checkbox"
+                      checked={
+                        selectedIds.length === seasons.length &&
+                        seasons.length > 0
+                      }
+                      onChange={(e) =>
+                        setSelectedIds(
+                          e.target.checked ? seasons.map((s) => s.id) : []
+                        )
+                      }
+                      className="w-4 h-4 rounded border-gray-300 accent-admin-sage"
+                    />
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Season
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Date Range
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Base Rate
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Min Stay
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    DOW Overrides
+                  </th>
+                  <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
+                    Priority
+                  </th>
+                  <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700">
+                    Status
+                  </th>
+                  <th className="px-6 py-3 text-right text-sm font-semibold text-gray-700">
+                    Actions
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {seasons.map((season) => (
+                  <tr
+                    key={season.id}
+                    className="border-b border-gray-100 hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(season.id)}
+                        onChange={() => toggleSelect(season.id)}
+                        className="w-4 h-4 rounded border-gray-300 accent-admin-sage"
+                      />
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div
+                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          style={{ backgroundColor: season.colorTag }}
+                        />
+                        <div>
+                          <p className="font-medium text-gray-900">
+                            {season.name}
+                          </p>
+                          {season.notes && (
+                            <p className="text-xs text-gray-500 mt-0.5">
+                              {season.notes}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {new Date(season.startDate).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                      })}
+                      {" → "}
+                      {new Date(season.endDate).toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-900">
+                      €{season.baseRate.toLocaleString()}/night
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {season.minStay}{" "}
+                      {season.minStay === 1 ? "night" : "nights"}
+                    </td>
+                    <td className="px-6 py-4">
+                      {season.dowOverrides.length > 0 ? (
+                        <div className="flex flex-wrap gap-1">
+                          {season.dowOverrides.map((d) => (
+                            <span
+                              key={d.id}
+                              className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700"
+                            >
+                              {DOW_LABELS[d.dayOfWeek]}{" "}
+                              {d.type === "ADD"
+                                ? "+"
+                                : d.type === "SUBTRACT"
+                                ? "-"
+                                : "="}
+                              €{d.amount}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-gray-400">None</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-admin-sage/10 text-sm font-semibold text-gray-900">
+                        {season.priority}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <AdminBadge
+                        variant={
+                          season.status === "ACTIVE" ? "success" : "default"
+                        }
+                        size="sm"
+                      >
+                        {season.status === "ACTIVE"
+                          ? "Active"
+                          : season.status === "ARCHIVED"
+                          ? "Archived"
+                          : "Inactive"}
+                      </AdminBadge>
+                    </td>
+                    <td className="px-6 py-4 text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <button
+                          onClick={() => openEdit(season)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Edit className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <button
+                          onClick={() => handleDuplicate(season)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Duplicate"
+                        >
+                          <Copy className="w-4 h-4 text-gray-600" />
+                        </button>
+                        <button
+                          onClick={() => handleArchive(season.id)}
+                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                          title="Archive"
+                        >
+                          <Archive className="w-4 h-4 text-gray-600" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </AdminCard>
+      )}
+
+      {/* Calendar view — simple visual representation */}
+      {view === "calendar" && (
+        <AdminCard
+          title="Season Calendar"
+          subtitle="Visual overview of all seasons"
+        >
+          <div className="space-y-3">
+            {seasons.map((season) => {
+              const start = new Date(season.startDate);
+              const end = new Date(season.endDate);
+              const days = Math.ceil(
+                (end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)
+              );
+              return (
+                <div
+                  key={season.id}
+                  className="flex items-center gap-4 p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
+                >
+                  <div
+                    className="w-4 h-4 rounded-full flex-shrink-0"
+                    style={{ backgroundColor: season.colorTag }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-gray-900">{season.name}</p>
+                    <p className="text-sm text-gray-500">
+                      {start.toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                      {" → "}
+                      {end.toLocaleDateString("en-GB", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      })}
+                      {" · "}
+                      {days} days
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-medium text-gray-900">
+                      €{season.baseRate}/night
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      min {season.minStay} nights
+                    </p>
+                  </div>
+                  <AdminBadge
+                    variant={season.status === "ACTIVE" ? "success" : "default"}
+                    size="sm"
+                  >
+                    {season.status === "ACTIVE" ? "Active" : "Inactive"}
+                  </AdminBadge>
+                  <button
+                    onClick={() => openEdit(season)}
+                    className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    <Edit className="w-4 h-4 text-gray-600" />
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+        </AdminCard>
+      )}
+
+      {/* Season modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-xl font-semibold text-gray-900">
+                {editingSeason ? "Edit Season" : "Add Season"}
+              </h3>
+              <button
+                onClick={() => setShowModal(false)}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <AdminField
+                label="Season Name"
+                placeholder="e.g. High Season"
+                value={form.name}
+                onChange={(v) => setForm((f) => ({ ...f, name: v }))}
+                required
+              />
+              <div className="grid grid-cols-2 gap-4">
+                <AdminField
+                  type="date"
+                  label="Start Date"
+                  value={form.startDate}
+                  onChange={(v) => setForm((f) => ({ ...f, startDate: v }))}
+                  required
+                />
+                <AdminField
+                  type="date"
+                  label="End Date"
+                  value={form.endDate}
+                  onChange={(v) => setForm((f) => ({ ...f, endDate: v }))}
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                <AdminField
+                  type="number"
+                  label="Base Rate (€/night)"
+                  placeholder="500"
+                  value={form.baseRate}
+                  onChange={(v) => setForm((f) => ({ ...f, baseRate: v }))}
+                  required
+                />
+                <AdminField
+                  type="number"
+                  label="Min Stay (nights)"
+                  placeholder="7"
+                  value={form.minStay}
+                  onChange={(v) => setForm((f) => ({ ...f, minStay: v }))}
+                />
+                <AdminField
+                  type="number"
+                  label="Priority"
+                  placeholder="1"
+                  value={form.priority}
+                  onChange={(v) => setForm((f) => ({ ...f, priority: v }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">
+                  Color Tag
+                </label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={form.colorTag}
+                    onChange={(e) =>
+                      setForm((f) => ({ ...f, colorTag: e.target.value }))
+                    }
+                    className="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer"
+                  />
+                  <span className="text-sm text-gray-600 font-mono">
+                    {form.colorTag}
+                  </span>
+                </div>
+              </div>
+              <AdminField
+                type="textarea"
+                label="Notes (optional)"
+                placeholder="Additional notes about this season…"
+                value={form.notes}
+                onChange={(v) => setForm((f) => ({ ...f, notes: v }))}
+              />
+            </div>
+            <div className="flex items-center gap-3 p-6 border-t border-gray-200">
+              <AdminButton
+                variant="secondary"
+                onClick={() => setShowModal(false)}
+                className="flex-1"
+              >
+                Cancel
+              </AdminButton>
+              <AdminButton
+                variant="primary"
+                loading={saving}
+                onClick={handleSave}
+                className="flex-1"
+              >
+                {editingSeason ? "Save Changes" : "Create Season"}
+              </AdminButton>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

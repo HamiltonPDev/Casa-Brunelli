@@ -18,12 +18,11 @@ interface AdminButtonProps {
 
 const VARIANT_STYLES = {
   primary:
-    "bg-[#1a4a3a] text-white hover:bg-[#2d5a47] active:bg-[#163d30] shadow-sm",
+    "bg-admin-sage text-white hover:bg-admin-sage-hover active:bg-admin-sage-hover shadow-sm",
   secondary:
-    "bg-white text-[#1a4a3a] border border-[#1a4a3a]/20 hover:bg-gray-50 active:bg-gray-100",
-  ghost: "text-[#1a4a3a] hover:bg-gray-100 active:bg-gray-200",
-  danger:
-    "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm",
+    "bg-white text-admin-sage border border-admin-sage/20 hover:bg-gray-50 active:bg-gray-100",
+  ghost: "text-admin-sage hover:bg-gray-100 active:bg-gray-200",
+  danger: "bg-red-600 text-white hover:bg-red-700 active:bg-red-800 shadow-sm",
 } as const;
 
 const SIZE_STYLES = {

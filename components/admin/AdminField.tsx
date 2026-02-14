@@ -9,7 +9,14 @@ interface SelectOption {
 }
 
 interface AdminFieldProps {
-  type?: "text" | "email" | "password" | "number" | "date" | "select" | "textarea";
+  type?:
+    | "text"
+    | "email"
+    | "password"
+    | "number"
+    | "date"
+    | "select"
+    | "textarea";
   label?: string;
   placeholder?: string;
   value?: string;
@@ -24,7 +31,7 @@ interface AdminFieldProps {
 
 const BASE_INPUT =
   "w-full px-3 py-2 border rounded-lg text-sm transition-all duration-200 " +
-  "focus:outline-none focus:ring-2 focus:ring-[#1a4a3a]/20 focus:border-[#1a4a3a] " +
+  "focus:outline-none focus:ring-2 focus:ring-admin-sage/20 focus:border-admin-sage " +
   "disabled:bg-gray-50 disabled:cursor-not-allowed";
 
 export function AdminField({
@@ -98,9 +105,7 @@ export function AdminField({
         )}
       </div>
 
-      {error && (
-        <span className="text-xs text-red-600">{error}</span>
-      )}
+      {error && <span className="text-xs text-red-600">{error}</span>}
     </div>
   );
 }

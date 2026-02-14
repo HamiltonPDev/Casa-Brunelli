@@ -11,7 +11,10 @@ import { MESSAGE_STATUS } from "@/lib/constants";
 export async function GET(request: NextRequest) {
   const session = await auth();
   if (!session) {
-    return Response.json({ success: false, error: "Unauthorized" }, { status: 401 });
+    return Response.json(
+      { success: false, error: "Unauthorized" },
+      { status: 401 }
+    );
   }
 
   const { searchParams } = new URL(request.url);
@@ -19,9 +22,16 @@ export async function GET(request: NextRequest) {
 
   try {
     const messages = await prisma.contactMessage.findMany({
-      where: statusParam && Object.values(MESSAGE_STATUS).includes(statusParam as typeof MESSAGE_STATUS[keyof typeof MESSAGE_STATUS])
-        ? { status: statusParam as typeof MESSAGE_STATUS[keyof typeof MESSAGE_STATUS] }
-        : undefined,
+      where:
+        statusParam &&
+        Object.values(MESSAGE_STATUS).includes(
+          statusParam as (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS]
+        )
+          ? {
+              status:
+                statusParam as (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS],
+            }
+          : undefined,
       orderBy: { createdAt: "desc" },
       include: {
         admin: { select: { name: true } },

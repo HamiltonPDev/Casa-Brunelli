@@ -100,7 +100,9 @@ export async function calculateBookingTotal(
       where: { id: { in: seasonIds as string[] } },
       select: { minStay: true },
     });
-    minStayRequired = Math.max(...seasons.map((s: { minStay: number }) => s.minStay));
+    minStayRequired = Math.max(
+      ...seasons.map((s: { minStay: number }) => s.minStay)
+    );
   }
 
   const numberOfNights = nights.length;
@@ -122,9 +124,11 @@ export async function calculateBookingTotal(
 // Quick sync check (no DB) for UI-side validation.
 // Pass the breakdown result from calculateBookingTotal.
 
-export function validateMinimumStay(
-  breakdown: BookingPriceBreakdown
-): { valid: boolean; required: number | null; actual: number } {
+export function validateMinimumStay(breakdown: BookingPriceBreakdown): {
+  valid: boolean;
+  required: number | null;
+  actual: number;
+} {
   return {
     valid: breakdown.minStayValid,
     required: breakdown.minStayRequired,

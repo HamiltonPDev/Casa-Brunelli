@@ -15,7 +15,10 @@ export default function HomePage() {
       <div className="flex flex-col items-center gap-2 mb-12">
         <p
           className="text-sm tracking-[0.3em] uppercase"
-          style={{ color: "var(--terracotta-gold)", fontFamily: "var(--font-body)" }}
+          style={{
+            color: "var(--terracotta-gold)",
+            fontFamily: "var(--font-body)",
+          }}
         >
           Tuscany, Italy
         </p>
@@ -31,7 +34,10 @@ export default function HomePage() {
         </h1>
         <p
           className="text-base tracking-widest uppercase"
-          style={{ color: "var(--muted-green-gray)", fontFamily: "var(--font-body)" }}
+          style={{
+            color: "var(--muted-green-gray)",
+            fontFamily: "var(--font-body)",
+          }}
         >
           Luxury Villa Rental
         </p>
@@ -55,11 +61,17 @@ export default function HomePage() {
         >
           <span
             className="text-2xl font-semibold"
-            style={{ fontFamily: "var(--font-display)", color: "var(--forest-green)" }}
+            style={{
+              fontFamily: "var(--font-display)",
+              color: "var(--forest-green)",
+            }}
           >
             Check Availability
           </span>
-          <span className="text-sm" style={{ color: "var(--muted-green-gray)" }}>
+          <span
+            className="text-sm"
+            style={{ color: "var(--muted-green-gray)" }}
+          >
             View dates &amp; pricing
           </span>
         </Link>
@@ -74,7 +86,10 @@ export default function HomePage() {
         >
           <span
             className="text-2xl font-semibold"
-            style={{ fontFamily: "var(--font-display)", color: "var(--golden-wheat)" }}
+            style={{
+              fontFamily: "var(--font-display)",
+              color: "var(--golden-wheat)",
+            }}
           >
             Admin Dashboard
           </span>

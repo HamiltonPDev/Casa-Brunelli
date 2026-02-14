@@ -3,13 +3,7 @@
 // ─── Imports ───────────────────────────────────────────────────
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
-import {
-  ChevronLeft,
-  ChevronRight,
-  Lock,
-  X,
-  Eye,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Lock, X, Eye } from "lucide-react";
 import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { AdminBadge } from "@/components/admin/AdminBadge";
@@ -40,8 +34,18 @@ interface CalendarWidgetProps {
 
 // ─── Constants ─────────────────────────────────────────────────
 const MONTH_NAMES = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
 ];
 const DAYS_OF_WEEK = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const YEARS = [2025, 2026, 2027];
@@ -56,7 +60,10 @@ function isSameDay(a: Date, b: Date): boolean {
 }
 
 // ─── Component ─────────────────────────────────────────────────
-export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps) {
+export function CalendarWidget({
+  bookings,
+  onViewBooking,
+}: CalendarWidgetProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | null>(null);
   const [hoveredDay, setHoveredDay] = useState<Date | null>(null);
@@ -170,10 +177,16 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
             {/* Legend */}
             <div className="flex items-center gap-3 mr-2">
               {[
-                { color: "bg-white border border-gray-300", label: "Available" },
+                {
+                  color: "bg-white border border-gray-300",
+                  label: "Available",
+                },
                 { color: "bg-admin-avatar", label: "Booked" },
                 { color: "bg-gray-200", label: "Blocked" },
-                { color: "bg-white border-2 border-admin-sage", label: "Today" },
+                {
+                  color: "bg-white border-2 border-admin-sage",
+                  label: "Today",
+                },
               ].map(({ color, label }) => (
                 <div key={label} className="flex items-center gap-1.5">
                   <div className={cn("w-3 h-3 rounded", color)} />
@@ -186,7 +199,11 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
             <button
               onClick={() =>
                 setCurrentDate(
-                  new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1)
+                  new Date(
+                    currentDate.getFullYear(),
+                    currentDate.getMonth() - 1,
+                    1
+                  )
                 )
               }
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -229,7 +246,11 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
             <button
               onClick={() =>
                 setCurrentDate(
-                  new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 1)
+                  new Date(
+                    currentDate.getFullYear(),
+                    currentDate.getMonth() + 1,
+                    1
+                  )
                 )
               }
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -263,7 +284,8 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
           {/* Calendar grid */}
           <div className="grid grid-cols-7 gap-2">
             {calendarDays.map((date, idx) => {
-              if (!date) return <div key={`e-${idx}`} className="aspect-square" />;
+              if (!date)
+                return <div key={`e-${idx}`} className="aspect-square" />;
 
               const state = getDayState(date);
               const booking = getBookingForDate(date);
@@ -289,7 +311,8 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
                         "bg-admin-avatar border-admin-avatar text-white",
                       state === "blocked" &&
                         "bg-gray-200 border-gray-300 relative overflow-hidden",
-                      state === "today" && "ring-2 ring-admin-sage ring-offset-2",
+                      state === "today" &&
+                        "ring-2 ring-admin-sage ring-offset-2",
                       isSelected && "ring-2 ring-blue-500 ring-offset-2",
                       inDrag && "ring-2 ring-admin-sage bg-admin-sage/10"
                     )}
@@ -356,8 +379,7 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
           {dragStart && dragEnd && (
             <div className="flex items-center justify-between p-4 bg-admin-sage text-white rounded-lg">
               <span className="font-medium text-sm">
-                Block{" "}
-                {toDateStr(dragStart < dragEnd ? dragStart : dragEnd)} →{" "}
+                Block {toDateStr(dragStart < dragEnd ? dragStart : dragEnd)} →{" "}
                 {toDateStr(dragStart < dragEnd ? dragEnd : dragStart)}
               </span>
               <div className="flex items-center gap-2">
@@ -378,7 +400,11 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
                 >
                   Cancel
                 </AdminButton>
-                <AdminButton variant="primary" size="sm" onClick={handleBlockDays}>
+                <AdminButton
+                  variant="primary"
+                  size="sm"
+                  onClick={handleBlockDays}
+                >
                   Block Days
                 </AdminButton>
               </div>
@@ -404,8 +430,8 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
                   {selectedBooking
                     ? "Booking Details"
                     : selectedBlocked
-                      ? "Blocked Date"
-                      : "Available Date"}
+                    ? "Blocked Date"
+                    : "Available Date"}
                 </p>
               </div>
               <button
@@ -430,20 +456,30 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
                     </div>
                     <AdminBadge
                       variant="status"
-                      status={selectedBooking.status as Parameters<typeof AdminBadge>[0]["status"]}
+                      status={
+                        selectedBooking.status as Parameters<
+                          typeof AdminBadge
+                        >[0]["status"]
+                      }
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-100">
                     <div>
                       <div className="text-xs text-gray-500 mb-1">Check-in</div>
                       <div className="font-medium text-gray-900 text-sm">
-                        {new Date(selectedBooking.checkIn).toLocaleDateString("en-GB")}
+                        {new Date(selectedBooking.checkIn).toLocaleDateString(
+                          "en-GB"
+                        )}
                       </div>
                     </div>
                     <div>
-                      <div className="text-xs text-gray-500 mb-1">Check-out</div>
+                      <div className="text-xs text-gray-500 mb-1">
+                        Check-out
+                      </div>
                       <div className="font-medium text-gray-900 text-sm">
-                        {new Date(selectedBooking.checkOut).toLocaleDateString("en-GB")}
+                        {new Date(selectedBooking.checkOut).toLocaleDateString(
+                          "en-GB"
+                        )}
                       </div>
                     </div>
                     <div>
@@ -487,7 +523,9 @@ export function CalendarWidget({ bookings, onViewBooking }: CalendarWidgetProps)
                       <span className="font-medium text-sm">Blocked</span>
                     </div>
                     {selectedBlocked.note && (
-                      <p className="text-sm text-gray-600">{selectedBlocked.note}</p>
+                      <p className="text-sm text-gray-600">
+                        {selectedBlocked.note}
+                      </p>
                     )}
                   </div>
                   <AdminButton

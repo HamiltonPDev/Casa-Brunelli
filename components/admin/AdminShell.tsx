@@ -28,7 +28,11 @@ const NAV_ITEMS = [
   { href: "/admin/bookings", label: "Bookings", icon: Calendar },
   { href: "/admin/messages", label: "Messages", icon: MessageSquare },
   { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
-  { href: "/admin/seasonal-pricing", label: "Seasonal Pricing", icon: DollarSign },
+  {
+    href: "/admin/seasonal-pricing",
+    label: "Seasonal Pricing",
+    icon: DollarSign,
+  },
   { href: "/admin/settings", label: "Settings", icon: Settings },
 ] as const;
 
@@ -156,9 +160,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
       <div className="flex-1 flex flex-col min-w-0">
         {/* Top Bar */}
         <header className="h-16 bg-white border-b border-gray-200 px-8 flex items-center justify-between shrink-0">
-          <h1 className="font-semibold text-gray-900">
-            Casa Brunelli Admin
-          </h1>
+          <h1 className="font-semibold text-gray-900">Casa Brunelli Admin</h1>
 
           <div className="flex items-center gap-4">
             {/* Search */}

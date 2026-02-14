@@ -86,7 +86,10 @@ function formatMessageDate(date: Date): string {
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
-    return d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+    return d.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   } else if (diffDays === 1) {
     return "Yesterday";
   } else if (diffDays < 7) {
@@ -117,7 +120,8 @@ function getInitials(name: string): string {
 
 // ─── Component ─────────────────────────────────────────────────
 export function MessagesClient({ initialMessages }: MessagesClientProps) {
-  const [messages, setMessages] = useState<SerializedMessage[]>(initialMessages);
+  const [messages, setMessages] =
+    useState<SerializedMessage[]>(initialMessages);
   const [selectedId, setSelectedId] = useState<string | null>(
     initialMessages[0]?.id ?? null
   );
@@ -240,8 +244,14 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
               {(
                 [
                   { label: "All", value: "all" as FilterStatus },
-                  { label: "Unread", value: MESSAGE_STATUS.UNREAD as FilterStatus },
-                  { label: "Replied", value: MESSAGE_STATUS.REPLIED as FilterStatus },
+                  {
+                    label: "Unread",
+                    value: MESSAGE_STATUS.UNREAD as FilterStatus,
+                  },
+                  {
+                    label: "Replied",
+                    value: MESSAGE_STATUS.REPLIED as FilterStatus,
+                  },
                 ] as { label: string; value: FilterStatus }[]
               ).map(({ label, value }) => (
                 <button
@@ -258,7 +268,11 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                   {value === "all" && ` (${messages.length})`}
                   {value === MESSAGE_STATUS.UNREAD && ` (${unreadCount})`}
                   {value === MESSAGE_STATUS.REPLIED &&
-                    ` (${messages.filter((m) => m.status === MESSAGE_STATUS.REPLIED).length})`}
+                    ` (${
+                      messages.filter(
+                        (m) => m.status === MESSAGE_STATUS.REPLIED
+                      ).length
+                    })`}
                 </button>
               ))}
             </div>
@@ -280,14 +294,16 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                       selectedId === message.id
                         ? "bg-[#f0f7f4] border-[#1a4a3a]"
                         : "border-transparent hover:bg-gray-50",
-                      message.status === MESSAGE_STATUS.UNREAD && "bg-blue-50/40"
+                      message.status === MESSAGE_STATUS.UNREAD &&
+                        "bg-blue-50/40"
                     )}
                   >
                     <div className="flex items-start justify-between mb-1">
                       <span
                         className={cn(
                           "text-sm text-gray-900",
-                          message.status === MESSAGE_STATUS.UNREAD && "font-semibold"
+                          message.status === MESSAGE_STATUS.UNREAD &&
+                            "font-semibold"
                         )}
                       >
                         {message.name}
@@ -303,7 +319,11 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                       {message.message}
                     </div>
                     <div className="flex items-center justify-between">
-                      <AdminBadge variant="message" status={message.status} size="sm" />
+                      <AdminBadge
+                        variant="message"
+                        status={message.status}
+                        size="sm"
+                      />
                       {message.type === MESSAGE_TYPE.BOOKING_REQUEST && (
                         <span className="text-xs text-[#1a4a3a] font-medium bg-[#1a4a3a]/10 px-2 py-0.5 rounded-full">
                           Booking
@@ -394,12 +414,17 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                         <div className="flex items-start gap-2">
                           <Calendar className="w-4 h-4 text-[#1a4a3a] mt-0.5 flex-shrink-0" />
                           <div>
-                            <div className="text-xs text-gray-500 mb-0.5">Check-in</div>
+                            <div className="text-xs text-gray-500 mb-0.5">
+                              Check-in
+                            </div>
                             <div className="text-sm font-medium text-gray-900">
-                              {new Date(selectedMessage.checkIn).toLocaleDateString(
-                                "en-GB",
-                                { day: "numeric", month: "short", year: "numeric" }
-                              )}
+                              {new Date(
+                                selectedMessage.checkIn
+                              ).toLocaleDateString("en-GB", {
+                                day: "numeric",
+                                month: "short",
+                                year: "numeric",
+                              })}
                             </div>
                           </div>
                         </div>
@@ -407,12 +432,17 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                           <div className="flex items-start gap-2">
                             <Calendar className="w-4 h-4 text-[#1a4a3a] mt-0.5 flex-shrink-0" />
                             <div>
-                              <div className="text-xs text-gray-500 mb-0.5">Check-out</div>
+                              <div className="text-xs text-gray-500 mb-0.5">
+                                Check-out
+                              </div>
                               <div className="text-sm font-medium text-gray-900">
-                                {new Date(selectedMessage.checkOut).toLocaleDateString(
-                                  "en-GB",
-                                  { day: "numeric", month: "short", year: "numeric" }
-                                )}
+                                {new Date(
+                                  selectedMessage.checkOut
+                                ).toLocaleDateString("en-GB", {
+                                  day: "numeric",
+                                  month: "short",
+                                  year: "numeric",
+                                })}
                               </div>
                             </div>
                           </div>
@@ -421,7 +451,9 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                           <div className="flex items-start gap-2">
                             <Users className="w-4 h-4 text-[#1a4a3a] mt-0.5 flex-shrink-0" />
                             <div>
-                              <div className="text-xs text-gray-500 mb-0.5">Guests</div>
+                              <div className="text-xs text-gray-500 mb-0.5">
+                                Guests
+                              </div>
                               <div className="text-sm font-medium text-gray-900">
                                 {selectedMessage.guestCount} guests
                               </div>
@@ -432,9 +464,14 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                           <div className="flex items-start gap-2">
                             <Euro className="w-4 h-4 text-[#1a4a3a] mt-0.5 flex-shrink-0" />
                             <div>
-                              <div className="text-xs text-gray-500 mb-0.5">Est. Total</div>
+                              <div className="text-xs text-gray-500 mb-0.5">
+                                Est. Total
+                              </div>
                               <div className="text-sm font-medium text-gray-900">
-                                €{selectedMessage.totalPrice.toLocaleString("en-GB")}
+                                €
+                                {selectedMessage.totalPrice.toLocaleString(
+                                  "en-GB"
+                                )}
                               </div>
                             </div>
                           </div>
@@ -446,7 +483,9 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                 {/* Reply Composer */}
                 <div className="space-y-4 pt-4 border-t border-gray-100">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-semibold text-gray-900 text-sm">Reply</h4>
+                    <h4 className="font-semibold text-gray-900 text-sm">
+                      Reply
+                    </h4>
                     {selectedMessage.status === MESSAGE_STATUS.REPLIED &&
                       selectedMessage.repliedAt && (
                         <span className="text-xs text-gray-400 flex items-center gap-1">
@@ -490,7 +529,10 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                       {selectedMessage.status !== MESSAGE_STATUS.UNREAD && (
                         <button
                           onClick={() =>
-                            updateStatus(selectedMessage.id, MESSAGE_STATUS.UNREAD)
+                            updateStatus(
+                              selectedMessage.id,
+                              MESSAGE_STATUS.UNREAD
+                            )
                           }
                           disabled={isPending}
                           className="text-xs text-gray-500 hover:text-gray-700 transition-colors disabled:opacity-50"
@@ -506,7 +548,10 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                           size="sm"
                           loading={isPending}
                           onClick={() =>
-                            updateStatus(selectedMessage.id, MESSAGE_STATUS.REPLIED)
+                            updateStatus(
+                              selectedMessage.id,
+                              MESSAGE_STATUS.REPLIED
+                            )
                           }
                         >
                           Mark as replied
@@ -567,7 +612,9 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                       {selectedMessage.email}
                     </p>
                     {selectedMessage.phone && (
-                      <p className="text-xs text-gray-500">{selectedMessage.phone}</p>
+                      <p className="text-xs text-gray-500">
+                        {selectedMessage.phone}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -612,7 +659,10 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                       onClick={() =>
                         updateStatus(selectedMessage.id, MESSAGE_STATUS.UNREAD)
                       }
-                      disabled={isPending || selectedMessage.status === MESSAGE_STATUS.UNREAD}
+                      disabled={
+                        isPending ||
+                        selectedMessage.status === MESSAGE_STATUS.UNREAD
+                      }
                       className="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-40"
                     >
                       Mark as unread
@@ -621,7 +671,10 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                       onClick={() =>
                         updateStatus(selectedMessage.id, MESSAGE_STATUS.READ)
                       }
-                      disabled={isPending || selectedMessage.status === MESSAGE_STATUS.READ}
+                      disabled={
+                        isPending ||
+                        selectedMessage.status === MESSAGE_STATUS.READ
+                      }
                       className="w-full text-left px-3 py-2 text-xs text-gray-600 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-40"
                     >
                       Mark as read
