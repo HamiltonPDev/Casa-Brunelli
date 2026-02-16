@@ -7,6 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle, Users, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MAX_GUESTS, MIN_GUESTS } from "@/lib/constants";
+import { Card } from "@/components/ui/Card";
 import type { DayAvailability } from "@/app/api/availability/route";
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -241,10 +242,7 @@ export function AvailabilityCalendar() {
           </div>
 
           {/* ─── Calendar card ───────────────────────────────── */}
-          <div
-            className="bg-white rounded-2xl border p-6 space-y-4"
-            style={{ borderColor: "rgba(139,157,131,0.2)" }}
-          >
+          <Card className="space-y-4">
             {/* Month navigation */}
             <div className="flex items-center justify-between">
               <h2 className="font-serif text-xl" style={{ color: "var(--dark-forest)" }}>
@@ -475,7 +473,7 @@ export function AvailabilityCalendar() {
                 </div>
               </div>
             )}
-          </div>
+          </Card>
         </div>
 
         {/* ═══ Sidebar (1/3) ══════════════════════════════════ */}
@@ -483,10 +481,7 @@ export function AvailabilityCalendar() {
           <div className="sticky top-24 space-y-4">
 
             {/* ─── Your Selection card ─────────────────────── */}
-            <div
-              className="bg-white rounded-2xl border p-6 space-y-4"
-              style={{ borderColor: "rgba(139,157,131,0.2)" }}
-            >
+            <Card className="space-y-4">
               <h3 className="font-serif text-lg" style={{ color: "var(--dark-forest)" }}>
                 Your Selection
               </h3>
@@ -597,13 +592,10 @@ export function AvailabilityCalendar() {
                   </button>
                 )}
               </div>
-            </div>
+            </Card>
 
             {/* ─── How it works card ────────────────────────── */}
-            <div
-              className="bg-white rounded-2xl border p-5"
-              style={{ borderColor: "rgba(139,157,131,0.2)" }}
-            >
+            <Card padding="sm">
               <p className="text-xs font-semibold mb-3" style={{ color: "rgba(61,82,67,0.7)" }}>
                 How it works
               </p>
@@ -614,7 +606,7 @@ export function AvailabilityCalendar() {
                 <li>Pay 30% deposit to secure dates</li>
                 <li>Balance due 7 days before check-in</li>
               </ol>
-            </div>
+            </Card>
 
           </div>
         </div>

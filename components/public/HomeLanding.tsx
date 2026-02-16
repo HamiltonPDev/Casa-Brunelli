@@ -2,7 +2,6 @@
 
 // ─── Imports ───────────────────────────────────────────────────
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Leaf,
@@ -18,6 +17,12 @@ import {
   ArrowUp,
   ChevronDown,
 } from "lucide-react";
+import { Eyebrow } from "@/components/ui/Eyebrow";
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Button } from "@/components/ui/Button";
+import { FadeInView } from "@/components/ui/FadeInView";
+import { SectionHeader } from "@/components/shared/SectionHeader";
+import { FeatureCard } from "@/components/shared/FeatureCard";
 
 // ─── Types ─────────────────────────────────────────────────────
 interface HeroMilestone {
@@ -614,29 +619,21 @@ export function HomeLanding() {
                 <div>
                   <p
                     className="text-xs tracking-[0.3em] uppercase font-semibold mb-1"
-                    style={{ color: "#C0AF7E" }}
+                    style={{ color: "var(--terracotta-gold)" }}
                   >
                     Book Direct
                   </p>
-                  <p className="text-sm font-serif" style={{ color: "#F5DEB3" }}>
+                  <p className="text-sm font-serif" style={{ color: "var(--golden-wheat)" }}>
                     Reserve your Tuscan escape — no commissions, no middlemen
                   </p>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
-                  <Link
-                    href="/availability"
-                    className="px-6 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90 active:scale-[0.98]"
-                    style={{ backgroundColor: "#C0AF7E", color: "#2D3A2E" }}
-                  >
+                  <Button href="/availability" variant="gold">
                     Check Availability
-                  </Link>
-                  <Link
-                    href="/contact"
-                    className="px-6 py-3 rounded-xl text-sm font-semibold border transition-all hover:opacity-80"
-                    style={{ borderColor: "rgba(139,157,131,0.5)", color: "#8B9D83" }}
-                  >
+                  </Button>
+                  <Button href="/contact" variant="outline">
                     Ask a Question
-                  </Link>
+                  </Button>
                 </div>
               </div>
             </motion.div>
@@ -649,107 +646,39 @@ export function HomeLanding() {
           ═══════════════════════════════════════════════════════ */}
       <div className="relative z-30" style={{ backgroundColor: "white" }}>
         {/* Stats strip */}
-        <div
-          className="border-b"
-          style={{
-            backgroundColor: "white",
-            borderColor: "rgba(139,157,131,0.1)",
-          }}
-        >
+        <div className="border-b" style={{ backgroundColor: "white", borderColor: "rgba(139,157,131,0.1)" }}>
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {STATS.map(({ value, label }, i) => (
-                <motion.div
-                  key={label}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  className="flex flex-col gap-1"
-                >
-                  <span
-                    className="font-serif text-4xl"
-                    style={{ color: "#2D3A2E" }}
-                  >
-                    {value}
-                  </span>
-                  <span
-                    className="text-xs tracking-widest uppercase"
-                    style={{ color: "rgba(61,82,67,0.6)" }}
-                  >
-                    {label}
-                  </span>
-                </motion.div>
+                <FadeInView key={label} delay={i * 0.1} className="flex flex-col gap-1">
+                  <span className="font-serif text-4xl" style={{ color: "var(--dark-forest)" }}>{value}</span>
+                  <Eyebrow color="muted">{label}</Eyebrow>
+                </FadeInView>
               ))}
             </div>
           </div>
         </div>
 
         {/* Features Section */}
-        <div
-          style={{ backgroundColor: "#F5F3EF" }}
-          className="py-20 lg:py-28"
-        >
+        <div style={{ backgroundColor: "var(--cream)" }} className="py-20 lg:py-28">
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="flex flex-col items-center text-center gap-4 max-w-xl mx-auto mb-14"
-            >
-              <p
-                className="text-xs tracking-[0.3em] uppercase font-semibold"
-                style={{ color: "#C0AF7E" }}
-              >
-                The Villa
-              </p>
-              <h2
-                className="font-serif text-3xl lg:text-4xl"
-                style={{ color: "#2D3A2E", letterSpacing: "-0.02em" }}
-              >
-                Everything You Need for the Perfect Stay
-              </h2>
-              <p className="text-base" style={{ color: "rgba(61,82,67,0.7)" }}>
-                Casa Brunelli combines authentic Tuscan architecture with every
-                modern comfort.
-              </p>
-            </motion.div>
-
+            <FadeInView className="mb-14">
+              <SectionHeader
+                eyebrow="The Villa"
+                heading="Everything You Need for the Perfect Stay"
+                subtitle="Casa Brunelli combines authentic Tuscan architecture with every modern comfort."
+              />
+            </FadeInView>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-              {FEATURES.map(({ icon: Icon, title, description, gradient }, i) => (
-                <motion.div
+              {FEATURES.map(({ icon, title, description, gradient }, i) => (
+                <FeatureCard
                   key={title}
-                  initial={{ opacity: 0, y: 30 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: i * 0.1 }}
-                  viewport={{ once: true }}
-                  whileHover={{ scale: 1.03, y: -4 }}
-                  className={`flex flex-col gap-4 p-6 rounded-2xl border bg-gradient-to-br ${gradient} cursor-default`}
-                  style={{ borderColor: "rgba(139,157,131,0.2)" }}
-                >
-                  <motion.div
-                    whileHover={{ rotate: [0, -10, 10, -10, 0] }}
-                    transition={{ duration: 0.5 }}
-                    className="w-12 h-12 bg-white rounded-xl flex items-center justify-center shadow-sm"
-                  >
-                    <Icon size={22} style={{ color: "#8B9D83" }} />
-                  </motion.div>
-                  <div className="flex flex-col gap-1.5">
-                    <h3
-                      className="text-base font-semibold"
-                      style={{ color: "#2D3A2E" }}
-                    >
-                      {title}
-                    </h3>
-                    <p
-                      className="text-sm leading-relaxed"
-                      style={{ color: "rgba(61,82,67,0.7)" }}
-                    >
-                      {description}
-                    </p>
-                  </div>
-                </motion.div>
+                  icon={icon}
+                  title={title}
+                  description={description}
+                  gradient={gradient}
+                  delay={i * 0.1}
+                />
               ))}
             </div>
           </div>
@@ -790,94 +719,43 @@ export function HomeLanding() {
                     desc: "Perfect for family gatherings and group retreats",
                     gradient: "from-[#FFF8ED] to-[#E8F5E9]",
                   },
-                ].map(({ icon: Icon, title, desc, gradient }, i) => (
-                  <motion.div
+                ].map(({ icon, title, desc, gradient }, i) => (
+                  <FeatureCard
                     key={title}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: i * 0.15 }}
-                    viewport={{ once: true }}
-                    whileHover={{ scale: 1.04, y: -4 }}
-                    className={`bg-gradient-to-br ${gradient} rounded-2xl p-6 border text-left`}
-                    style={{ borderColor: "rgba(139,157,131,0.2)" }}
-                  >
-                    <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center mb-4 shadow-sm">
-                      <Icon size={22} style={{ color: "#8B9D83" }} />
-                    </div>
-                    <h3
-                      className="text-base font-semibold mb-2"
-                      style={{ color: "#2D3A2E" }}
-                    >
-                      {title}
-                    </h3>
-                    <p
-                      className="text-sm"
-                      style={{ color: "rgba(61,82,67,0.7)" }}
-                    >
-                      {desc}
-                    </p>
-                  </motion.div>
+                    icon={icon}
+                    title={title}
+                    description={desc}
+                    gradient={gradient}
+                    delay={i * 0.15}
+                  />
                 ))}
               </div>
-              <motion.div
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                transition={{ duration: 0.6, delay: 0.5 }}
-                viewport={{ once: true }}
-              >
-                <h2
-                  className="font-serif text-2xl lg:text-3xl mb-3"
-                  style={{ color: "#2D3A2E" }}
-                >
+              <FadeInView delay={0.5}>
+                <SectionHeading size="lg" className="mb-3">
                   Scroll Back to Explore the Villa
-                </h2>
+                </SectionHeading>
                 <p className="text-sm mb-6" style={{ color: "rgba(61,82,67,0.7)" }}>
-                  Experience Casa Brunelli through our immersive scroll journey — from
-                  exterior to every intimate detail.
+                  Experience Casa Brunelli through our immersive scroll journey — from exterior to every intimate detail.
                 </p>
-                <button
-                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold transition-all hover:opacity-90"
-                  style={{ backgroundColor: "#2D3A2E", color: "white" }}
-                >
+                <Button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
                   <ArrowUp size={14} />
                   Back to Top
-                </button>
-              </motion.div>
+                </Button>
+              </FadeInView>
             </motion.div>
           </div>
         </div>
 
         {/* Pricing Section */}
-        <div
-          style={{ backgroundColor: "#F5F3EF" }}
-          className="py-20 lg:py-28"
-        >
+        <div style={{ backgroundColor: "var(--cream)" }} className="py-20 lg:py-28">
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="flex flex-col items-center text-center gap-4 max-w-xl mx-auto mb-14"
-            >
-              <p
-                className="text-xs tracking-[0.3em] uppercase font-semibold"
-                style={{ color: "#C0AF7E" }}
-              >
-                Seasonal Rates
-              </p>
-              <h2
-                className="font-serif text-3xl lg:text-4xl"
-                style={{ color: "#2D3A2E", letterSpacing: "-0.02em" }}
-              >
-                Transparent Pricing, No Surprises
-              </h2>
-              <p className="text-sm" style={{ color: "rgba(61,82,67,0.7)" }}>
-                Book directly with us and save up to 20% versus OTA platforms.
-                All rates include taxes and cleaning.
-              </p>
-            </motion.div>
+            <FadeInView className="mb-14">
+              <SectionHeader
+                eyebrow="Seasonal Rates"
+                heading="Transparent Pricing, No Surprises"
+                subtitle="Book directly with us and save up to 20% versus OTA platforms. All rates include taxes and cleaning."
+              />
+            </FadeInView>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
               {SEASONS.map(({ name, period, rate, highlight }, i) => (
@@ -890,9 +768,9 @@ export function HomeLanding() {
                   whileHover={{ y: -4 }}
                   className="flex flex-col gap-3 p-5 rounded-2xl border transition-all"
                   style={{
-                    backgroundColor: highlight ? "#2D3A2E" : "white",
+                    backgroundColor: highlight ? "var(--dark-forest)" : "white",
                     borderColor: highlight
-                      ? "#2D3A2E"
+                      ? "var(--dark-forest)"
                       : "rgba(139,157,131,0.2)",
                   }}
                 >
@@ -900,12 +778,12 @@ export function HomeLanding() {
                     <div className="flex items-center gap-1">
                       <Star
                         size={12}
-                        style={{ color: "#C0AF7E" }}
-                        fill="#C0AF7E"
+                        style={{ color: "var(--terracotta-gold)" }}
+                        fill="var(--terracotta-gold)"
                       />
                       <span
                         className="text-xs tracking-wider uppercase font-semibold"
-                        style={{ color: "#C0AF7E" }}
+                        style={{ color: "var(--terracotta-gold)" }}
                       >
                         Peak
                       </span>
@@ -914,14 +792,14 @@ export function HomeLanding() {
                   <div>
                     <h3
                       className="font-serif text-base font-medium"
-                      style={{ color: highlight ? "#F5DEB3" : "#2D3A2E" }}
+                      style={{ color: highlight ? "var(--golden-wheat)" : "var(--dark-forest)" }}
                     >
                       {name}
                     </h3>
                     <p
                       className="text-xs mt-0.5"
                       style={{
-                        color: highlight ? "#8B9D83" : "rgba(61,82,67,0.6)",
+                        color: highlight ? "var(--sage-variant)" : "rgba(61,82,67,0.6)",
                       }}
                     >
                       {period}
@@ -930,7 +808,7 @@ export function HomeLanding() {
                   <p
                     className="font-semibold mt-auto"
                     style={{
-                      color: highlight ? "#C0AF7E" : "#3D5243",
+                      color: highlight ? "var(--terracotta-gold)" : "var(--medium-green)",
                     }}
                   >
                     {rate}
@@ -940,13 +818,9 @@ export function HomeLanding() {
             </div>
 
             <div className="flex justify-center">
-              <Link
-                href="/availability"
-                className="inline-flex items-center px-8 py-4 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ backgroundColor: "#2D3A2E" }}
-              >
+              <Button href="/availability" size="lg">
                 Check Live Availability &amp; Rates
-              </Link>
+              </Button>
             </div>
           </div>
         </div>
@@ -954,29 +828,17 @@ export function HomeLanding() {
         {/* Why Book Direct */}
         <div
           className="py-20 lg:py-28"
-          style={{ backgroundColor: "#2D3A2E" }}
+          style={{ backgroundColor: "var(--dark-forest)" }}
         >
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="flex flex-col items-center text-center gap-4 mb-14"
-            >
-              <p
-                className="text-xs tracking-[0.3em] uppercase font-semibold"
-                style={{ color: "#C0AF7E" }}
-              >
-                Why Book Direct
-              </p>
-              <h2
-                className="font-serif text-3xl lg:text-4xl max-w-xl"
-                style={{ color: "#F5DEB3", letterSpacing: "-0.02em" }}
-              >
-                Skip the Middleman. Save More.
-              </h2>
-            </motion.div>
+            <FadeInView className="mb-14">
+              <SectionHeader
+                eyebrow="Why Book Direct"
+                heading="Skip the Middleman. Save More."
+                align="center"
+                color="wheat"
+              />
+            </FadeInView>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
               {[
@@ -996,32 +858,29 @@ export function HomeLanding() {
                     "Arrival time, late check-out, special occasions — just ask us directly.",
                 },
               ].map(({ title, description }, i) => (
-                <motion.div
-                  key={title}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: i * 0.15 }}
-                  viewport={{ once: true }}
-                  className="flex flex-col gap-3 p-6 rounded-2xl"
-                  style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
-                >
+                <FadeInView key={title} delay={i * 0.15}>
                   <div
-                    className="w-2 h-2 rounded-full"
-                    style={{ backgroundColor: "#C0AF7E" }}
-                  />
-                  <h3
-                    className="text-lg font-semibold"
-                    style={{ color: "#F5DEB3" }}
+                    className="flex flex-col gap-3 p-6 rounded-2xl h-full"
+                    style={{ backgroundColor: "rgba(255,255,255,0.06)" }}
                   >
-                    {title}
-                  </h3>
-                  <p
-                    className="text-sm leading-relaxed"
-                    style={{ color: "#8B9D83" }}
-                  >
-                    {description}
-                  </p>
-                </motion.div>
+                    <div
+                      className="w-2 h-2 rounded-full"
+                      style={{ backgroundColor: "var(--terracotta-gold)" }}
+                    />
+                    <h3
+                      className="text-lg font-semibold"
+                      style={{ color: "var(--golden-wheat)" }}
+                    >
+                      {title}
+                    </h3>
+                    <p
+                      className="text-sm leading-relaxed"
+                      style={{ color: "var(--sage-variant)" }}
+                    >
+                      {description}
+                    </p>
+                  </div>
+                </FadeInView>
               ))}
             </div>
           </div>
@@ -1036,52 +895,22 @@ export function HomeLanding() {
           }}
         >
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="flex flex-col items-center text-center gap-6"
-            >
-              <p
-                className="text-xs tracking-[0.3em] uppercase font-semibold"
-                style={{ color: "#C0AF7E" }}
-              >
-                Ready to Visit?
-              </p>
-              <h2
-                className="font-serif text-3xl lg:text-4xl max-w-xl"
-                style={{ color: "#2D3A2E", letterSpacing: "-0.02em" }}
-              >
-                Your Tuscan Escape Awaits
-              </h2>
-              <p
-                className="text-base max-w-md"
-                style={{ color: "rgba(61,82,67,0.7)" }}
-              >
-                Check live availability, select your dates, and send a booking
-                request in minutes. No account required.
-              </p>
+            <FadeInView className="flex flex-col items-center text-center gap-6">
+              <SectionHeader
+                eyebrow="Ready to Visit?"
+                heading="Your Tuscan Escape Awaits"
+                subtitle="Check live availability, select your dates, and send a booking request in minutes. No account required."
+                align="center"
+              />
               <div className="flex flex-col sm:flex-row items-center gap-4">
-                <Link
-                  href="/availability"
-                  className="px-8 py-4 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
-                  style={{ backgroundColor: "#2D3A2E" }}
-                >
+                <Button href="/availability" size="lg">
                   View Availability
-                </Link>
-                <Link
-                  href="/contact"
-                  className="px-8 py-4 rounded-xl text-sm font-semibold border transition-all hover:opacity-80"
-                  style={{
-                    borderColor: "rgba(139,157,131,0.3)",
-                    color: "rgba(61,82,67,0.7)",
-                  }}
-                >
+                </Button>
+                <Button href="/contact" variant="outline" size="lg">
                   Contact Us
-                </Link>
+                </Button>
               </div>
-            </motion.div>
+            </FadeInView>
           </div>
         </div>
       </div>

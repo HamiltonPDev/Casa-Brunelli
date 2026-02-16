@@ -268,8 +268,16 @@ export function PublicFooter() {
             <span className="hidden md:block">
               Designed by HPS PropTech &amp; Solutions
             </span>
-            <span>
-              Made with <span className="text-red-400">❤️</span> in Amsterdam
+            <span className="flex items-center gap-3">
+              <span>Made with <span className="text-red-400">❤️</span> in Amsterdam</span>
+              <span style={{ color: "rgba(255,255,255,0.15)" }}>·</span>
+              <Link
+                href="/admin"
+                className="transition-opacity duration-300 hover:opacity-60"
+                style={{ color: "rgba(255,255,255,0.2)" }}
+              >
+                Property Management
+              </Link>
             </span>
           </div>
         </div>
