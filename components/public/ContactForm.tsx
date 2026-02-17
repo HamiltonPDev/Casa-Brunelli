@@ -1,7 +1,7 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import {
@@ -96,6 +96,14 @@ export function ContactForm() {
     message: "",
   });
   const [status, setStatus] = useState<SubmitStatus>("idle");
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ── Cleanup timeout on unmount ────────────────────────────
+  useEffect(() => {
+    return () => {
+      if (resetTimerRef.current) clearTimeout(resetTimerRef.current);
+    };
+  }, []);
 
   function updateField<K extends keyof FormState>(key: K, value: FormState[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -144,8 +152,8 @@ export function ContactForm() {
 
       setStatus("success");
 
-      // Reset form after 4 seconds
-      setTimeout(() => {
+      // Reset form after 4 seconds — cleanup via ref to avoid state update on unmounted component
+      resetTimerRef.current = setTimeout(() => {
         setStatus("idle");
         setForm({ name: "", email: "", subject: "", message: "" });
       }, 4000);

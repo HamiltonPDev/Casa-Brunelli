@@ -285,7 +285,7 @@ export interface AvailabilityDay {
   booked: boolean;
   unavailable: boolean;
   pending: boolean;
-  nightly_rate: number | null;
+  nightlyRate: number | null;
   seasonName: string | null;
   minStay: number | null;
 }

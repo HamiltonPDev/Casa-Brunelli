@@ -9,6 +9,12 @@ import { getToken } from "next-auth/jwt";
 
 const secret = process.env.AUTH_SECRET;
 
+if (!secret) {
+  throw new Error(
+    "AUTH_SECRET is not defined. Set it in your .env file (at least 32 characters)."
+  );
+}
+
 export default async function proxy(req: NextRequest) {
   const { nextUrl } = req;
   const isLoginPage = nextUrl.pathname === "/admin/login";
@@ -26,7 +32,7 @@ export default async function proxy(req: NextRequest) {
   // Redirect unauthenticated users to login
   if (isAdminRoute && !isLoggedIn) {
     const loginUrl = new URL("/admin/login", nextUrl.origin);
-    loginUrl.searchParams.set("callbackUrl", nextUrl.pathname);
+    loginUrl.searchParams.set("callbackUrl", nextUrl.pathname + nextUrl.search);
     return NextResponse.redirect(loginUrl);
   }
 
