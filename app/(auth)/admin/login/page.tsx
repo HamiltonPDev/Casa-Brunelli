@@ -242,25 +242,27 @@ export default function AdminLoginPage() {
               </AnimatePresence>
             </div>
 
-            {/* Demo Credentials — exactly as in the Figma prototype */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.4 }}
-              className="bg-admin-sage/5 rounded-xl p-3 border border-admin-sage/10"
-            >
-              <p className="text-admin-sage text-xs font-medium mb-1.5">
-                Demo Credentials:
-              </p>
-              <div className="space-y-0.5">
-                <p className="text-dark-forest/70 text-xs font-mono">
-                  admin@casabrunelli.com
+            {/* Demo Credentials — only visible in development */}
+            {process.env.NODE_ENV !== "production" && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.4 }}
+                className="bg-admin-sage/5 rounded-xl p-3 border border-admin-sage/10"
+              >
+                <p className="text-admin-sage text-xs font-medium mb-1.5">
+                  Demo Credentials:
                 </p>
-                <p className="text-dark-forest/70 text-xs font-mono">
-                  admin123
-                </p>
-              </div>
-            </motion.div>
+                <div className="space-y-0.5">
+                  <p className="text-dark-forest/70 text-xs font-mono">
+                    admin@casabrunelli.com
+                  </p>
+                  <p className="text-dark-forest/70 text-xs font-mono">
+                    admin123
+                  </p>
+                </div>
+              </motion.div>
+            )}
 
             {/* Submit */}
             <button

@@ -34,11 +34,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
         if (!isValid) return null;
 
-        // Update last login timestamp
-        await prisma.adminUser.update({
-          where: { id: admin.id },
-          data: { lastLoginAt: new Date() },
-        });
+        // Update last login timestamp — non-blocking so login still succeeds if DB write fails
+        try {
+          await prisma.adminUser.update({
+            where: { id: admin.id },
+            data: { lastLoginAt: new Date() },
+          });
+        } catch {
+          // Log but don't block authentication
+          console.error(`Failed to update lastLoginAt for admin ${admin.id}`);
+        }
 
         return {
           id: admin.id,

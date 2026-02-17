@@ -19,7 +19,7 @@ import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminBadge } from "@/components/admin/AdminBadge";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { AdminField } from "@/components/admin/AdminField";
-import { cn } from "@/lib/utils";
+import { cn, getInitials } from "@/lib/utils";
 import { MESSAGE_STATUS, MESSAGE_TYPE } from "@/lib/constants";
 import type { MessageStatus } from "@/lib/constants";
 
@@ -107,15 +107,6 @@ function formatFullDate(date: Date): string {
     hour: "2-digit",
     minute: "2-digit",
   });
-}
-
-function getInitials(name: string): string {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
 }
 
 // ─── Component ─────────────────────────────────────────────────

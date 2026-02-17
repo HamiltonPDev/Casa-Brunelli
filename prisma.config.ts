@@ -3,7 +3,7 @@ import "dotenv/config";
 
 // Prisma v7 — connection URL moved from schema.prisma to prisma.config.ts
 // See: https://pris.ly/d/config-datasource
-// dotenv/config loads .env before Prisma reads process.evn
+// dotenv/config loads .env before Prisma reads process.env
 
 export default defineConfig({
   schema: "prisma/schema.prisma",

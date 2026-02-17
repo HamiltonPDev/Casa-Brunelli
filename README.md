@@ -11,8 +11,8 @@ Direct booking platform for Casa Brunelli. Saves €11–15k/year in OTA commiss
 npm install
 
 # 2. Set up environment variables
-cp .env.example .env
-# → Edit .env with your real credentials (see section below)
+cp .env .env.local   # or create .env from scratch
+# → Fill in the required variables (see section below)
 
 # 3. Run database migrations (creates all tables in Supabase)
 npx prisma migrate dev --name init
@@ -30,7 +30,7 @@ Open [http://localhost:3000/admin](http://localhost:3000/admin) — redirects to
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in:
+Create a `.env` file (or `.env.local`) in the project root and fill in:
 
 | Variable | Where to get it |
 |----------|----------------|
@@ -131,7 +131,7 @@ AuditLog            — All admin actions for security and compliance
 
 ```
 app/
-  (admin)/admin/          Admin panel (protected by middleware)
+  (admin)/admin/          Admin panel (protected by proxy.ts)
     login/                Login page
     page.tsx              Dashboard (KPI cards)
     messages/             ← Next to build
@@ -162,7 +162,7 @@ prisma/
   seed.ts                 Initial data (admin + seasons + templates)
 
 prisma.config.ts          Prisma v7 datasource config (DATABASE_URL lives here)
-middleware.ts             Protects /admin/* routes
+proxy.ts                  Protects /admin/* routes (Next.js 16 proxy, NOT middleware.ts)
 ```
 
 ---
@@ -202,7 +202,7 @@ middleware.ts             Protects /admin/* routes
 | NextAuth | 5.0.0-beta.30 |
 | Prisma | 7.3.0 |
 | Tailwind CSS | 4 |
-| Framer Motion | 12 (import from `motion/react`) |
+| Framer Motion | 12 (import from `framer-motion`) |
 | Stripe | 20.3.1 |
 | Resend | 6.9.2 |
 | Zod | 4.3.6 |
@@ -216,7 +216,7 @@ middleware.ts             Protects /admin/* routes
 Your `DATABASE_URL` is wrong or Supabase is paused. Check Supabase dashboard → project is active.
 
 ### Seed fails with "Missing ADMIN_EMAIL or ADMIN_PASSWORD"
-Your `.env` file is missing these variables. Make sure you copied `.env.example` to `.env` (not `.env.local`).
+Your `.env` file is missing these variables. Make sure you have a `.env` file in the project root with `ADMIN_EMAIL` and `ADMIN_PASSWORD` set.
 
 ### Login redirects back to /admin/login
 `AUTH_SECRET` might be missing or less than 32 characters. Regenerate: `openssl rand -base64 33`

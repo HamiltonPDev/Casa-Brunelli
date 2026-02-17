@@ -217,7 +217,7 @@ export const SAMPLE_SEASONS = [
 export const APP_CONFIG = {
   name: "Casa Brunelli",
   currency: "EUR",
-  locale: "en-EU",
+  locale: "it-IT",
   timezone: "Europe/Rome",
   contactEmail: "info@casabrunelli.com",
   adminEmail: "admin@casabrunelli.com",

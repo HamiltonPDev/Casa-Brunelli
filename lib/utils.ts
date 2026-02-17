@@ -111,11 +111,17 @@ export function truncate(str: string, maxLength: number): string {
 
 /**
  * Returns initials from a full name (up to 2 chars).
+ * Returns "?" for empty or whitespace-only strings.
  * @example getInitials("Marco Rossi") → "MR"
+ * @example getInitials("") → "?"
  */
 export function getInitials(name: string): string {
-  return name
+  const trimmed = name.trim();
+  if (!trimmed) return "?";
+
+  return trimmed
     .split(" ")
+    .filter(Boolean)
     .map((n) => n[0])
     .join("")
     .toUpperCase()
