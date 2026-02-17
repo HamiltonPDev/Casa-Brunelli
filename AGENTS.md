@@ -2,56 +2,55 @@
 
 ## Project Overview
 
-Luxury villa rental booking platform (Tuscany). Direct booking site to avoid OTA commissions.
+Luxury Tuscan villa direct-booking platform. Replaces OTA dependency (saves €11-15k/year).
 Next.js 16 App Router · React 19 · Tailwind CSS 4 · Prisma 7 · NextAuth v5 · PostgreSQL.
 
-**Business model:** Messages-First — ALL inquiries enter as `ContactMessage`, admin promotes to `Booking`.
-No guest-facing auth. Admin-only credentials auth. Deposit = 30%, balance = 70%.
+**Business model — Messages-First:** ALL inquiries → `ContactMessage` → admin promotes to `Booking`.
+No guest-facing auth. Admin-only credentials auth. Deposit = 30 %, balance = 70 %.
 
 ---
 
 ## Commands
 
 ```bash
-# Dev
 npm run dev                  # Next.js 16 + Turbopack
-
-# Quality — run BOTH before finishing any task
 npm run lint                 # ESLint (eslint-config-next)
+
+# TypeScript check — MUST pass 0 errors before finishing any task
 npx tsc --noEmit 2>&1 | grep -v "Interactive Web Prototypes" | grep -v "^$"
 
-# Build
-npm run build && npm start
+npm run build && npm start   # Production build
 
 # Database
-npx prisma migrate dev       # Run migrations
-npx prisma db seed           # Uses tsx prisma/seed.ts (Prisma v7 config)
+npx prisma migrate dev       # Apply migrations
+npx prisma db seed           # tsx prisma/seed.ts (configured in prisma.config.ts)
 npx prisma studio            # Visual DB browser
 ```
 
-> **No test runner configured.** Ask before adding Vitest or Jest.
+> **No test runner configured.** Ask before adding Vitest/Jest.
+> **No commits** without explicit user approval.
+> LSP errors in `Interactive Web Prototypes casa brunelly/` are IDE ghosts — ignore them.
 
 ---
 
 ## Critical Version Constraints — DO NOT CHANGE
 
-| Package | Version | Critical rule |
+| Package | Version | Rule |
 |---|---|---|
-| `next` | 16.1.6 | Uses `proxy.ts` in root, NOT `middleware.ts` |
-| `react` | 19.2.4 | No `useMemo`/`useCallback` needed (React Compiler) |
-| `framer-motion` | ^12.34.0 | Import from `"framer-motion"` — NOT `"motion/react"` |
-| `zod` | ^4.3.6 | Import from `"zod/v4"` — NOT `"zod"` |
+| `next` | 16.1.6 | Uses `proxy.ts` in root, **NOT** `middleware.ts` |
+| `react` | 19.2.4 | React Compiler — no `useMemo`/`useCallback` needed |
+| `framer-motion` | ^12.34.0 | Import from `"framer-motion"` — **NOT** `"motion/react"` |
+| `zod` | ^4.3.6 | Import from `"zod/v4"` — **NOT** `"zod"` |
 | `sonner` | ^2.0.7 | Import from `"sonner"` |
-| `next-auth` | ^5.0.0-beta.30 | Beta — Credentials provider only, no OAuth |
-| `prisma` | ^7.3.0 | DB url in `prisma.config.ts`, NOT `schema.prisma` |
-| `tailwindcss` | ^4 | `@import "tailwindcss"` syntax, no `@tailwind` directives |
+| `next-auth` | ^5.0.0-beta.30 | Credentials only, no OAuth |
+| `prisma` | ^7.3.0 | DB url in `prisma.config.ts`, **NOT** `schema.prisma` |
+| `tailwindcss` | ^4 | `@import "tailwindcss"` — no `@tailwind` directives |
 
-### Next.js 16 Async Params
-`params` AND `searchParams` in Server Components are **Promises** — always `await` them:
+### Next.js 16 — Async Params
+`params` AND `searchParams` are **Promises** in Server Components:
 ```tsx
-export default async function Page({ params, searchParams }: Props) {
+export default async function Page({ params }: Props) {
   const { id } = await params;
-  const { guests } = await searchParams;
 }
 ```
 
@@ -61,252 +60,130 @@ export default async function Page({ params, searchParams }: Props) {
 
 ```
 proxy.ts                     ← Route protection (NOT middleware.ts)
-prisma.config.ts             ← Prisma v7 DB URL + seed command
-prisma/schema.prisma         ← 10 tables: Booking, ContactMessage, Season,
-                               DowOverride, AdminUser, UnavailableDate,
-                               GuestUser, EmailTemplate, PaymentTransaction, AuditLog
+prisma.config.ts             ← Prisma v7 config (url, directUrl, seed)
+prisma/schema.prisma         ← 10 models (see below)
 app/
-  globals.css                ← @import "tailwindcss" + all CSS vars + @theme
-  layout.tsx                 ← Root layout
-  page.tsx                   ← Landing (Server → HomeLanding client component)
-  (admin)/admin/             ← Route group, all admin pages
-  api/
-    auth/[...nextauth]/      ← NextAuth route handler
-    availability/route.ts
-    booking-request/route.ts
-    contact/route.ts
+  globals.css                ← @import "tailwindcss" + CSS vars + @theme
+  page.tsx                   ← Landing → HomeLanding client component
+  availability/ booking/ contact/ gallery/   ← Public pages
+  (admin)/admin/             ← Route group — Dashboard, Bookings, Messages, Pricing, Settings
+  (auth)/admin/login/        ← Login page
+  api/                       ← Public + admin API routes
 components/
-  admin/                     ← Admin-only components
-  public/                    ← Public-facing components
-  ui/                        ← Reusable primitives
+  ui/                        ← Atoms (Eyebrow, SectionHeading, Button, Card, FadeInView)
+  shared/                    ← Molecules (SectionHeader, FeatureCard)
+  public/                    ← Organisms (HomeLanding, Calendar, BookingForm, etc.)
+  admin/                     ← Admin components (Shell, Client pages, atoms)
 lib/
-  auth.ts                    ← NextAuth config
-  constants.ts               ← All enums + business constants (source of truth)
-  pricing.ts                 ← Season-based pricing calculation
-  prisma.ts                  ← Prisma singleton (ALWAYS import from here)
-  utils.ts                   ← cn(), formatCurrency(), formatDate(), etc.
-types/
-  index.ts                   ← Domain types mirroring Prisma schema
+  auth.ts      constants.ts      pricing.ts      prisma.ts      utils.ts
+types/index.ts               ← Domain types mirroring Prisma schema
 ```
+
+**Prisma models (10):** Booking, ContactMessage, Season, DowOverride, AdminUser,
+UnavailableDate, GuestUser, EmailTemplate, PaymentTransaction, AuditLog.
 
 ---
 
 ## Import Order
 
 ```tsx
-// 1. Next.js / React core
+// 1. Next.js / React
 import type { Metadata } from "next";
 import { useState } from "react";
-
-// 2. External libraries
-import { motion, AnimatePresence } from "framer-motion";
+// 2. External libs
+import { motion } from "framer-motion";
 import { z } from "zod/v4";
 import { toast } from "sonner";
-
 // 3. Internal absolute (@/*)
 import { cn } from "@/lib/utils";
-import { BOOKING_STATUS, MAX_GUESTS } from "@/lib/constants";
+import { BOOKING_STATUS } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
 import type { Booking } from "@/types";
-
 // 4. Relative (only when necessary)
-import { SomeLocalHelper } from "./helpers";
-import "./globals.css";
+import { SomeHelper } from "./helpers";
 ```
 
 ---
 
-## TypeScript Patterns
+## TypeScript
 
-```tsx
-// interface for object shapes — NOT type
-interface BookingFormProps {
-  checkIn: string;
-  checkOut: string;
-  nights: number;
-  guests?: number;          // optional props with ?
-}
-
-// type for unions / derived types
-type BookingStatus = (typeof BOOKING_STATUS)[keyof typeof BOOKING_STATUS];
-
-// Explicit return types on all exported functions
-export function formatCurrency(amount: number): string { ... }
-
-// Readonly for component props when immutable
-function Page({ children }: Readonly<{ children: ReactNode }>) { ... }
-
-// Never use `any` — use `unknown` and narrow
-catch (error: unknown) {
-  const msg = error instanceof Error ? error.message : "Unknown error";
-}
-```
+- `interface` for object shapes. `type` for unions / derived types.
+- Explicit return types on all exported functions.
+- `Readonly<Props>` for immutable component props.
+- `unknown` instead of `any` — narrow with `instanceof`.
+- All enums live in `lib/constants.ts` — never inline string literals.
 
 ---
 
 ## Component Structure
 
 ```tsx
-"use client"; // First line if client component
-
-// ─── Imports ───────────────────────────────────────────────────
-import { useState } from "react";
-import { cn } from "@/lib/utils";
-
-// ─── Types ─────────────────────────────────────────────────────
-interface Props {
-  title: string;
-  onSubmit: () => void;
-}
-
-// ─── Constants ─────────────────────────────────────────────────
-const NAV_ITEMS = ["Home", "Availability", "Gallery"] as const;
-
-// ─── Component ─────────────────────────────────────────────────
-export function ComponentName({ title, onSubmit }: Props) {
-  // 1. Hooks
-  const [open, setOpen] = useState(false);
-
-  // 2. Derived values
-  const isActive = open && title.length > 0;
-
-  // 3. Handlers
-  function handleClick() {
-    setOpen(true);
-    onSubmit();
-  }
-
-  return <div>{title}</div>;
+"use client";                              // First line if client
+// ─── Imports ─────────────────────────
+// ─── Types ───────────────────────────
+// ─── Constants ───────────────────────
+// ─── Component ───────────────────────
+export function Name({ title }: Props) {
+  // 1. Hooks → 2. Derived → 3. Handlers → return JSX
 }
 ```
 
----
-
-## Naming Conventions
+## Naming
 
 | Thing | Convention | Example |
 |---|---|---|
-| Components | PascalCase | `BookingCard.tsx` |
-| Hooks | `use` prefix, camelCase | `useAuth.ts` |
-| Utilities | camelCase | `formatDate.ts` |
-| Constants | SCREAMING_SNAKE_CASE + `as const` | `BOOKING_STATUS` |
-| Types / Interfaces | PascalCase | `BookingStatus`, `AdminShellProps` |
-| Files | Match default export exactly | `AdminShell.tsx` exports `AdminShell` |
-| API routes | `route.ts` inside `app/api/*/` | — |
+| Components | PascalCase file + export | `BookingCard.tsx` |
+| Hooks | `use` prefix | `useAuth.ts` |
+| Constants | SCREAMING_SNAKE + `as const` | `BOOKING_STATUS` |
+| Types | PascalCase | `BookingStatus` |
+| API routes | `route.ts` in `app/api/*/` | — |
 
 ---
 
 ## Tailwind v4 + Design System
 
+**NEVER** hex in `className` — use `style={{}}` with CSS vars or inline hex:
 ```tsx
-// NEVER inline hex in className — use style={} instead
-// BAD:
-<div className="bg-[#2D3A2E]">
-
-// GOOD — use CSS vars mapped in @theme (globals.css)
-<div className="bg-forest-green text-white">
-
-// GOOD — inline style for dynamic/one-off hex
-<div style={{ backgroundColor: "#2D3A2E" }}>
-
-// Always use cn() for conditional classes
-className={cn(
-  "rounded-xl px-4 py-2",
-  isActive && "ring-2 ring-sage-variant",
-  disabled ? "opacity-50" : "hover:opacity-80"
-)}
+// ✅ style={{ backgroundColor: "var(--dark-forest)" }}
+// ✅ style={{ color: "#2D3A2E" }}
+// ❌ className="bg-[#2D3A2E]"
 ```
 
-**Design tokens (hex reference — do not use var() in JSX):**
-- `#2D3A2E` — dark forest (primary text, headings)
-- `#3D5243` — medium green (interactive elements)
-- `#8B9D83` — sage variant (borders, subtle accents)
-- `#C0AF7E` — terracotta gold (logo accent, calendar booked)
-- `#F5F3EF` — cream (main page background)
-- `#1A4A3A` — forest green (dark CTAs, hero backgrounds)
+Always use `cn()` for conditional classes.
+
+**Tokens:** `--dark-forest` #2D3A2E · `--medium-green` #3D5243 · `--sage-variant` #8B9D83
+`--terracotta-gold` #C0AF7E · `--cream` #F5F3EF · `--forest-green` #1A4A3A · `--golden-wheat` #F5DEB3
 
 **Layout:** `max-w-[1400px] mx-auto px-6 lg:px-8`
-
-**Hero pattern (availability / booking / contact pages):**
-```tsx
-<div style={{ background: "linear-gradient(to bottom, white, #F5F3EF)" }}
-     className="py-8 lg:py-12">
-  <h1 className="font-serif text-4xl" style={{ color: "#2D3A2E" }}>...</h1>
-</div>
-```
 
 ---
 
 ## Error Handling
 
 ```tsx
-// API routes — always structured JSON response
-export async function POST(req: Request) {
-  try {
-    const body = await req.json();
-    const data = MySchema.parse(body);                   // zod/v4 — throws on invalid
-    const result = await prisma.booking.create({ data });
-    return Response.json({ success: true, data: result });
-  } catch (error) {
-    console.error("[API /booking-request] Failed:", error);
-    return Response.json(
-      { success: false, error: "Failed to process request" },
-      { status: 500 }
-    );
-  }
-}
+// API — always structured { success, data/error }
+return Response.json({ success: true, data: result });
+return Response.json({ success: false, error: "msg" }, { status: 500 });
 
-// Client — use sonner for toasts
-import { toast } from "sonner";
-toast.success("Booking submitted!");
-toast.error("Something went wrong. Please try again.");
-```
-
----
-
-## Constants Pattern
-
-All enums live in `lib/constants.ts` — never inline string literals:
-```ts
-// ✅ GOOD
-import { BOOKING_STATUS } from "@/lib/constants";
-if (booking.status === BOOKING_STATUS.CONFIRMED) { ... }
-
-// ❌ BAD
-if (booking.status === "CONFIRMED") { ... }
-```
-
----
-
-## Comments Style
-
-```tsx
-// ─── Section Name ──────────────────────────────────────────── (minor)
-// ═══ Major Section ════════════════════════════════════════════ (major)
-
-/** JSDoc for exported functions / business logic */
-const depositAmount = totalPrice * DEPOSIT_PERCENTAGE; // Deposit is always 30%
+// Client — sonner toasts
+toast.success("Saved!"); toast.error("Something went wrong.");
 ```
 
 ---
 
 ## Key Constraints
 
-1. **No tests** — do not add test infrastructure without asking
-2. **No OAuth** — admin auth only, credentials provider via NextAuth v5
-3. **Prisma singleton** — always `import { prisma } from "@/lib/prisma"`, never `new PrismaClient()`
-4. **Messages-First** — never create `Booking` directly from public form; create `ContactMessage` first
-5. **`proxy.ts`** — route protection lives here, not in `middleware.ts` (Next.js 16)
-6. **Stripe** — deposit = 30%, balance = 70%, payment link expires in 24h
-7. **TSC must pass** — run `npx tsc --noEmit 2>&1 | grep -v "Interactive Web Prototypes" | grep -v "^$"` before finishing
-8. **LSP errors in `Interactive Web Prototypes casa brunelly/`** — IDE cache ghosts, ignore them
-9. **No commits** without explicit user approval
+1. **Messages-First** — public forms → `ContactMessage`, never `Booking` directly
+2. **Prisma singleton** — `import { prisma } from "@/lib/prisma"`, never `new PrismaClient()`
+3. **`proxy.ts`** — route protection, NOT `middleware.ts`
+4. **Stripe** — deposit 30 %, balance 70 %, link expires 24h
+5. **Comments:** `// ─── Section ───` (minor) · `// ═══ Major ═══` (major) · JSDoc for exports
 
 ## Environment Variables
 
 ```bash
-DATABASE_URL=       # PostgreSQL connection string
+DATABASE_URL=       # PostgreSQL
 AUTH_SECRET=        # NextAuth JWT secret
 AUTH_TRUST_HOST=    # true in production
-DIRECT_URL=         # Direct DB connection (Prisma v7 — set in prisma.config.ts)
+DIRECT_URL=         # Direct DB (prisma.config.ts)
 ```

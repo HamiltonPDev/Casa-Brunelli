@@ -15,7 +15,6 @@ import {
   ChevronRight,
   LogOut,
   Search,
-  CalendarDays,
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -27,7 +26,6 @@ const NAV_ITEMS = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { href: "/admin/bookings", label: "Bookings", icon: Calendar },
   { href: "/admin/messages", label: "Messages", icon: MessageSquare },
-  { href: "/admin/calendar", label: "Calendar", icon: CalendarDays },
   {
     href: "/admin/seasonal-pricing",
     label: "Seasonal Pricing",
