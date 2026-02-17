@@ -35,7 +35,8 @@ export const BOOKING_STATUS = {
   COMPLETED: "COMPLETED",
 } as const;
 
-export type BookingStatus = (typeof BOOKING_STATUS)[keyof typeof BOOKING_STATUS];
+export type BookingStatus =
+  (typeof BOOKING_STATUS)[keyof typeof BOOKING_STATUS];
 
 // ─── Message Types ─────────────────────────────────────────────
 
@@ -56,7 +57,8 @@ export const MESSAGE_STATUS = {
   REPLIED: "REPLIED",
 } as const;
 
-export type MessageStatus = (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS];
+export type MessageStatus =
+  (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS];
 
 // ─── Season Status ─────────────────────────────────────────────
 
@@ -99,7 +101,8 @@ export const EMAIL_CATEGORY = {
   GENERAL: "GENERAL",
 } as const;
 
-export type EmailCategory = (typeof EMAIL_CATEGORY)[keyof typeof EMAIL_CATEGORY];
+export type EmailCategory =
+  (typeof EMAIL_CATEGORY)[keyof typeof EMAIL_CATEGORY];
 
 // ─── Payment Status ────────────────────────────────────────────
 
@@ -110,7 +113,8 @@ export const PAYMENT_STATUS = {
   REFUNDED: "REFUNDED",
 } as const;
 
-export type PaymentStatus = (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
+export type PaymentStatus =
+  (typeof PAYMENT_STATUS)[keyof typeof PAYMENT_STATUS];
 
 // ─── Payment Types ─────────────────────────────────────────────
 

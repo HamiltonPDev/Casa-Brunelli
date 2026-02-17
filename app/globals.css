@@ -8,55 +8,55 @@
 
 :root {
   /* ─── Primary Greens ─────────────────────────────────────── */
-  --forest-green: #1a4a3a;       /* Deep accent, CTAs, dark backgrounds */
-  --deep-green: #2d5a47;         /* Primary buttons, headers, primary text */
-  --sage-green: #9caf88;         /* Accent elements, highlights */
-  --olive-green: #8fbc8f;        /* Soft backgrounds, cards */
-  --dark-forest: #2D3A2E;        /* Primary text, headings */
-  --medium-green: #3D5243;       /* Interactive elements, hover states */
-  --muted-green-gray: #5F6F65;   /* Secondary text, descriptions */
-  --sage-variant: #8B9D83;       /* Borders, subtle accents, primary actions */
-  --mint-tint: #E8F5E9;          /* Light backgrounds, hover states */
+  --forest-green: #1a4a3a; /* Deep accent, CTAs, dark backgrounds */
+  --deep-green: #2d5a47; /* Primary buttons, headers, primary text */
+  --sage-green: #9caf88; /* Accent elements, highlights */
+  --olive-green: #8fbc8f; /* Soft backgrounds, cards */
+  --dark-forest: #2d3a2e; /* Primary text, headings */
+  --medium-green: #3d5243; /* Interactive elements, hover states */
+  --muted-green-gray: #5f6f65; /* Secondary text, descriptions */
+  --sage-variant: #8b9d83; /* Borders, subtle accents, primary actions */
+  --mint-tint: #e8f5e9; /* Light backgrounds, hover states */
 
   /* ─── Warm Accent Colors ─────────────────────────────────── */
-  --terracotta: #d2691e;         /* Accent highlights, CTAs */
-  --burnt-orange: #cc5500;       /* Warning states, emphasis */
-  --golden-wheat: #f5deb3;       /* Borders, decorative elements, hero text */
-  --terracotta-gold: #C0AF7E;    /* Logo accents, decorative elements */
-  --light-terracotta: #C89F7E;   /* Bullet points, icons */
+  --terracotta: #d2691e; /* Accent highlights, CTAs */
+  --burnt-orange: #cc5500; /* Warning states, emphasis */
+  --golden-wheat: #f5deb3; /* Borders, decorative elements, hero text */
+  --terracotta-gold: #c0af7e; /* Logo accents, decorative elements */
+  --light-terracotta: #c89f7e; /* Bullet points, icons */
 
   /* ─── Neutral / Background Colors ───────────────────────── */
-  --warm-cream: #fdf6e3;         /* Page backgrounds, cards */
-  --warm-linen: #faf0e6;         /* Alternate backgrounds */
-  --warm-beige: #f5f5dc;         /* Subtle backgrounds */
-  --warm-gray: #8b8680;          /* Disabled states, borders */
-  --cream: #F5F3EF;              /* Main page background */
-  --soft-beige: #E8E4DD;         /* Card backgrounds */
+  --warm-cream: #fdf6e3; /* Page backgrounds, cards */
+  --warm-linen: #faf0e6; /* Alternate backgrounds */
+  --warm-beige: #f5f5dc; /* Subtle backgrounds */
+  --warm-gray: #8b8680; /* Disabled states, borders */
+  --cream: #f5f3ef; /* Main page background */
+  --soft-beige: #e8e4dd; /* Card backgrounds */
 
   /* ─── Supporting Colors ──────────────────────────────────── */
-  --deep-brown: #654321;         /* Rich accents, footer backgrounds */
-  --success-green: #3d7a4f;      /* Success states, confirmations */
-  --error-red: #c14343;          /* Error states, alerts */
+  --deep-brown: #654321; /* Rich accents, footer backgrounds */
+  --success-green: #3d7a4f; /* Success states, confirmations */
+  --error-red: #c14343; /* Error states, alerts */
   --white: #ffffff;
   --black: #000000;
 
   /* ─── Gray Scale ─────────────────────────────────────────── */
-  --gray-50: #F8F9FA;
-  --gray-100: #F1F3F5;
-  --gray-200: #E9ECEF;
-  --gray-300: #DEE2E6;
-  --gray-400: #CED4DA;
-  --gray-500: #ADB5BD;
-  --gray-600: #868E96;
+  --gray-50: #f8f9fa;
+  --gray-100: #f1f3f5;
+  --gray-200: #e9ecef;
+  --gray-300: #dee2e6;
+  --gray-400: #ced4da;
+  --gray-500: #adb5bd;
+  --gray-600: #868e96;
   --gray-700: #495057;
-  --gray-800: #343A40;
+  --gray-800: #343a40;
   --gray-900: #212529;
 
   /* ─── Booking Status Colors ──────────────────────────────── */
-  --status-pending: #B26A00;
-  --status-confirmed: #2E7D32;
-  --status-cancelled: #C62828;
-  --status-completed: #1565C0;
+  --status-pending: #b26a00;
+  --status-confirmed: #2e7d32;
+  --status-cancelled: #c62828;
+  --status-completed: #1565c0;
 
   /* ─── Semantic Aliases ───────────────────────────────────── */
   --color-bg: var(--cream);
@@ -77,21 +77,25 @@
   --admin-sidebar-bg: var(--dark-forest);
   --admin-sidebar-text: #d4d9d2;
   --admin-sidebar-active: var(--sage-variant);
+  /* Admin brand colors — matches Figma prototype exactly */
+  --admin-sage: #6b705c; /* Primary admin accent (nav active, buttons) */
+  --admin-sage-hover: #5a5f4d; /* Hover state */
+  --admin-avatar: #cb997e; /* Guest/user avatar background */
 
   /* ─── Typography ─────────────────────────────────────────── */
   --font-display: var(--font-playfair);
   --font-body: var(--font-inter);
 
   /* ─── Type Scale ─────────────────────────────────────────── */
-  --text-xs: 0.75rem;      /* 12px */
-  --text-sm: 0.875rem;     /* 14px */
-  --text-base: 1rem;       /* 16px */
-  --text-lg: 1.125rem;     /* 18px */
-  --text-xl: 1.25rem;      /* 20px */
-  --text-2xl: 1.5rem;      /* 24px */
-  --text-3xl: 1.875rem;    /* 30px */
-  --text-4xl: 2.25rem;     /* 36px */
-  --text-5xl: 3rem;        /* 48px */
+  --text-xs: 0.75rem; /* 12px */
+  --text-sm: 0.875rem; /* 14px */
+  --text-base: 1rem; /* 16px */
+  --text-lg: 1.125rem; /* 18px */
+  --text-xl: 1.25rem; /* 20px */
+  --text-2xl: 1.5rem; /* 24px */
+  --text-3xl: 1.875rem; /* 30px */
+  --text-4xl: 2.25rem; /* 36px */
+  --text-5xl: 3rem; /* 48px */
 
   /* ─── Line Heights ───────────────────────────────────────── */
   --leading-tight: 1.2;
@@ -99,16 +103,16 @@
   --leading-relaxed: 1.8;
 
   /* ─── Spacing (8px base) ─────────────────────────────────── */
-  --space-1: 0.5rem;    /* 8px */
-  --space-2: 1rem;      /* 16px */
-  --space-3: 1.5rem;    /* 24px */
-  --space-4: 2rem;      /* 32px */
-  --space-5: 2.5rem;    /* 40px */
-  --space-6: 3rem;      /* 48px */
-  --space-8: 4rem;      /* 64px */
-  --space-10: 5rem;     /* 80px */
-  --space-12: 6rem;     /* 96px */
-  --space-16: 8rem;     /* 128px */
+  --space-1: 0.5rem; /* 8px */
+  --space-2: 1rem; /* 16px */
+  --space-3: 1.5rem; /* 24px */
+  --space-4: 2rem; /* 32px */
+  --space-5: 2.5rem; /* 40px */
+  --space-6: 3rem; /* 48px */
+  --space-8: 4rem; /* 64px */
+  --space-10: 5rem; /* 80px */
+  --space-12: 6rem; /* 96px */
+  --space-16: 8rem; /* 128px */
 
   /* ─── Border Radius ──────────────────────────────────────── */
   --radius-sm: 4px;
@@ -153,6 +157,9 @@
   --color-muted-green-gray: var(--muted-green-gray);
   --color-sage-variant: var(--sage-variant);
   --color-mint-tint: var(--mint-tint);
+  --color-admin-sage: var(--admin-sage);
+  --color-admin-sage-hover: var(--admin-sage-hover);
+  --color-admin-avatar: var(--admin-avatar);
 
   --color-terracotta: var(--terracotta);
   --color-burnt-orange: var(--burnt-orange);

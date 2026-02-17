@@ -14,7 +14,7 @@ export function cn(...inputs: ClassValue[]): string {
  * @example formatCurrency(1250) → "€1,250.00"
  */
 export function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat("en-EU", {
+  return new Intl.NumberFormat("de-DE", {
     style: "currency",
     currency: "EUR",
     minimumFractionDigits: 2,
@@ -37,7 +37,10 @@ export function formatDate(date: Date | string): string {
  * Formats a date range as a string.
  * @example formatDateRange(checkIn, checkOut) → "Jun 15 – Jun 22, 2025"
  */
-export function formatDateRange(checkIn: Date | string, checkOut: Date | string): string {
+export function formatDateRange(
+  checkIn: Date | string,
+  checkOut: Date | string
+): string {
   const start = new Date(checkIn);
   const end = new Date(checkOut);
 
@@ -45,28 +48,39 @@ export function formatDateRange(checkIn: Date | string, checkOut: Date | string)
   const sameMonth = sameYear && start.getMonth() === end.getMonth();
 
   if (sameMonth) {
-    return new Intl.DateTimeFormat("en-US", {
-      month: "short",
-      day: "numeric",
-    }).format(start) +
+    return (
+      new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+      }).format(start) +
       " – " +
       new Intl.DateTimeFormat("en-US", {
         day: "numeric",
         year: "numeric",
-      }).format(end);
+      }).format(end)
+    );
   }
 
   return (
-    new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(start) +
+    new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(
+      start
+    ) +
     " – " +
-    new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(end)
+    new Intl.DateTimeFormat("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    }).format(end)
   );
 }
 
 /**
  * Calculates the number of nights between two dates.
  */
-export function calculateNights(checkIn: Date | string, checkOut: Date | string): number {
+export function calculateNights(
+  checkIn: Date | string,
+  checkOut: Date | string
+): number {
   const start = new Date(checkIn);
   const end = new Date(checkOut);
   const diff = end.getTime() - start.getTime();
