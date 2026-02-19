@@ -3,9 +3,13 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { calculateNightlyRate } from "@/lib/pricing";
 import { addDays } from "@/lib/utils";
-import { BOOKING_STATUS, SEASON_STATUS } from "@/lib/constants";
+import {
+  BOOKING_STATUS,
+  SEASON_STATUS,
+  OVERRIDE_TYPE,
+  DEFAULT_NIGHTLY_RATE,
+} from "@/lib/constants";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -157,15 +161,14 @@ export async function GET(request: NextRequest) {
           let baseRate = Number(matchingSeason.baseRate);
           if (override) {
             const amount = Number(override.amount);
-            if (override.type === "ADD") baseRate += amount;
-            else if (override.type === "SUBTRACT") baseRate -= amount;
-            else if (override.type === "CUSTOM") baseRate = amount;
+            if (override.type === OVERRIDE_TYPE.ADD) baseRate += amount;
+            else if (override.type === OVERRIDE_TYPE.SUBTRACT) baseRate -= amount;
+            else if (override.type === OVERRIDE_TYPE.CUSTOM) baseRate = amount;
           }
           rate = Math.max(0, baseRate);
         } else {
-          // No active season — use default rate
-          const result = await calculateNightlyRate(current);
-          rate = result.rate;
+          // No active season — use default rate (no DB query needed)
+          rate = DEFAULT_NIGHTLY_RATE;
         }
       }
 
@@ -188,7 +191,7 @@ export async function GET(request: NextRequest) {
       to: toISODate(clampedTo),
     };
 
-    return NextResponse.json(response, {
+    return NextResponse.json({ success: true, data: response }, {
       headers: {
         // Cache for 5 minutes — public, stale-while-revalidate
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",

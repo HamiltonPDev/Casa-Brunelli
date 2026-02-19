@@ -110,7 +110,7 @@ export async function PATCH(request: Request) {
       data: { status: status as BookingStatus },
     });
 
-    return Response.json({ success: true, updated: count });
+    return Response.json({ success: true, data: { updated: count } });
   } catch (error) {
     console.error("[API] PATCH /api/admin/bookings:", error);
     return Response.json(

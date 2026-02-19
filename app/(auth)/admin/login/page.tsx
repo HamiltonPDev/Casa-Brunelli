@@ -299,7 +299,7 @@ export default function AdminLoginPage() {
           transition={{ delay: 0.6 }}
           className="text-center mt-6 text-sm text-white/50"
         >
-          © 2025 Casa Brunelli
+          © {new Date().getFullYear()} Casa Brunelli
         </motion.p>
       </motion.div>
     </div>
