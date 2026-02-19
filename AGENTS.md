@@ -82,10 +82,10 @@ components/
     admin/                   ← AdminShell (sidebar + topbar + content layout)
 lib/
   auth.ts                    ← NextAuth v5 config
-  constants.ts               ← ALL enums + business rules + COUNTRIES (const object + type extraction)
+  constants.ts               ← ALL enums + business rules + COUNTRIES + QUICK_REPLIES (const object + type extraction)
   pricing.ts                 ← calculateNightlyRate, calculateBookingTotal
   prisma.ts                  ← Prisma singleton — ALWAYS import from here
-  utils.ts                   ← cn, formatCurrency, formatDateShort, formatDateLong, formatEur, getInitials, formatDateRange
+  utils.ts                   ← cn, formatCurrency, formatDateShort, formatDateLong, formatEur, getInitials, formatDateRange, formatMessageDate, formatFullDate
   validations/admin.ts       ← Centralized Zod schemas for admin API routes
   services/                  ← Client-side typed fetch wrappers (see Service Layer below)
 types/index.ts               ← Domain types mirroring Prisma schema
@@ -158,6 +158,7 @@ import { SomeHelper } from "./helpers";
 // ─── Imports ─────────────────────────
 // ─── Types ───────────────────────────
 // ─── Constants ───────────────────────
+// ─── Private Sub-Components ──────────  (for organisms with 400+ lines)
 // ─── Component ───────────────────────
 export function Name({ title }: Readonly<Props>) {
   // 1. Hooks → 2. Derived → 3. Handlers → return JSX

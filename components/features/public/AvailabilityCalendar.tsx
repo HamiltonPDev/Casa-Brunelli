@@ -156,6 +156,21 @@ export function AvailabilityCalendar() {
     return cells;
   }
 
+  // ─── Range validation ───────────────────────────────────────
+  /** Returns true if every intermediate day between checkIn and checkOut is available */
+  function isRangeClear(checkInISO: string, checkOutISO: string): boolean {
+    const cursor = new Date(checkInISO + "T00:00:00");
+    cursor.setDate(cursor.getDate() + 1); // skip check-in day (already validated)
+    const endDate = new Date(checkOutISO + "T00:00:00");
+
+    while (cursor < endDate) {
+      const info = availMap.get(toISO(cursor));
+      if (!info || info.booked || info.blocked) return false;
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    return true;
+  }
+
   // ─── Selection logic ───────────────────────────────────────
   function handleDayClick(cell: DayCell) {
     if (!cell.inMonth || cell.state !== "available") return;
@@ -167,6 +182,12 @@ export function AvailabilityCalendar() {
     }
     if (selection.phase === "start") {
       if (iso <= selection.checkIn) {
+        setSelection({ phase: "start", checkIn: iso });
+        return;
+      }
+      // Validate no booked/blocked dates in between
+      if (!isRangeClear(selection.checkIn, iso)) {
+        // Reset to clicked date as new check-in
         setSelection({ phase: "start", checkIn: iso });
         return;
       }
@@ -250,7 +271,7 @@ export function AvailabilityCalendar() {
               </h2>
               <div className="flex items-center gap-1">
                 <button
-                  onClick={() => setViewMonth((m) => addMonths(m, 0))}
+                  onClick={() => setViewMonth(new Date())}
                   className="px-3 py-1.5 text-sm rounded-lg transition-colors"
                   style={{ color: "var(--medium-green)" }}
                   onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = "var(--cream)")}
