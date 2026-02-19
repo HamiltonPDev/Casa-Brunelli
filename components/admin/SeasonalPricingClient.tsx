@@ -17,6 +17,13 @@ import { AdminButton } from "@/components/admin/AdminButton";
 import { AdminBadge } from "@/components/admin/AdminBadge";
 import { AdminField } from "@/components/admin/AdminField";
 import { cn } from "@/lib/utils";
+import {
+  createSeason,
+  updateSeason,
+  duplicateSeason as duplicateSeasonApi,
+  archiveSeason,
+  activateSeason,
+} from "@/lib/services/seasons";
 
 // ─── Types ─────────────────────────────────────────────────────
 interface DowOverride {
@@ -99,112 +106,97 @@ export function SeasonalPricingClient({
     }
 
     setSaving(true);
-    try {
-      const body = {
-        name: form.name,
-        colorTag: form.colorTag,
-        startDate: form.startDate,
-        endDate: form.endDate,
-        baseRate: Number(form.baseRate),
-        minStay: Number(form.minStay),
-        priority: Number(form.priority),
-        notes: form.notes || undefined,
-      };
 
+    const payload = {
+      name: form.name,
+      colorTag: form.colorTag,
+      startDate: form.startDate,
+      endDate: form.endDate,
+      baseRate: Number(form.baseRate),
+      minStay: Number(form.minStay),
+      priority: Number(form.priority),
+      notes: form.notes || undefined,
+    };
+
+    const result = editingSeason
+      ? await updateSeason(editingSeason.id, payload)
+      : await createSeason(payload);
+
+    if (result.success) {
       if (editingSeason) {
-        const res = await fetch(`/api/admin/seasons/${editingSeason.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        const json = (await res.json()) as { success: boolean; data: Season };
-        if (json.success) {
-          setSeasons((prev) =>
-            prev.map((s) => (s.id === editingSeason.id ? json.data : s))
-          );
-          toast.success("Season updated");
-        }
+        setSeasons((prev) =>
+          prev.map((s) => (s.id === editingSeason.id ? result.data : s))
+        );
+        toast.success("Season updated");
       } else {
-        const res = await fetch("/api/admin/seasons", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
-        const json = (await res.json()) as { success: boolean; data: Season };
-        if (json.success) {
-          setSeasons((prev) => [...prev, json.data]);
-          toast.success("Season created");
-        }
+        setSeasons((prev) => [...prev, result.data]);
+        toast.success("Season created");
       }
       setShowModal(false);
-    } catch {
-      toast.error("Failed to save season");
-    } finally {
-      setSaving(false);
+    } else {
+      toast.error(result.error);
     }
+
+    setSaving(false);
   }
 
   async function handleDuplicate(season: Season) {
-    try {
-      const res = await fetch("/api/admin/seasons", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: `${season.name} (Copy)`,
-          colorTag: season.colorTag,
-          startDate: season.startDate.split("T")[0],
-          endDate: season.endDate.split("T")[0],
-          baseRate: season.baseRate,
-          minStay: season.minStay,
-          priority: season.priority,
-          notes: season.notes,
-        }),
-      });
-      const json = (await res.json()) as { success: boolean; data: Season };
-      if (json.success) {
-        setSeasons((prev) => [...prev, json.data]);
-        toast.success("Season duplicated");
-      }
-    } catch {
-      toast.error("Failed to duplicate season");
+    const result = await duplicateSeasonApi({
+      name: season.name,
+      colorTag: season.colorTag,
+      startDate: season.startDate.split("T")[0],
+      endDate: season.endDate.split("T")[0],
+      baseRate: season.baseRate,
+      minStay: season.minStay,
+      priority: season.priority,
+      notes: season.notes,
+    });
+
+    if (result.success) {
+      setSeasons((prev) => [...prev, result.data]);
+      toast.success("Season duplicated");
+    } else {
+      toast.error(result.error);
     }
   }
 
   async function handleArchive(seasonId: string) {
-    try {
-      const res = await fetch(`/api/admin/seasons/${seasonId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "ARCHIVED" }),
-      });
-      const json = (await res.json()) as { success: boolean };
-      if (json.success) {
-        setSeasons((prev) =>
-          prev.map((s) =>
-            s.id === seasonId ? { ...s, status: "ARCHIVED" } : s
-          )
-        );
-        toast.success("Season archived");
-      }
-    } catch {
-      toast.error("Failed to archive season");
+    const result = await archiveSeason(seasonId);
+
+    if (result.success) {
+      setSeasons((prev) =>
+        prev.map((s) =>
+          s.id === seasonId ? { ...s, status: "ARCHIVED" } : s
+        )
+      );
+      toast.success("Season archived");
+    } else {
+      toast.error(result.error);
     }
   }
 
   async function handleBulkActivate() {
-    for (const id of selectedIds) {
-      await fetch(`/api/admin/seasons/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "ACTIVE" }),
-      });
+    const results = await Promise.all(
+      selectedIds.map((id) => activateSeason(id))
+    );
+
+    const failedCount = results.filter((r) => !r.success).length;
+
+    if (failedCount > 0) {
+      toast.error(`Failed to activate ${failedCount} season(s)`);
     }
+
+    // Update local state for all that succeeded
+    const succeededIds = selectedIds.filter((_, i) => results[i].success);
     setSeasons((prev) =>
       prev.map((s) =>
-        selectedIds.includes(s.id) ? { ...s, status: "ACTIVE" } : s
+        succeededIds.includes(s.id) ? { ...s, status: "ACTIVE" } : s
       )
     );
-    toast.success(`${selectedIds.length} seasons activated`);
+
+    if (succeededIds.length > 0) {
+      toast.success(`${succeededIds.length} season(s) activated`);
+    }
     setSelectedIds([]);
   }
 

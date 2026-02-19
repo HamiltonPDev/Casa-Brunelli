@@ -1,13 +1,14 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState, useMemo } from "react";
+import { useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Lock, X, Eye } from "lucide-react";
 import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { AdminBadge } from "@/components/admin/AdminBadge";
 import { cn } from "@/lib/utils";
+import { blockDates, unblockDates } from "@/lib/services/unavailable-dates";
 
 // ─── Types ─────────────────────────────────────────────────────
 export interface CalendarBooking {
@@ -29,6 +30,8 @@ interface BlockedDate {
 
 interface CalendarWidgetProps {
   bookings: CalendarBooking[];
+  /** Pre-loaded blocked dates from the server (UnavailableDate records) */
+  initialBlockedDates?: BlockedDate[];
   onViewBooking?: (bookingId: string) => void;
 }
 
@@ -62,6 +65,7 @@ function isSameDay(a: Date, b: Date): boolean {
 // ─── Component ─────────────────────────────────────────────────
 export function CalendarWidget({
   bookings,
+  initialBlockedDates = [],
   onViewBooking,
 }: CalendarWidgetProps) {
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -70,7 +74,9 @@ export function CalendarWidget({
   const [dragStart, setDragStart] = useState<Date | null>(null);
   const [dragEnd, setDragEnd] = useState<Date | null>(null);
   const [blockNote, setBlockNote] = useState("");
-  const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
+  const [blockedDates, setBlockedDates] =
+    useState<BlockedDate[]>(initialBlockedDates);
+  const [isPending, startTransition] = useTransition();
 
   // ── Derived ───────────────────────────────────────────────
   const calendarDays = useMemo(() => {
@@ -142,26 +148,51 @@ export function CalendarWidget({
     if (!dragStart || !dragEnd) return;
     const start = dragStart < dragEnd ? dragStart : dragEnd;
     const end = dragStart < dragEnd ? dragEnd : dragStart;
-    const newBlocked: BlockedDate[] = [];
 
+    // Collect all date strings in the range
+    const dateStrings: string[] = [];
     for (const d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
-      newBlocked.push({
-        date: toDateStr(new Date(d)),
-        note: blockNote || "Blocked by admin",
-      });
+      dateStrings.push(toDateStr(new Date(d)));
     }
 
-    setBlockedDates((prev) => [...prev, ...newBlocked]);
-    setDragStart(null);
-    setDragEnd(null);
-    setBlockNote("");
-    toast.success(`Blocked ${toDateStr(start)} → ${toDateStr(end)}`);
+    const reason = blockNote || "Blocked by admin";
+
+    startTransition(async () => {
+      const result = await blockDates(dateStrings, reason);
+
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+
+      // Update local state after successful API call
+      const newBlocked: BlockedDate[] = dateStrings.map((d) => ({
+        date: d,
+        note: reason,
+      }));
+      setBlockedDates((prev) => [...prev, ...newBlocked]);
+      setDragStart(null);
+      setDragEnd(null);
+      setBlockNote("");
+      toast.success(`Blocked ${toDateStr(start)} → ${toDateStr(end)}`);
+    });
   }
 
   function handleUnblockDay(date: Date) {
-    setBlockedDates((prev) => prev.filter((b) => b.date !== toDateStr(date)));
-    setSelectedDay(null);
-    toast.success("Day unblocked");
+    const dateStr = toDateStr(date);
+
+    startTransition(async () => {
+      const result = await unblockDates([dateStr]);
+
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+
+      setBlockedDates((prev) => prev.filter((b) => b.date !== dateStr));
+      setSelectedDay(null);
+      toast.success("Day unblocked");
+    });
   }
 
   const selectedBooking = selectedDay ? getBookingForDate(selectedDay) : null;

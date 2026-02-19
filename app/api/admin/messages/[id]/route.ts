@@ -2,10 +2,11 @@ import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUS } from "@/lib/constants";
+import { updateMessageSchema, validationError } from "@/lib/validations/admin";
 
 // ─── PATCH /api/admin/messages/[id] ────────────────────────────
 // Updates the status of a ContactMessage (READ | REPLIED).
-// Protected: admin session required.
+// Protected: admin session required. Validated with Zod.
 
 export async function PATCH(
   request: NextRequest,
@@ -21,23 +22,13 @@ export async function PATCH(
 
   const { id } = await params;
   const body = await request.json();
-  const { status } = body as { status: string };
+  const parsed = updateMessageSchema.safeParse(body);
 
-  const validStatuses = Object.values(MESSAGE_STATUS);
-  if (
-    !status ||
-    !validStatuses.includes(
-      status as (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS]
-    )
-  ) {
-    return Response.json(
-      {
-        success: false,
-        error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
-      },
-      { status: 400 }
-    );
+  if (!parsed.success) {
+    return validationError(parsed.error);
   }
+
+  const { status } = parsed.data;
 
   try {
     const updated = await prisma.contactMessage.update({

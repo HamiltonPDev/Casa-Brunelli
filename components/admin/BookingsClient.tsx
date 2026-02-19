@@ -1,7 +1,7 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
@@ -18,8 +18,11 @@ import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminBadge } from "@/components/admin/AdminBadge";
 import { AdminButton } from "@/components/admin/AdminButton";
 import { AdminField } from "@/components/admin/AdminField";
-import { formatCurrency, formatDateRange } from "@/lib/utils";
-import { cn } from "@/lib/utils";
+import { formatCurrency, formatDateRange, cn } from "@/lib/utils";
+import {
+  fetchBookings as fetchBookingsApi,
+  bulkUpdateBookings,
+} from "@/lib/services/bookings";
 
 // ─── Types ─────────────────────────────────────────────────────
 interface Booking {
@@ -68,45 +71,39 @@ export function BookingsClient() {
   // ── Table state ───────────────────────────────────────────
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [pagination, setPagination] = useState<Pagination | null>(null);
-  const [loading, setLoading] = useState(true);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   const hasActiveFilters =
     search || statusFilters.length > 0 || dateFrom || dateTo || guests;
 
   // ── Fetch bookings ────────────────────────────────────────
-  const fetchBookings = useCallback(async () => {
-    setLoading(true);
-    const params = new URLSearchParams();
-    if (search) params.set("search", search);
-    if (statusFilters.length) params.set("status", statusFilters.join(","));
-    if (dateFrom) params.set("dateFrom", dateFrom);
-    if (dateTo) params.set("dateTo", dateTo);
-    if (guests) params.set("guests", guests);
-    params.set("page", String(page));
+  // useTransition batches all setState calls into a single render
+  function loadBookings() {
+    startTransition(async () => {
+      const result = await fetchBookingsApi({
+        search: search || undefined,
+        status: statusFilters.length ? statusFilters : undefined,
+        dateFrom: dateFrom || undefined,
+        dateTo: dateTo || undefined,
+        guests: guests || undefined,
+        page,
+      });
 
-    try {
-      const res = await fetch(`/api/admin/bookings?${params}`);
-      const json = (await res.json()) as {
-        success: boolean;
-        data: Booking[];
-        pagination: Pagination;
-      };
-      if (json.success) {
-        setBookings(json.data);
-        setPagination(json.pagination);
+      if (result.success) {
+        setBookings(result.data.data);
+        setPagination(result.data.pagination);
+      } else {
+        toast.error(result.error);
       }
-    } catch {
-      toast.error("Failed to load bookings");
-    } finally {
-      setLoading(false);
-    }
-  }, [search, statusFilters, dateFrom, dateTo, guests, page]);
+    });
+  }
 
   useEffect(() => {
-    void fetchBookings();
-  }, [fetchBookings]);
+    loadBookings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search, statusFilters, dateFrom, dateTo, guests, page]);
 
   // ── Handlers ──────────────────────────────────────────────
   function toggleStatus(status: string) {
@@ -141,25 +138,20 @@ export function BookingsClient() {
 
   async function handleBulkStatus(status: string) {
     setBulkLoading(true);
-    try {
-      const res = await fetch("/api/admin/bookings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: selectedRows, status }),
-      });
-      const json = (await res.json()) as { success: boolean; updated: number };
-      if (json.success) {
-        toast.success(
-          `Updated ${json.updated} booking${json.updated !== 1 ? "s" : ""}`
-        );
-        setSelectedRows([]);
-        void fetchBookings();
-      }
-    } catch {
-      toast.error("Failed to update bookings");
-    } finally {
-      setBulkLoading(false);
+
+    const result = await bulkUpdateBookings(selectedRows, status);
+
+    if (result.success) {
+      toast.success(
+        `Updated ${result.data.updated} booking${result.data.updated !== 1 ? "s" : ""}`
+      );
+      setSelectedRows([]);
+      void loadBookings();
+    } else {
+      toast.error(result.error);
     }
+
+    setBulkLoading(false);
   }
 
   // ── Render ────────────────────────────────────────────────
@@ -307,7 +299,7 @@ export function BookingsClient() {
       )}
 
       {/* Table or empty state */}
-      {!loading && bookings.length === 0 ? (
+      {!isPending && bookings.length === 0 ? (
         <AdminCard>
           <div className="text-center py-16">
             <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -375,7 +367,7 @@ export function BookingsClient() {
                 </tr>
               </thead>
               <tbody>
-                {loading
+                {isPending
                   ? Array.from({ length: 5 }).map((_, i) => (
                       <tr key={i} className="border-b border-gray-100">
                         {Array.from({ length: 10 }).map((__, j) => (

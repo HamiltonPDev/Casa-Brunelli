@@ -1,5 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { SeasonStatus } from "@/lib/constants";
+import { updateSeasonSchema, validationError } from "@/lib/validations/admin";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -18,17 +20,14 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   const { id } = await params;
 
   try {
-    const body = (await request.json()) as {
-      name?: string;
-      colorTag?: string;
-      startDate?: string;
-      endDate?: string;
-      baseRate?: number;
-      minStay?: number;
-      priority?: number;
-      notes?: string;
-      status?: string;
-    };
+    const raw = await request.json();
+    const parsed = updateSeasonSchema.safeParse(raw);
+
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const body = parsed.data;
 
     const updated = await prisma.season.update({
       where: { id },
@@ -41,9 +40,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
         ...(body.minStay !== undefined && { minStay: body.minStay }),
         ...(body.priority !== undefined && { priority: body.priority }),
         ...(body.notes !== undefined && { notes: body.notes }),
-        ...(body.status && {
-          status: body.status as "ACTIVE" | "INACTIVE" | "ARCHIVED",
-        }),
+        ...(body.status && { status: body.status as SeasonStatus }),
       },
       include: { dowOverrides: true },
     });

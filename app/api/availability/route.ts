@@ -1,6 +1,5 @@
 // app/api/availability/route.ts
-// Public endpoint — no auth required
-// Returns available dates, nightly rates, and min-stay for a date range
+// Public endpoint — no auth required Returns available dates, nightly rates, and min-stay for a date range
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -51,10 +50,7 @@ export async function GET(request: NextRequest) {
     today.setUTCHours(0, 0, 0, 0);
 
     const from = parseDateParam(searchParams.get("from"), today);
-    const to = parseDateParam(
-      searchParams.get("to"),
-      addDays(today, 90)
-    );
+    const to = parseDateParam(searchParams.get("to"), addDays(today, 90));
 
     // Clamp: from can't be in the past; range can't exceed 365 days
     const clampedFrom = from < today ? today : from;

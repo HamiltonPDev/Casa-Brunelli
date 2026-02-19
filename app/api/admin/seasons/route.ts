@@ -1,5 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { OverrideType } from "@/lib/constants";
+import { createSeasonSchema, validationError } from "@/lib/validations/admin";
 
 // ─── GET /api/admin/seasons ────────────────────────────────────
 export async function GET() {
@@ -47,21 +49,14 @@ export async function POST(request: Request) {
   }
 
   try {
-    const body = (await request.json()) as {
-      name: string;
-      colorTag: string;
-      startDate: string;
-      endDate: string;
-      baseRate: number;
-      minStay: number;
-      priority: number;
-      notes?: string;
-      dowOverrides?: Array<{
-        dayOfWeek: number;
-        type: "ADD" | "SUBTRACT" | "CUSTOM";
-        amount: number;
-      }>;
-    };
+    const raw = await request.json();
+    const parsed = createSeasonSchema.safeParse(raw);
+
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const body = parsed.data;
 
     const season = await prisma.season.create({
       data: {
@@ -74,7 +69,13 @@ export async function POST(request: Request) {
         priority: body.priority,
         notes: body.notes,
         dowOverrides: body.dowOverrides?.length
-          ? { create: body.dowOverrides }
+          ? {
+              create: body.dowOverrides.map((d) => ({
+                dayOfWeek: d.dayOfWeek,
+                type: d.type as OverrideType,
+                amount: d.amount,
+              })),
+            }
           : undefined,
       },
       include: { dowOverrides: true },

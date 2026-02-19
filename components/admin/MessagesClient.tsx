@@ -2,6 +2,7 @@
 
 // ─── Imports ───────────────────────────────────────────────────
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   Send,
@@ -14,6 +15,7 @@ import {
   MessageSquare,
   Euro,
   Clock,
+  CheckCircle,
 } from "lucide-react";
 import { AdminCard } from "@/components/admin/AdminCard";
 import { AdminBadge } from "@/components/admin/AdminBadge";
@@ -22,6 +24,10 @@ import { AdminField } from "@/components/admin/AdminField";
 import { cn, getInitials } from "@/lib/utils";
 import { MESSAGE_STATUS, MESSAGE_TYPE } from "@/lib/constants";
 import type { MessageStatus } from "@/lib/constants";
+import {
+  updateMessageStatus as updateMessageStatusApi,
+  promoteMessage,
+} from "@/lib/services/messages";
 
 // ─── Types ─────────────────────────────────────────────────────
 interface SerializedMessage {
@@ -111,6 +117,7 @@ function formatFullDate(date: Date): string {
 
 // ─── Component ─────────────────────────────────────────────────
 export function MessagesClient({ initialMessages }: MessagesClientProps) {
+  const router = useRouter();
   const [messages, setMessages] =
     useState<SerializedMessage[]>(initialMessages);
   const [selectedId, setSelectedId] = useState<string | null>(
@@ -154,31 +161,26 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
 
   function updateStatus(id: string, status: MessageStatus) {
     startTransition(async () => {
-      try {
-        const res = await fetch(`/api/admin/messages/${id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status }),
-        });
+      const result = await updateMessageStatusApi(id, status);
 
-        if (!res.ok) throw new Error("Failed to update status");
-
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === id
-              ? {
-                  ...m,
-                  status,
-                  ...(status === MESSAGE_STATUS.REPLIED && {
-                    repliedAt: new Date(),
-                  }),
-                }
-              : m
-          )
-        );
-      } catch {
-        toast.error("Failed to update message status");
+      if (!result.success) {
+        toast.error(result.error);
+        return;
       }
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === id
+            ? {
+                ...m,
+                status,
+                ...(status === MESSAGE_STATUS.REPLIED && {
+                  repliedAt: new Date(),
+                }),
+              }
+            : m
+        )
+      );
     });
   }
 
@@ -186,28 +188,59 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
     if (!selectedMessage || !replyText.trim()) return;
 
     startTransition(async () => {
-      try {
-        // Mark as REPLIED — in a real implementation Resend would send the email here
-        await fetch(`/api/admin/messages/${selectedMessage.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: MESSAGE_STATUS.REPLIED }),
-        });
+      // Mark as REPLIED — in a real implementation Resend would send the email here
+      const result = await updateMessageStatusApi(
+        selectedMessage.id,
+        MESSAGE_STATUS.REPLIED
+      );
 
-        setMessages((prev) =>
-          prev.map((m) =>
-            m.id === selectedMessage.id
-              ? { ...m, status: MESSAGE_STATUS.REPLIED, repliedAt: new Date() }
-              : m
-          )
-        );
-
-        setReplyText("");
-        setQuickReply("");
-        toast.success("Reply sent and message marked as replied");
-      } catch {
-        toast.error("Failed to send reply");
+      if (!result.success) {
+        toast.error(result.error);
+        return;
       }
+
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === selectedMessage.id
+            ? { ...m, status: MESSAGE_STATUS.REPLIED, repliedAt: new Date() }
+            : m
+        )
+      );
+
+      setReplyText("");
+      setQuickReply("");
+      toast.success("Reply sent and message marked as replied");
+    });
+  }
+
+  function handlePromote() {
+    if (!selectedMessage) return;
+
+    startTransition(async () => {
+      const result = await promoteMessage(selectedMessage.id);
+
+      if (!result.success) {
+        toast.error(result.error);
+        return;
+      }
+
+      // Update local state — mark message as REPLIED
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === selectedMessage.id
+            ? { ...m, status: MESSAGE_STATUS.REPLIED, repliedAt: new Date() }
+            : m
+        )
+      );
+
+      toast.success("Booking created!", {
+        description: `€${result.data.totalPrice.toLocaleString("en-GB")} · ${result.data.nights} nights`,
+        action: {
+          label: "View Booking",
+          onClick: () =>
+            router.push(`/admin/bookings/${result.data.bookingId}`),
+        },
+      });
     });
   }
 
@@ -468,6 +501,21 @@ export function MessagesClient({ initialMessages }: MessagesClientProps) {
                           </div>
                         )}
                       </div>
+
+                      {/* ── Approve & Create Booking button ────── */}
+                      {selectedMessage.status !== MESSAGE_STATUS.REPLIED && (
+                        <div className="col-span-3 pt-3 border-t border-[#1a4a3a]/10">
+                          <AdminButton
+                            variant="primary"
+                            size="sm"
+                            icon={<CheckCircle className="w-4 h-4" />}
+                            loading={isPending}
+                            onClick={handlePromote}
+                          >
+                            Approve &amp; Create Booking
+                          </AdminButton>
+                        </div>
+                      )}
                     </div>
                   )}
 

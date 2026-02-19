@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BOOKING_STATUS } from "@/lib/constants";
 import type { BookingStatus } from "@/lib/constants";
+import { bulkUpdateBookingsSchema, validationError } from "@/lib/validations/admin";
 
 // ─── GET /api/admin/bookings ───────────────────────────────────
 // Supports query params: search, status, dateFrom, dateTo, guests, page
@@ -95,22 +96,14 @@ export async function PATCH(request: Request) {
   }
 
   try {
-    const body = (await request.json()) as { ids: string[]; status: string };
-    const { ids, status } = body;
+    const body = await request.json();
+    const parsed = bulkUpdateBookingsSchema.safeParse(body);
 
-    if (!ids?.length || !status) {
-      return Response.json(
-        { success: false, error: "ids and status are required" },
-        { status: 400 }
-      );
+    if (!parsed.success) {
+      return validationError(parsed.error);
     }
 
-    if (!Object.values(BOOKING_STATUS).includes(status as BookingStatus)) {
-      return Response.json(
-        { success: false, error: "Invalid status value" },
-        { status: 400 }
-      );
-    }
+    const { ids, status } = parsed.data;
 
     const { count } = await prisma.booking.updateMany({
       where: { id: { in: ids } },

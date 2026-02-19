@@ -38,7 +38,7 @@ npx prisma studio            # Visual DB browser
 | Package | Version | Rule |
 |---|---|---|
 | `next` | 16.1.6 | Uses `proxy.ts` in root, **NOT** `middleware.ts` |
-| `react` | 19.2.4 | React Compiler — no `useMemo`/`useCallback` needed |
+| `react` | 19.2.4 | React Compiler — **no** `useMemo`/`useCallback` |
 | `framer-motion` | ^12.34.0 | Import from `"framer-motion"` — **NOT** `"motion/react"` |
 | `zod` | ^4.3.6 | Import from `"zod/v4"` — **NOT** `"zod"` |
 | `sonner` | ^2.0.7 | Import from `"sonner"` |
@@ -61,7 +61,7 @@ export default async function Page({ params }: Props) {
 ```
 proxy.ts                     ← Route protection (NOT middleware.ts)
 prisma.config.ts             ← Prisma v7 config (url, directUrl, seed)
-prisma/schema.prisma         ← 10 models (see below)
+prisma/schema.prisma         ← 10 models
 app/
   globals.css                ← @import "tailwindcss" + CSS vars + @theme
   page.tsx                   ← Landing → HomeLanding client component
@@ -75,7 +75,13 @@ components/
   public/                    ← Organisms (HomeLanding, Calendar, BookingForm, etc.)
   admin/                     ← Admin components (Shell, Client pages, atoms)
 lib/
-  auth.ts      constants.ts      pricing.ts      prisma.ts      utils.ts
+  auth.ts                    ← NextAuth v5 config
+  constants.ts               ← ALL enums + business rules (const object + type extraction)
+  pricing.ts                 ← calculateNightlyRate, calculateBookingTotal
+  prisma.ts                  ← Prisma singleton — ALWAYS import from here
+  utils.ts                   ← cn, formatCurrency, getInitials, formatDateRange
+  validations/admin.ts       ← Centralized Zod schemas for admin API routes
+  services/                  ← Client-side typed fetch wrappers (see Service Layer below)
 types/index.ts               ← Domain types mirroring Prisma schema
 ```
 
@@ -89,7 +95,7 @@ UnavailableDate, GuestUser, EmailTemplate, PaymentTransaction, AuditLog.
 ```tsx
 // 1. Next.js / React
 import type { Metadata } from "next";
-import { useState } from "react";
+import { useState, useTransition } from "react";
 // 2. External libs
 import { motion } from "framer-motion";
 import { z } from "zod/v4";
@@ -98,6 +104,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BOOKING_STATUS } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
+import { updateBooking } from "@/lib/services/bookings";
 import type { Booking } from "@/types";
 // 4. Relative (only when necessary)
 import { SomeHelper } from "./helpers";
@@ -110,12 +117,17 @@ import { SomeHelper } from "./helpers";
 - `interface` for object shapes. `type` for unions / derived types.
 - Explicit return types on all exported functions.
 - `Readonly<Props>` for immutable component props.
-- `unknown` instead of `any` — narrow with `instanceof`.
+- `unknown` instead of `any` — narrow with `instanceof` or type guards.
+- **Const object pattern** for enums — never bare string unions:
+  ```ts
+  export const BOOKING_STATUS = { PENDING: "PENDING", ... } as const;
+  export type BookingStatus = (typeof BOOKING_STATUS)[keyof typeof BOOKING_STATUS];
+  ```
 - All enums live in `lib/constants.ts` — never inline string literals.
 
 ---
 
-## Component Structure
+## React 19 + Component Structure
 
 ```tsx
 "use client";                              // First line if client
@@ -123,10 +135,50 @@ import { SomeHelper } from "./helpers";
 // ─── Types ───────────────────────────
 // ─── Constants ───────────────────────
 // ─── Component ───────────────────────
-export function Name({ title }: Props) {
+export function Name({ title }: Readonly<Props>) {
   // 1. Hooks → 2. Derived → 3. Handlers → return JSX
 }
 ```
+
+- **No `useMemo` / `useCallback`** — React Compiler handles optimization.
+- **`useTransition`** for async mutations — batches state updates, provides `isPending`.
+- **No `forwardRef`** — in React 19, `ref` is a regular prop.
+- **Named imports only:** `import { useState } from "react"` — never `import React`.
+
+---
+
+## Service Layer (`lib/services/`)
+
+Client components call **service functions** — never inline `fetch`.
+Services use `lib/services/client.ts` which returns `ApiResult<T>`:
+
+```tsx
+// In component:
+const result = await blockDates(dateStrings, reason);
+if (!result.success) { toast.error(result.error); return; }
+setBlockedDates((prev) => [...prev, ...newBlocked]);
+```
+
+**Services:** `bookings.ts` · `messages.ts` · `seasons.ts` · `unavailable-dates.ts`
+
+---
+
+## API Routes — Response Contract
+
+ALL API routes return this shape:
+```ts
+// Success — single payload:
+Response.json({ success: true, data: result });
+// Success — with pagination siblings:
+Response.json({ success: true, data: items, pagination: { total, page, perPage, totalPages } });
+// Error:
+Response.json({ success: false, error: "msg" }, { status: 4xx/5xx });
+```
+
+**Validation:** Every admin POST/PATCH route uses Zod schemas from `lib/validations/admin.ts`.
+**Auth:** Every admin route checks `const session = await auth()` + proxy.ts defense-in-depth.
+
+---
 
 ## Naming
 
@@ -136,7 +188,9 @@ export function Name({ title }: Props) {
 | Hooks | `use` prefix | `useAuth.ts` |
 | Constants | SCREAMING_SNAKE + `as const` | `BOOKING_STATUS` |
 | Types | PascalCase | `BookingStatus` |
+| Services | camelCase functions | `blockDates()`, `updateSeason()` |
 | API routes | `route.ts` in `app/api/*/` | — |
+| Comments | `// ─── Section ───` minor · `// ═══ Major ═══` major · JSDoc for exports |
 
 ---
 
@@ -161,12 +215,16 @@ Always use `cn()` for conditional classes.
 ## Error Handling
 
 ```tsx
-// API — always structured { success, data/error }
+// API routes — structured response + Zod
+const parsed = schema.safeParse(body);
+if (!parsed.success) return validationError(parsed.error); // from lib/validations/admin.ts
 return Response.json({ success: true, data: result });
 return Response.json({ success: false, error: "msg" }, { status: 500 });
 
-// Client — sonner toasts
-toast.success("Saved!"); toast.error("Something went wrong.");
+// Client components — service layer + sonner toasts
+const result = await updateBooking(id, data);
+if (!result.success) { toast.error(result.error); return; }
+toast.success("Booking updated");
 ```
 
 ---
@@ -175,9 +233,9 @@ toast.success("Saved!"); toast.error("Something went wrong.");
 
 1. **Messages-First** — public forms → `ContactMessage`, never `Booking` directly
 2. **Prisma singleton** — `import { prisma } from "@/lib/prisma"`, never `new PrismaClient()`
-3. **`proxy.ts`** — route protection, NOT `middleware.ts`
+3. **`proxy.ts`** — route protection, NOT `middleware.ts` (Next.js 16)
 4. **Stripe** — deposit 30 %, balance 70 %, link expires 24h
-5. **Comments:** `// ─── Section ───` (minor) · `// ═══ Major ═══` (major) · JSDoc for exports
+5. **Decimal → number** — `types/index.ts` uses `number`; Prisma `Decimal` is serialized in server components before passing to client
 
 ## Environment Variables
 
