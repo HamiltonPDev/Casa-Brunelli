@@ -169,6 +169,45 @@ export function getInitials(name: string): string {
 }
 
 /**
+ * Formats a date as a relative/short label for message lists.
+ * Today → "HH:MM", yesterday → "Yesterday", <7 days → weekday short, else → "DD Mon".
+ * @example formatMessageDate(new Date()) → "14:30"
+ */
+export function formatMessageDate(date: Date | string): string {
+  const d = new Date(date);
+  const now = new Date();
+  const diffMs = now.getTime() - d.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return d.toLocaleTimeString("en-GB", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } else if (diffDays === 1) {
+    return "Yesterday";
+  } else if (diffDays < 7) {
+    return d.toLocaleDateString("en-GB", { weekday: "short" });
+  }
+  return d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+}
+
+/**
+ * Formats a date as a full human-readable string with time.
+ * @example formatFullDate(new Date()) → "Thursday, 19 February 2026, 14:30"
+ */
+export function formatFullDate(date: Date | string): string {
+  return new Date(date).toLocaleDateString("en-GB", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+/**
  * Checks if a date falls within a range (inclusive).
  */
 export function isDateInRange(date: Date, start: Date, end: Date): boolean {

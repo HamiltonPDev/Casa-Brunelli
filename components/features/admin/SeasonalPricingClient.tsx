@@ -1,7 +1,7 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   Plus,
@@ -17,6 +17,7 @@ import { AdminButton } from "@/components/ui/admin/AdminButton";
 import { AdminBadge } from "@/components/ui/admin/AdminBadge";
 import { AdminField } from "@/components/ui/admin/AdminField";
 import { cn } from "@/lib/utils";
+import { DAYS_OF_WEEK, SEASON_STATUS } from "@/lib/constants";
 import {
   createSeason,
   updateSeason,
@@ -52,10 +53,19 @@ interface SeasonalPricingClientProps {
   initialSeasons: Season[];
 }
 
-// ─── Constants ─────────────────────────────────────────────────
-const DOW_LABELS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+interface SeasonFormData {
+  name: string;
+  colorTag: string;
+  startDate: string;
+  endDate: string;
+  baseRate: string;
+  minStay: string;
+  priority: string;
+  notes: string;
+}
 
-const EMPTY_FORM = {
+// ─── Constants ─────────────────────────────────────────────────
+const EMPTY_FORM: SeasonFormData = {
   name: "",
   colorTag: "#6B705C",
   startDate: "",
@@ -66,25 +76,154 @@ const EMPTY_FORM = {
   notes: "",
 };
 
+// ─── Private Sub-Components ────────────────────────────────────
+
+/** Modal for creating/editing a season */
+function SeasonModal({
+  form,
+  editingSeason,
+  isPending,
+  onFormChange,
+  onSave,
+  onClose,
+}: Readonly<{
+  form: SeasonFormData;
+  editingSeason: Season | null;
+  isPending: boolean;
+  onFormChange: (updater: (prev: SeasonFormData) => SeasonFormData) => void;
+  onSave: () => void;
+  onClose: () => void;
+}>) {
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <h3 className="text-xl font-semibold text-gray-900">
+            {editingSeason ? "Edit Season" : "Add Season"}
+          </h3>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <div className="p-6 space-y-4">
+          <AdminField
+            label="Season Name"
+            placeholder="e.g. High Season"
+            value={form.name}
+            onChange={(v) => onFormChange((f) => ({ ...f, name: v }))}
+            required
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <AdminField
+              type="date"
+              label="Start Date"
+              value={form.startDate}
+              onChange={(v) => onFormChange((f) => ({ ...f, startDate: v }))}
+              required
+            />
+            <AdminField
+              type="date"
+              label="End Date"
+              value={form.endDate}
+              onChange={(v) => onFormChange((f) => ({ ...f, endDate: v }))}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <AdminField
+              type="number"
+              label="Base Rate (€/night)"
+              placeholder="500"
+              value={form.baseRate}
+              onChange={(v) => onFormChange((f) => ({ ...f, baseRate: v }))}
+              required
+            />
+            <AdminField
+              type="number"
+              label="Min Stay (nights)"
+              placeholder="7"
+              value={form.minStay}
+              onChange={(v) => onFormChange((f) => ({ ...f, minStay: v }))}
+            />
+            <AdminField
+              type="number"
+              label="Priority"
+              placeholder="1"
+              value={form.priority}
+              onChange={(v) => onFormChange((f) => ({ ...f, priority: v }))}
+            />
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700">
+              Color Tag
+            </label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={form.colorTag}
+                onChange={(e) =>
+                  onFormChange((f) => ({ ...f, colorTag: e.target.value }))
+                }
+                className="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer"
+              />
+              <span className="text-sm text-gray-600 font-mono">
+                {form.colorTag}
+              </span>
+            </div>
+          </div>
+          <AdminField
+            type="textarea"
+            label="Notes (optional)"
+            placeholder="Additional notes about this season…"
+            value={form.notes}
+            onChange={(v) => onFormChange((f) => ({ ...f, notes: v }))}
+          />
+        </div>
+        <div className="flex items-center gap-3 p-6 border-t border-gray-200">
+          <AdminButton
+            variant="secondary"
+            onClick={onClose}
+            className="flex-1"
+          >
+            Cancel
+          </AdminButton>
+          <AdminButton
+            variant="primary"
+            loading={isPending}
+            onClick={onSave}
+            className="flex-1"
+          >
+            {editingSeason ? "Save Changes" : "Create Season"}
+          </AdminButton>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Component ─────────────────────────────────────────────────
 export function SeasonalPricingClient({
   initialSeasons,
-}: SeasonalPricingClientProps) {
+}: Readonly<SeasonalPricingClientProps>) {
   const [seasons, setSeasons] = useState<Season[]>(initialSeasons);
   const [view, setView] = useState<"table" | "calendar">("table");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingSeason, setEditingSeason] = useState<Season | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [form, setForm] = useState(EMPTY_FORM);
+  const [form, setForm] = useState<SeasonFormData>(EMPTY_FORM);
+  const [isPending, startTransition] = useTransition();
 
-  function openAdd() {
+  // ── Modal openers ─────────────────────────────────────────
+  function openAdd(): void {
     setEditingSeason(null);
     setForm(EMPTY_FORM);
     setShowModal(true);
   }
 
-  function openEdit(season: Season) {
+  function openEdit(season: Season): void {
     setEditingSeason(season);
     setForm({
       name: season.name,
@@ -99,13 +238,12 @@ export function SeasonalPricingClient({
     setShowModal(true);
   }
 
-  async function handleSave() {
+  // ── Handlers ──────────────────────────────────────────────
+  function handleSave(): void {
     if (!form.name || !form.startDate || !form.endDate || !form.baseRate) {
       toast.error("Please fill in all required fields");
       return;
     }
-
-    setSaving(true);
 
     const payload = {
       name: form.name,
@@ -118,89 +256,98 @@ export function SeasonalPricingClient({
       notes: form.notes || undefined,
     };
 
-    const result = editingSeason
-      ? await updateSeason(editingSeason.id, payload)
-      : await createSeason(payload);
+    startTransition(async () => {
+      const result = editingSeason
+        ? await updateSeason(editingSeason.id, payload)
+        : await createSeason(payload);
 
-    if (result.success) {
-      if (editingSeason) {
-        setSeasons((prev) =>
-          prev.map((s) => (s.id === editingSeason.id ? result.data : s))
-        );
-        toast.success("Season updated");
+      if (result.success) {
+        if (editingSeason) {
+          setSeasons((prev) =>
+            prev.map((s) => (s.id === editingSeason.id ? result.data : s))
+          );
+          toast.success("Season updated");
+        } else {
+          setSeasons((prev) => [...prev, result.data]);
+          toast.success("Season created");
+        }
+        setShowModal(false);
       } else {
-        setSeasons((prev) => [...prev, result.data]);
-        toast.success("Season created");
+        toast.error(result.error);
       }
-      setShowModal(false);
-    } else {
-      toast.error(result.error);
-    }
-
-    setSaving(false);
-  }
-
-  async function handleDuplicate(season: Season) {
-    const result = await duplicateSeasonApi({
-      name: season.name,
-      colorTag: season.colorTag,
-      startDate: season.startDate.split("T")[0],
-      endDate: season.endDate.split("T")[0],
-      baseRate: season.baseRate,
-      minStay: season.minStay,
-      priority: season.priority,
-      notes: season.notes,
     });
-
-    if (result.success) {
-      setSeasons((prev) => [...prev, result.data]);
-      toast.success("Season duplicated");
-    } else {
-      toast.error(result.error);
-    }
   }
 
-  async function handleArchive(seasonId: string) {
-    const result = await archiveSeason(seasonId);
+  function handleDuplicate(season: Season): void {
+    startTransition(async () => {
+      const result = await duplicateSeasonApi({
+        name: season.name,
+        colorTag: season.colorTag,
+        startDate: season.startDate.split("T")[0],
+        endDate: season.endDate.split("T")[0],
+        baseRate: season.baseRate,
+        minStay: season.minStay,
+        priority: season.priority,
+        notes: season.notes,
+      });
 
-    if (result.success) {
+      if (result.success) {
+        setSeasons((prev) => [...prev, result.data]);
+        toast.success("Season duplicated");
+      } else {
+        toast.error(result.error);
+      }
+    });
+  }
+
+  function handleArchive(seasonId: string): void {
+    startTransition(async () => {
+      const result = await archiveSeason(seasonId);
+
+      if (result.success) {
+        setSeasons((prev) =>
+          prev.map((s) =>
+            s.id === seasonId
+              ? { ...s, status: SEASON_STATUS.ARCHIVED }
+              : s
+          )
+        );
+        toast.success("Season archived");
+      } else {
+        toast.error(result.error);
+      }
+    });
+  }
+
+  function handleBulkActivate(): void {
+    startTransition(async () => {
+      const results = await Promise.all(
+        selectedIds.map((id) => activateSeason(id))
+      );
+
+      const failedCount = results.filter((r) => !r.success).length;
+
+      if (failedCount > 0) {
+        toast.error(`Failed to activate ${failedCount} season(s)`);
+      }
+
+      const succeededIds = selectedIds.filter((_, i) => results[i].success);
       setSeasons((prev) =>
         prev.map((s) =>
-          s.id === seasonId ? { ...s, status: "ARCHIVED" } : s
+          succeededIds.includes(s.id)
+            ? { ...s, status: SEASON_STATUS.ACTIVE }
+            : s
         )
       );
-      toast.success("Season archived");
-    } else {
-      toast.error(result.error);
-    }
+
+      if (succeededIds.length > 0) {
+        toast.success(`${succeededIds.length} season(s) activated`);
+      }
+      setSelectedIds([]);
+    });
   }
 
-  async function handleBulkActivate() {
-    const results = await Promise.all(
-      selectedIds.map((id) => activateSeason(id))
-    );
-
-    const failedCount = results.filter((r) => !r.success).length;
-
-    if (failedCount > 0) {
-      toast.error(`Failed to activate ${failedCount} season(s)`);
-    }
-
-    // Update local state for all that succeeded
-    const succeededIds = selectedIds.filter((_, i) => results[i].success);
-    setSeasons((prev) =>
-      prev.map((s) =>
-        succeededIds.includes(s.id) ? { ...s, status: "ACTIVE" } : s
-      )
-    );
-
-    if (succeededIds.length > 0) {
-      toast.success(`${succeededIds.length} season(s) activated`);
-    }
-    setSelectedIds([]);
-  }
-
-  function toggleSelect(id: string) {
+  function toggleSelect(id: string): void {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]
     );
@@ -264,6 +411,7 @@ export function SeasonalPricingClient({
               variant="secondary"
               size="sm"
               onClick={handleBulkActivate}
+              loading={isPending}
             >
               Activate
             </AdminButton>
@@ -385,12 +533,12 @@ export function SeasonalPricingClient({
                               key={d.id}
                               className="inline-flex items-center px-2 py-0.5 rounded text-xs bg-gray-100 text-gray-700"
                             >
-                              {DOW_LABELS[d.dayOfWeek]}{" "}
+                              {DAYS_OF_WEEK[d.dayOfWeek].short}{" "}
                               {d.type === "ADD"
                                 ? "+"
                                 : d.type === "SUBTRACT"
-                                ? "-"
-                                : "="}
+                                  ? "-"
+                                  : "="}
                               €{d.amount}
                             </span>
                           ))}
@@ -407,15 +555,17 @@ export function SeasonalPricingClient({
                     <td className="px-6 py-4">
                       <AdminBadge
                         variant={
-                          season.status === "ACTIVE" ? "success" : "default"
+                          season.status === SEASON_STATUS.ACTIVE
+                            ? "success"
+                            : "default"
                         }
                         size="sm"
                       >
-                        {season.status === "ACTIVE"
+                        {season.status === SEASON_STATUS.ACTIVE
                           ? "Active"
-                          : season.status === "ARCHIVED"
-                          ? "Archived"
-                          : "Inactive"}
+                          : season.status === SEASON_STATUS.ARCHIVED
+                            ? "Archived"
+                            : "Inactive"}
                       </AdminBadge>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -431,6 +581,7 @@ export function SeasonalPricingClient({
                           onClick={() => handleDuplicate(season)}
                           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                           title="Duplicate"
+                          disabled={isPending}
                         >
                           <Copy className="w-4 h-4 text-gray-600" />
                         </button>
@@ -438,6 +589,7 @@ export function SeasonalPricingClient({
                           onClick={() => handleArchive(season.id)}
                           className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
                           title="Archive"
+                          disabled={isPending}
                         >
                           <Archive className="w-4 h-4 text-gray-600" />
                         </button>
@@ -500,10 +652,16 @@ export function SeasonalPricingClient({
                     </p>
                   </div>
                   <AdminBadge
-                    variant={season.status === "ACTIVE" ? "success" : "default"}
+                    variant={
+                      season.status === SEASON_STATUS.ACTIVE
+                        ? "success"
+                        : "default"
+                    }
                     size="sm"
                   >
-                    {season.status === "ACTIVE" ? "Active" : "Inactive"}
+                    {season.status === SEASON_STATUS.ACTIVE
+                      ? "Active"
+                      : "Inactive"}
                   </AdminBadge>
                   <button
                     onClick={() => openEdit(season)}
@@ -520,112 +678,14 @@ export function SeasonalPricingClient({
 
       {/* Season modal */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-lg w-full shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-xl font-semibold text-gray-900">
-                {editingSeason ? "Edit Season" : "Add Season"}
-              </h3>
-              <button
-                onClick={() => setShowModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="p-6 space-y-4">
-              <AdminField
-                label="Season Name"
-                placeholder="e.g. High Season"
-                value={form.name}
-                onChange={(v) => setForm((f) => ({ ...f, name: v }))}
-                required
-              />
-              <div className="grid grid-cols-2 gap-4">
-                <AdminField
-                  type="date"
-                  label="Start Date"
-                  value={form.startDate}
-                  onChange={(v) => setForm((f) => ({ ...f, startDate: v }))}
-                  required
-                />
-                <AdminField
-                  type="date"
-                  label="End Date"
-                  value={form.endDate}
-                  onChange={(v) => setForm((f) => ({ ...f, endDate: v }))}
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <AdminField
-                  type="number"
-                  label="Base Rate (€/night)"
-                  placeholder="500"
-                  value={form.baseRate}
-                  onChange={(v) => setForm((f) => ({ ...f, baseRate: v }))}
-                  required
-                />
-                <AdminField
-                  type="number"
-                  label="Min Stay (nights)"
-                  placeholder="7"
-                  value={form.minStay}
-                  onChange={(v) => setForm((f) => ({ ...f, minStay: v }))}
-                />
-                <AdminField
-                  type="number"
-                  label="Priority"
-                  placeholder="1"
-                  value={form.priority}
-                  onChange={(v) => setForm((f) => ({ ...f, priority: v }))}
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Color Tag
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="color"
-                    value={form.colorTag}
-                    onChange={(e) =>
-                      setForm((f) => ({ ...f, colorTag: e.target.value }))
-                    }
-                    className="w-10 h-10 rounded-lg border border-gray-300 cursor-pointer"
-                  />
-                  <span className="text-sm text-gray-600 font-mono">
-                    {form.colorTag}
-                  </span>
-                </div>
-              </div>
-              <AdminField
-                type="textarea"
-                label="Notes (optional)"
-                placeholder="Additional notes about this season…"
-                value={form.notes}
-                onChange={(v) => setForm((f) => ({ ...f, notes: v }))}
-              />
-            </div>
-            <div className="flex items-center gap-3 p-6 border-t border-gray-200">
-              <AdminButton
-                variant="secondary"
-                onClick={() => setShowModal(false)}
-                className="flex-1"
-              >
-                Cancel
-              </AdminButton>
-              <AdminButton
-                variant="primary"
-                loading={saving}
-                onClick={handleSave}
-                className="flex-1"
-              >
-                {editingSeason ? "Save Changes" : "Create Season"}
-              </AdminButton>
-            </div>
-          </div>
-        </div>
+        <SeasonModal
+          form={form}
+          editingSeason={editingSeason}
+          isPending={isPending}
+          onFormChange={setForm}
+          onSave={handleSave}
+          onClose={() => setShowModal(false)}
+        />
       )}
     </div>
   );

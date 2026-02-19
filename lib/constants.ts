@@ -229,6 +229,36 @@ export const COUNTRIES = [
   { value: "CA", label: "Canada" },
 ] as const;
 
+// ─── Quick Reply Templates (Messages) ──────────────────────
+
+export const QUICK_REPLIES = [
+  {
+    value: "parking",
+    label: "Parking Information",
+    body: "Free parking is available on-site at Casa Brunelli. There are 3 designated parking spots for our guests. No reservation needed — parking is included in your stay.",
+  },
+  {
+    value: "checkin",
+    label: "Check-in Instructions",
+    body: "Check-in is from 3:00 PM onwards. You will receive a detailed welcome guide with the access code 24 hours before your arrival. Early check-in may be arranged subject to availability — please don't hesitate to ask.",
+  },
+  {
+    value: "amenities",
+    label: "Amenities List",
+    body: "Casa Brunelli features: private outdoor pool (open May–October), BBQ area, fully equipped kitchen, high-speed Wi-Fi, air conditioning throughout, outdoor dining terrace, and stunning Tuscan countryside views.",
+  },
+  {
+    value: "cancellation",
+    label: "Cancellation Policy",
+    body: "We offer free cancellation up to 14 days before check-in. Cancellations within 14 days will forfeit the 30% deposit. The remaining balance is not charged for cancellations made at least 7 days before arrival.",
+  },
+  {
+    value: "pricing",
+    label: "Pricing Inquiry",
+    body: "Thank you for your interest in Casa Brunelli. I'd be happy to provide a personalised quote for your requested dates. Could you please let me know your preferred check-in/check-out dates and the number of guests in your party?",
+  },
+] as const;
+
 // ─── App Config ────────────────────────────────────────────────
 
 export const APP_CONFIG = {
