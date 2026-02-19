@@ -56,7 +56,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex">
+    <div className="min-h-screen bg-admin-bg flex">
       {/* ── Sidebar ──────────────────────────────────────────── */}
       <aside
         className={cn(

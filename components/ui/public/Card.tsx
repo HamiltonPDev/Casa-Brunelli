@@ -19,10 +19,19 @@ const PADDING_MAP = {
   lg: "p-8",
 } as const;
 
-export function Card({ children, title, padding = "md", className }: Readonly<CardProps>) {
+export function Card({
+  children,
+  title,
+  padding = "md",
+  className,
+}: Readonly<CardProps>) {
   return (
     <div
-      className={cn("bg-white rounded-2xl border", PADDING_MAP[padding], className)}
+      className={cn(
+        "bg-white rounded-2xl border",
+        PADDING_MAP[padding],
+        className
+      )}
       style={{ borderColor: "rgba(139,157,131,0.2)" }}
     >
       {title && (

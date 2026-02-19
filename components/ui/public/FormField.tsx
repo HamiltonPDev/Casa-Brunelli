@@ -64,7 +64,10 @@ type FormFieldProps = FormFieldInput | FormFieldSelect | FormFieldTextarea;
 const BASE_INPUT =
   "w-full px-4 py-3 rounded-xl border text-sm outline-none transition-colors focus:ring-2 focus:ring-opacity-30";
 
-function getFieldStyle(hasError: boolean, isEmpty?: boolean): React.CSSProperties {
+function getFieldStyle(
+  hasError: boolean,
+  isEmpty?: boolean
+): React.CSSProperties {
   return {
     backgroundColor: "white",
     borderColor: hasError ? "#C62828" : "rgba(139,157,131,0.3)",
@@ -75,15 +78,7 @@ function getFieldStyle(hasError: boolean, isEmpty?: boolean): React.CSSPropertie
 // ─── Component ─────────────────────────────────────────────────
 
 export function FormField(props: Readonly<FormFieldProps>) {
-  const {
-    id,
-    label,
-    required,
-    optional,
-    error,
-    hint,
-    className,
-  } = props;
+  const { id, label, required, optional, error, hint, className } = props;
 
   const hasError = !!error;
 
@@ -98,7 +93,10 @@ export function FormField(props: Readonly<FormFieldProps>) {
         >
           {label}
           {required && (
-            <span className="ml-0.5" style={{ color: "#C62828" }}> *</span>
+            <span className="ml-0.5" style={{ color: "#C62828" }}>
+              {" "}
+              *
+            </span>
           )}
           {optional && (
             <span
@@ -119,7 +117,11 @@ export function FormField(props: Readonly<FormFieldProps>) {
           value={props.value}
           onChange={(e) => props.onChange(e.target.value)}
           placeholder={props.placeholder}
-          className={cn(BASE_INPUT, "resize-none", hasError && "border-red-400")}
+          className={cn(
+            BASE_INPUT,
+            "resize-none",
+            hasError && "border-red-400"
+          )}
           style={getFieldStyle(hasError)}
         />
       ) : props.type === "select" ? (
@@ -137,7 +139,7 @@ export function FormField(props: Readonly<FormFieldProps>) {
               BASE_INPUT,
               "appearance-none cursor-pointer",
               props.icon && "pl-10",
-              hasError && "border-red-400",
+              hasError && "border-red-400"
             )}
             style={getFieldStyle(hasError, !props.value)}
           >
@@ -169,7 +171,7 @@ export function FormField(props: Readonly<FormFieldProps>) {
             className={cn(
               BASE_INPUT,
               props.icon && "pl-10",
-              hasError && "border-red-400",
+              hasError && "border-red-400"
             )}
             style={getFieldStyle(hasError)}
           />

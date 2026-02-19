@@ -76,7 +76,7 @@ export function Button({
     BASE_CLASS,
     SIZE_CLASSES[size],
     isDisabled && "opacity-70 cursor-not-allowed",
-    className,
+    className
   );
 
   if ("href" in props && props.href) {
@@ -97,7 +97,7 @@ export function Button({
       style={styles}
     >
       {loading && <Loader2 size={16} className="animate-spin" />}
-      {loading ? (loadingText ?? children) : children}
+      {loading ? loadingText ?? children : children}
     </button>
   );
 }

@@ -33,8 +33,6 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
-
-
   useEffect(() => {
     function handleScroll() {
       setIsScrolled(window.scrollY > 40);
@@ -54,9 +52,7 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
     <header
       className={cn(
         "fixed top-0 left-0 right-0 z-[200] transition-all duration-500",
-        isSolidWhite
-          ? "shadow-sm border-b"
-          : "border-b border-transparent"
+        isSolidWhite ? "shadow-sm border-b" : "border-b border-transparent"
       )}
       style={{
         backgroundColor: isSolidWhite ? "white" : "transparent",
@@ -66,10 +62,18 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* ─── Logo ──────────────────────────────────────────── */}
-          <Link href="/" className="flex flex-col leading-none group" aria-label="Casa Brunelli">
+          <Link
+            href="/"
+            className="flex flex-col leading-none group"
+            aria-label="Casa Brunelli"
+          >
             <span
               className="text-[10px] tracking-[0.3em] uppercase transition-colors duration-500"
-              style={{ color: isTransparentMode ? "rgba(192,175,126,0.9)" : "var(--terracotta-gold)" }}
+              style={{
+                color: isTransparentMode
+                  ? "rgba(192,175,126,0.9)"
+                  : "var(--terracotta-gold)",
+              }}
             >
               Tuscany, Italy
             </span>
@@ -85,7 +89,10 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
           </Link>
 
           {/* ─── Desktop Nav ──────────────────────────────────── */}
-          <nav className="hidden md:flex items-center gap-8" aria-label="Main navigation">
+          <nav
+            className="hidden md:flex items-center gap-8"
+            aria-label="Main navigation"
+          >
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -98,8 +105,12 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
                   )}
                   style={{
                     color: isTransparentMode
-                      ? isActive ? "rgba(255,255,255,1)" : "rgba(255,255,255,0.8)"
-                      : isActive ? "var(--sage-variant)" : "var(--medium-green)",
+                      ? isActive
+                        ? "rgba(255,255,255,1)"
+                        : "rgba(255,255,255,0.8)"
+                      : isActive
+                      ? "var(--sage-variant)"
+                      : "var(--medium-green)",
                   }}
                 >
                   {item.label}
@@ -114,10 +125,14 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
               href="/availability"
               className="hidden md:inline-flex px-5 py-2.5 rounded-lg text-sm font-medium tracking-wide transition-all duration-300 hover:opacity-90 active:scale-95"
               style={{
-                backgroundColor: isTransparentMode ? "rgba(255,255,255,0.15)" : "var(--dark-forest)",
+                backgroundColor: isTransparentMode
+                  ? "rgba(255,255,255,0.15)"
+                  : "var(--dark-forest)",
                 color: "white",
                 backdropFilter: isTransparentMode ? "blur(4px)" : "none",
-                border: isTransparentMode ? "1px solid rgba(255,255,255,0.3)" : "none",
+                border: isTransparentMode
+                  ? "1px solid rgba(255,255,255,0.3)"
+                  : "none",
               }}
             >
               Check Availability
@@ -128,7 +143,9 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
               onClick={() => setIsMobileOpen((v) => !v)}
               aria-expanded={isMobileOpen}
               aria-label="Toggle menu"
-              style={{ color: isTransparentMode ? "white" : "var(--dark-forest)" }}
+              style={{
+                color: isTransparentMode ? "white" : "var(--dark-forest)",
+              }}
             >
               {isMobileOpen ? <X size={22} /> : <Menu size={22} />}
             </button>
@@ -145,7 +162,10 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.25, ease: "easeOut" }}
             className="md:hidden overflow-hidden border-t"
-            style={{ borderColor: "rgba(139,157,131,0.2)", backgroundColor: "white" }}
+            style={{
+              borderColor: "rgba(139,157,131,0.2)",
+              backgroundColor: "white",
+            }}
           >
             <nav className="max-w-[1400px] mx-auto px-6 py-4 flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
@@ -160,8 +180,12 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
                       isActive ? "font-medium" : ""
                     )}
                     style={{
-                      color: isActive ? "var(--sage-variant)" : "var(--medium-green)",
-                      backgroundColor: isActive ? "rgba(139,157,131,0.08)" : "transparent",
+                      color: isActive
+                        ? "var(--sage-variant)"
+                        : "var(--medium-green)",
+                      backgroundColor: isActive
+                        ? "rgba(139,157,131,0.08)"
+                        : "transparent",
                     }}
                   >
                     {item.label}
@@ -172,7 +196,10 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
                 href="/availability"
                 onClick={() => setIsMobileOpen(false)}
                 className="mt-2 px-4 py-3 rounded-lg text-sm font-medium text-center transition-all"
-                style={{ backgroundColor: "var(--dark-forest)", color: "white" }}
+                style={{
+                  backgroundColor: "var(--dark-forest)",
+                  color: "white",
+                }}
               >
                 Check Availability
               </Link>

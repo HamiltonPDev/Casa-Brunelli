@@ -19,7 +19,10 @@ const COLOR_MAP = {
 export function Eyebrow({ children, color = "gold", className }: EyebrowProps) {
   return (
     <p
-      className={cn("text-xs tracking-[0.3em] uppercase font-semibold", className)}
+      className={cn(
+        "text-xs tracking-[0.3em] uppercase font-semibold",
+        className
+      )}
       style={{ color: COLOR_MAP[color] }}
     >
       {children}

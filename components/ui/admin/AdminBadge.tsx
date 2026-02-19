@@ -20,16 +20,22 @@ interface AdminBadgeProps {
 const STATUS_STYLES: Record<string, string> = {
   // Booking status
   PENDING: "bg-gray-100 text-gray-700 border-gray-200",
-  CONFIRMED: "bg-[#E9F5EC] text-[#2E7D32] border-[#2E7D32]/20",
-  CANCELLED: "bg-red-50 text-[#C62828] border-[#C62828]/20",
-  COMPLETED: "bg-blue-50 text-[#1565C0] border-[#1565C0]/20",
+  CONFIRMED:
+    "bg-status-confirmed-bg text-status-confirmed border-status-confirmed/20",
+  CANCELLED:
+    "bg-status-cancelled-bg text-status-cancelled border-status-cancelled/20",
+  COMPLETED:
+    "bg-status-completed-bg text-status-completed border-status-completed/20",
   // Payment status
-  FAILED: "bg-red-50 text-[#C62828] border-[#C62828]/20",
+  FAILED:
+    "bg-status-cancelled-bg text-status-cancelled border-status-cancelled/20",
   REFUNDED: "bg-purple-50 text-purple-700 border-purple-200",
   // Message status
-  UNREAD: "bg-blue-50 text-[#1565C0] border-[#1565C0]/20",
+  UNREAD:
+    "bg-status-completed-bg text-status-completed border-status-completed/20",
   READ: "bg-gray-100 text-gray-600 border-gray-200",
-  REPLIED: "bg-[#E9F5EC] text-[#2E7D32] border-[#2E7D32]/20",
+  REPLIED:
+    "bg-status-confirmed-bg text-status-confirmed border-status-confirmed/20",
 };
 
 const STATUS_LABELS: Record<string, string> = {
@@ -56,7 +62,7 @@ export function AdminBadge({
       <span
         className={cn(
           "inline-flex items-center rounded-md border font-medium",
-          "bg-[#E9F5EC] text-[#2E7D32] border-[#2E7D32]/20",
+          "bg-status-confirmed-bg text-status-confirmed border-status-confirmed/20",
           size === "sm" ? "text-xs px-2 py-0.5" : "text-sm px-3 py-1"
         )}
       >

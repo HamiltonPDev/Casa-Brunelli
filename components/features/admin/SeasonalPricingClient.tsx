@@ -183,11 +183,7 @@ function SeasonModal({
           />
         </div>
         <div className="flex items-center gap-3 p-6 border-t border-gray-200">
-          <AdminButton
-            variant="secondary"
-            onClick={onClose}
-            className="flex-1"
-          >
+          <AdminButton variant="secondary" onClick={onClose} className="flex-1">
             Cancel
           </AdminButton>
           <AdminButton
@@ -307,9 +303,7 @@ export function SeasonalPricingClient({
       if (result.success) {
         setSeasons((prev) =>
           prev.map((s) =>
-            s.id === seasonId
-              ? { ...s, status: SEASON_STATUS.ARCHIVED }
-              : s
+            s.id === seasonId ? { ...s, status: SEASON_STATUS.ARCHIVED } : s
           )
         );
         toast.success("Season archived");
@@ -537,8 +531,8 @@ export function SeasonalPricingClient({
                               {d.type === "ADD"
                                 ? "+"
                                 : d.type === "SUBTRACT"
-                                  ? "-"
-                                  : "="}
+                                ? "-"
+                                : "="}
                               €{d.amount}
                             </span>
                           ))}
@@ -564,8 +558,8 @@ export function SeasonalPricingClient({
                         {season.status === SEASON_STATUS.ACTIVE
                           ? "Active"
                           : season.status === SEASON_STATUS.ARCHIVED
-                            ? "Archived"
-                            : "Inactive"}
+                          ? "Archived"
+                          : "Inactive"}
                       </AdminBadge>
                     </td>
                     <td className="px-6 py-4 text-right">
