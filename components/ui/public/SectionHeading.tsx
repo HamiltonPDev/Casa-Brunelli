@@ -1,4 +1,4 @@
-// components/ui/SectionHeading.tsx
+// components/ui/public/SectionHeading.tsx
 // Atom — serif section title used across all public pages
 
 import { cn } from "@/lib/utils";

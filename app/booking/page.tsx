@@ -3,9 +3,9 @@
 
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { PublicNav } from "@/components/public/PublicNav";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { BookingForm } from "@/components/public/BookingForm";
+import { PublicNav } from "@/components/features/public/PublicNav";
+import { PublicFooter } from "@/components/features/public/PublicFooter";
+import { BookingForm } from "@/components/features/public/BookingForm";
 
 export const metadata: Metadata = {
   title: "Request to Book",

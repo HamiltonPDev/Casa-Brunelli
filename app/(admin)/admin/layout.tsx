@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { AdminShell } from "@/components/admin/AdminShell";
+import { AdminShell } from "@/components/layouts/admin/AdminShell";
 import type { ReactNode } from "react";
 
 // ─── Admin Layout ──────────────────────────────────────────────

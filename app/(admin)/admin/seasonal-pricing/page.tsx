@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { SeasonalPricingClient } from "@/components/admin/SeasonalPricingClient";
+import { SeasonalPricingClient } from "@/components/features/admin/SeasonalPricingClient";
 
 export const metadata: Metadata = { title: "Seasonal Pricing" };
 export const dynamic = "force-dynamic";

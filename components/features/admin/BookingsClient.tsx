@@ -14,10 +14,10 @@ import {
   Eye,
   FileX,
 } from "lucide-react";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminBadge } from "@/components/admin/AdminBadge";
-import { AdminButton } from "@/components/admin/AdminButton";
-import { AdminField } from "@/components/admin/AdminField";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
+import { AdminButton } from "@/components/ui/admin/AdminButton";
+import { AdminField } from "@/components/ui/admin/AdminField";
 import { formatCurrency, formatDateRange, cn } from "@/lib/utils";
 import {
   fetchBookings as fetchBookingsApi,

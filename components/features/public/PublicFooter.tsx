@@ -1,5 +1,5 @@
 "use client";
-// components/public/PublicFooter.tsx
+// components/features/public/PublicFooter.tsx
 // Figma design: dark forest bg, 4-col, CTA band top, social icons
 
 // ─── Imports ───────────────────────────────────────────────────

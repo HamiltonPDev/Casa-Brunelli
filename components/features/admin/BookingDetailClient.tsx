@@ -12,9 +12,9 @@ import {
   Info,
   RefreshCcw,
 } from "lucide-react";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminBadge } from "@/components/admin/AdminBadge";
-import { AdminButton } from "@/components/admin/AdminButton";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
+import { AdminButton } from "@/components/ui/admin/AdminButton";
 import { formatCurrency } from "@/lib/utils";
 import { updateBooking } from "@/lib/services/bookings";
 

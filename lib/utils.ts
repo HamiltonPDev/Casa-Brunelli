@@ -34,6 +34,46 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
+ * Formats a date as a short European string from an ISO yyyy-MM-dd string.
+ * Appends T00:00:00 to avoid timezone shifts.
+ * @example formatDateShort("2025-06-15") → "15 Jun 2025"
+ */
+export function formatDateShort(iso: string): string {
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+/**
+ * Formats a date as a long European string from an ISO yyyy-MM-dd string.
+ * Appends T00:00:00 to avoid timezone shifts.
+ * @example formatDateLong("2025-06-15") → "15 June 2025"
+ */
+export function formatDateLong(iso: string): string {
+  return new Date(iso + "T00:00:00").toLocaleDateString("en-GB", {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+}
+
+/**
+ * Formats a number as EUR currency with no decimals.
+ * Uses "en" locale for wider compatibility with €-prefix formatting.
+ * @example formatEur(1250) → "€1,250"
+ */
+export function formatEur(amount: number): string {
+  return new Intl.NumberFormat("en", {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
+/**
  * Formats a date range as a string.
  * @example formatDateRange(checkIn, checkOut) → "Jun 15 – Jun 22, 2025"
  */

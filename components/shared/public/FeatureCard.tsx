@@ -1,6 +1,6 @@
 "use client";
 
-// components/shared/FeatureCard.tsx
+// components/shared/public/FeatureCard.tsx
 // Molecule — icon + title + description card with hover animation
 // Used in HomeLanding features grid and villa highlights section
 

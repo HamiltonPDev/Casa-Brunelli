@@ -3,9 +3,9 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PublicNav } from "@/components/public/PublicNav";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { ContactForm } from "@/components/public/ContactForm";
+import { PublicNav } from "@/components/features/public/PublicNav";
+import { PublicFooter } from "@/components/features/public/PublicFooter";
+import { ContactForm } from "@/components/features/public/ContactForm";
 
 export const metadata: Metadata = {
   title: "Contact Us",

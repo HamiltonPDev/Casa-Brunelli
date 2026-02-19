@@ -17,12 +17,12 @@ import {
   ArrowUp,
   ChevronDown,
 } from "lucide-react";
-import { Eyebrow } from "@/components/ui/Eyebrow";
-import { SectionHeading } from "@/components/ui/SectionHeading";
-import { Button } from "@/components/ui/Button";
-import { FadeInView } from "@/components/ui/FadeInView";
-import { SectionHeader } from "@/components/shared/SectionHeader";
-import { FeatureCard } from "@/components/shared/FeatureCard";
+import { Eyebrow } from "@/components/ui/public/Eyebrow";
+import { SectionHeading } from "@/components/ui/public/SectionHeading";
+import { Button } from "@/components/ui/public/Button";
+import { FadeInView } from "@/components/ui/public/FadeInView";
+import { SectionHeader } from "@/components/shared/public/SectionHeader";
+import { FeatureCard } from "@/components/shared/public/FeatureCard";
 
 // ─── Types ─────────────────────────────────────────────────────
 interface HeroMilestone {

@@ -12,10 +12,10 @@ import {
   Archive,
   X,
 } from "lucide-react";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminButton } from "@/components/admin/AdminButton";
-import { AdminBadge } from "@/components/admin/AdminBadge";
-import { AdminField } from "@/components/admin/AdminField";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminButton } from "@/components/ui/admin/AdminButton";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
+import { AdminField } from "@/components/ui/admin/AdminField";
 import { cn } from "@/lib/utils";
 import {
   createSeason,

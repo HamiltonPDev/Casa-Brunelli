@@ -2,9 +2,9 @@
 // Landing page — Server Component wrapping HomeLanding client component
 
 import type { Metadata } from "next";
-import { PublicNav } from "@/components/public/PublicNav";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { HomeLanding } from "@/components/public/HomeLanding";
+import { PublicNav } from "@/components/features/public/PublicNav";
+import { PublicFooter } from "@/components/features/public/PublicFooter";
+import { HomeLanding } from "@/components/features/public/HomeLanding";
 
 export const metadata: Metadata = {
   title: "Casa Brunelli — Luxury Tuscan Villa",

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { BookingsClient } from "@/components/admin/BookingsClient";
+import { BookingsClient } from "@/components/features/admin/BookingsClient";
 
 export const metadata: Metadata = { title: "Bookings" };
 export const dynamic = "force-dynamic";

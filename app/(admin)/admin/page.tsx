@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminBadge } from "@/components/admin/AdminBadge";
-import { CalendarWidget } from "@/components/admin/CalendarWidget";
-import type { CalendarBooking } from "@/components/admin/CalendarWidget";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
+import { CalendarWidget } from "@/components/features/admin/CalendarWidget";
+import type { CalendarBooking } from "@/components/features/admin/CalendarWidget";
 import { formatCurrency, formatDateRange } from "@/lib/utils";
 import { BOOKING_STATUS } from "@/lib/constants";
 import {

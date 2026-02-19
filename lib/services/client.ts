@@ -54,7 +54,10 @@ async function parseError(res: Response): Promise<string> {
  * @param init   - Standard RequestInit (method, body, etc.)
  * @returns      - `ApiResult<T>` — always resolves, never throws
  */
-async function request<T>(url: string, init: RequestInit): Promise<ApiResult<T>> {
+async function request<T>(
+  url: string,
+  init: RequestInit
+): Promise<ApiResult<T>> {
   try {
     const res = await fetch(url, {
       ...init,
@@ -73,7 +76,10 @@ async function request<T>(url: string, init: RequestInit): Promise<ApiResult<T>>
 
     // Check for server-side failure flag
     if ("success" in json && json.success === false) {
-      return { success: false, error: (json.error as string) ?? "Operation failed" };
+      return {
+        success: false,
+        error: (json.error as string) ?? "Operation failed",
+      };
     }
 
     // Strip `success` flag, pass everything else as T.
@@ -110,6 +116,9 @@ export function apiPatch<T>(url: string, body: unknown): Promise<ApiResult<T>> {
 }
 
 /** DELETE request with JSON body */
-export function apiDelete<T>(url: string, body: unknown): Promise<ApiResult<T>> {
+export function apiDelete<T>(
+  url: string,
+  body: unknown
+): Promise<ApiResult<T>> {
   return request<T>(url, { method: "DELETE", body: JSON.stringify(body) });
 }

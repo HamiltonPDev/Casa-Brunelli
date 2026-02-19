@@ -212,6 +212,23 @@ export const SAMPLE_SEASONS = [
   },
 ] as const;
 
+// ─── Countries (Booking & Contact forms) ───────────────────────
+
+export const COUNTRIES = [
+  { value: "IT", label: "Italy" },
+  { value: "GB", label: "United Kingdom" },
+  { value: "US", label: "United States" },
+  { value: "FR", label: "France" },
+  { value: "DE", label: "Germany" },
+  { value: "ES", label: "Spain" },
+  { value: "NL", label: "Netherlands" },
+  { value: "CH", label: "Switzerland" },
+  { value: "AT", label: "Austria" },
+  { value: "BE", label: "Belgium" },
+  { value: "AU", label: "Australia" },
+  { value: "CA", label: "Canada" },
+] as const;
+
 // ─── App Config ────────────────────────────────────────────────
 
 export const APP_CONFIG = {

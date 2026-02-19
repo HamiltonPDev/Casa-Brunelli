@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminBadge } from "@/components/admin/AdminBadge";
-import { BookingDetailClient } from "@/components/admin/BookingDetailClient";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
+import { BookingDetailClient } from "@/components/features/admin/BookingDetailClient";
 import { formatCurrency } from "@/lib/utils";
 import type { Metadata } from "next";
 

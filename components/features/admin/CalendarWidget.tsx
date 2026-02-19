@@ -4,9 +4,9 @@
 import { useState, useMemo, useTransition } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Lock, X, Eye } from "lucide-react";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminButton } from "@/components/admin/AdminButton";
-import { AdminBadge } from "@/components/admin/AdminBadge";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminButton } from "@/components/ui/admin/AdminButton";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
 import { cn } from "@/lib/utils";
 import { blockDates, unblockDates } from "@/lib/services/unavailable-dates";
 

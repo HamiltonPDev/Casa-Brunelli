@@ -56,7 +56,7 @@ export default async function Page({ params }: Props) {
 
 ---
 
-## File Organization
+## File Organization — Atomic Design
 
 ```
 proxy.ts                     ← Route protection (NOT middleware.ts)
@@ -70,20 +70,44 @@ app/
   (auth)/admin/login/        ← Login page
   api/                       ← Public + admin API routes
 components/
-  ui/                        ← Atoms (Eyebrow, SectionHeading, Button, Card, FadeInView)
-  shared/                    ← Molecules (SectionHeader, FeatureCard)
-  public/                    ← Organisms (HomeLanding, Calendar, BookingForm, etc.)
-  admin/                     ← Admin components (Shell, Client pages, atoms)
+  ui/                        ← UI primitives — single elements, no composition
+    public/                  ← Button, Card, FormField, Eyebrow, SectionHeading, FadeInView
+    admin/                   ← AdminCard, AdminButton, AdminField, AdminBadge
+  shared/                    ← Composed reusable blocks (2-3 ui primitives together)
+    public/                  ← SectionHeader, FeatureCard, SuccessConfirmation
+  features/                  ← Complex self-contained sections, organized by domain
+    public/                  ← PublicNav, PublicFooter, HomeLanding, BookingForm, ContactForm, GalleryClient, AvailabilityCalendar
+    admin/                   ← CalendarWidget, BookingsClient, BookingDetailClient, MessagesClient, SeasonalPricingClient, SettingsClient
+  layouts/                   ← Page-level layout scaffolding
+    admin/                   ← AdminShell (sidebar + topbar + content layout)
 lib/
   auth.ts                    ← NextAuth v5 config
-  constants.ts               ← ALL enums + business rules (const object + type extraction)
+  constants.ts               ← ALL enums + business rules + COUNTRIES (const object + type extraction)
   pricing.ts                 ← calculateNightlyRate, calculateBookingTotal
   prisma.ts                  ← Prisma singleton — ALWAYS import from here
-  utils.ts                   ← cn, formatCurrency, getInitials, formatDateRange
+  utils.ts                   ← cn, formatCurrency, formatDateShort, formatDateLong, formatEur, getInitials, formatDateRange
   validations/admin.ts       ← Centralized Zod schemas for admin API routes
   services/                  ← Client-side typed fetch wrappers (see Service Layer below)
 types/index.ts               ← Domain types mirroring Prisma schema
 ```
+
+### Atomic Design Levels
+
+| Level | Folder | Rule | Public examples | Admin examples |
+|---|---|---|---|---|
+| **Atoms** | `ui/` | Single HTML element, no composition | Button, Card, FormField | AdminCard, AdminButton, AdminBadge |
+| **Molecules** | `shared/` | 2-3 atoms composed together | SectionHeader (Eyebrow + SectionHeading), FeatureCard | — |
+| **Organisms** | `features/` | Complex, self-contained UI sections | BookingForm, HomeLanding, PublicNav | CalendarWidget, BookingsClient |
+| **Templates** | `layouts/` | Page-level layout scaffolding | — | AdminShell (sidebar + topbar + content) |
+| **Pages** | `app/` | Route files — Server Components that compose organisms | `app/page.tsx`, `app/booking/page.tsx` | `app/(admin)/admin/page.tsx` |
+
+### Where does a new component go?
+
+1. **Single element** (button, input, badge, card) → `ui/public/` or `ui/admin/`
+2. **Composes 2-3 atoms** (header block, feature card) → `shared/public/`
+3. **Self-contained section** (form, table, nav, footer) → `features/public/` or `features/admin/`
+4. **Page layout shell** (sidebar + content area) → `layouts/admin/`
+5. **Route entry point** → `app/` (Server Component that fetches data + renders organisms)
 
 **Prisma models (10):** Booking, ContactMessage, Season, DowOverride, AdminUser,
 UnavailableDate, GuestUser, EmailTemplate, PaymentTransaction, AuditLog.
@@ -159,7 +183,7 @@ if (!result.success) { toast.error(result.error); return; }
 setBlockedDates((prev) => [...prev, ...newBlocked]);
 ```
 
-**Services:** `bookings.ts` · `messages.ts` · `seasons.ts` · `unavailable-dates.ts`
+**Services:** `bookings.ts` · `messages.ts` · `seasons.ts` · `unavailable-dates.ts` · `booking-request.ts`
 
 ---
 

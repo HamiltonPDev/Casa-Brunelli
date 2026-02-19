@@ -17,10 +17,10 @@ import {
   Clock,
   CheckCircle,
 } from "lucide-react";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminBadge } from "@/components/admin/AdminBadge";
-import { AdminButton } from "@/components/admin/AdminButton";
-import { AdminField } from "@/components/admin/AdminField";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
+import { AdminButton } from "@/components/ui/admin/AdminButton";
+import { AdminField } from "@/components/ui/admin/AdminField";
 import { cn, getInitials } from "@/lib/utils";
 import { MESSAGE_STATUS, MESSAGE_TYPE } from "@/lib/constants";
 import type { MessageStatus } from "@/lib/constants";

@@ -1,9 +1,9 @@
-// components/shared/SectionHeader.tsx
+// components/shared/public/SectionHeader.tsx
 // Molecule — Eyebrow + SectionHeading + optional subtitle, centered or left-aligned
 // Replaces the repeated "eyebrow + h2 + p" pattern found in every section of HomeLanding
 
-import { Eyebrow } from "@/components/ui/Eyebrow";
-import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Eyebrow } from "@/components/ui/public/Eyebrow";
+import { SectionHeading } from "@/components/ui/public/SectionHeading";
 import { cn } from "@/lib/utils";
 
 interface SectionHeaderProps {
