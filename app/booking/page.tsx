@@ -3,6 +3,8 @@
 
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { calculateNights, formatDateLong } from "@/lib/utils";
+import { MAX_GUESTS, MIN_GUESTS } from "@/lib/constants";
 import { PublicNav } from "@/components/features/public/PublicNav";
 import { PublicFooter } from "@/components/features/public/PublicFooter";
 import { BookingForm } from "@/components/features/public/BookingForm";
@@ -21,15 +23,6 @@ function isValidDate(raw: string | undefined): raw is string {
   return !isNaN(d.getTime());
 }
 
-function calcNights(checkIn: string, checkOut: string): number {
-  const msPerDay = 86400000;
-  return Math.round(
-    (new Date(checkOut + "T00:00:00").getTime() -
-      new Date(checkIn + "T00:00:00").getTime()) /
-      msPerDay
-  );
-}
-
 // ─── Page ──────────────────────────────────────────────────────
 
 interface BookingPageProps {
@@ -39,22 +32,18 @@ interface BookingPageProps {
 export default async function BookingPage({ searchParams }: BookingPageProps) {
   const params = await searchParams;
   const { checkIn, checkOut } = params;
-  const guests = Math.min(8, Math.max(1, Number(params.guests ?? 2) || 2));
+  const guests = Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, Number(params.guests ?? 2) || 2));
 
   // If dates are missing or invalid, send back to calendar
   if (!isValidDate(checkIn) || !isValidDate(checkOut)) {
     redirect("/availability");
   }
 
-  const nights = calcNights(checkIn, checkOut);
+  const nights = calculateNights(checkIn, checkOut);
   if (nights <= 0) redirect("/availability");
 
-  const checkInLabel = new Date(checkIn + "T00:00:00").toLocaleDateString("en-GB", {
-    day: "numeric", month: "long", year: "numeric",
-  });
-  const checkOutLabel = new Date(checkOut + "T00:00:00").toLocaleDateString("en-GB", {
-    day: "numeric", month: "long", year: "numeric",
-  });
+  const checkInLabel = formatDateLong(checkIn);
+  const checkOutLabel = formatDateLong(checkOut);
 
   return (
     <>

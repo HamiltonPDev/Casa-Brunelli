@@ -56,8 +56,8 @@ function addMonths(d: Date, n: number): Date {
 async function fetchAvailability(from: string, to: string): Promise<Map<string, DayAvailability>> {
   const res = await fetch(`/api/availability?from=${from}&to=${to}`);
   if (!res.ok) throw new Error("Failed to fetch");
-  const data = (await res.json()) as { days: DayAvailability[] };
-  return new Map(data.days.map((d) => [d.date, d]));
+  const json = (await res.json()) as { success: boolean; data: { days: DayAvailability[] } };
+  return new Map(json.data.days.map((d) => [d.date, d]));
 }
 
 function formatEuro(n: number): string {

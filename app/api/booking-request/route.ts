@@ -7,7 +7,12 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod/v4";
 import { prisma } from "@/lib/prisma";
 import { calculateBookingTotal } from "@/lib/pricing";
-import { MESSAGE_TYPE, MAX_GUESTS, MIN_GUESTS } from "@/lib/constants";
+import {
+  MESSAGE_TYPE,
+  MAX_GUESTS,
+  MIN_GUESTS,
+  DEPOSIT_PERCENTAGE,
+} from "@/lib/constants";
 
 // ─── Validation Schema ─────────────────────────────────────────
 
@@ -72,7 +77,7 @@ export async function POST(request: NextRequest) {
       `Nights:    ${pricing.nights}`,
       `Guests:    ${guestCount}`,
       `Total:     €${pricing.totalPrice.toFixed(2)}`,
-      `Deposit (30%): €${pricing.depositAmount.toFixed(2)}`,
+      `Deposit (${DEPOSIT_PERCENTAGE * 100}%): €${pricing.depositAmount.toFixed(2)}`,
       pricing.minStayRequired
         ? `Min stay: ${pricing.minStayRequired} nights`
         : null,

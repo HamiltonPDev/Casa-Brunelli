@@ -33,15 +33,14 @@ export async function POST(request: Request, { params }: RouteParams) {
 
   const { id } = await params;
 
-  // ── 1. Validate request body ──────────────────────────────
-  const body = await request.json();
-  const parsed = promoteMessageSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return validationError(parsed.error);
-  }
-
   try {
+    // ── 1. Validate request body ──────────────────────────────
+    const body = await request.json();
+    const parsed = promoteMessageSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
     // ── 2. Fetch the message ──────────────────────────────────
     const message = await prisma.contactMessage.findUnique({
       where: { id },
