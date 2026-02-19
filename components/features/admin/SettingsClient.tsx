@@ -125,25 +125,18 @@ export function SettingsClient({
   const [isPending, startTransition] = useTransition();
 
   // Form state — grouped by tab
-  const [generalForm, setGeneralForm] =
-    useState<GeneralForm>(INITIAL_GENERAL);
+  const [generalForm, setGeneralForm] = useState<GeneralForm>(INITIAL_GENERAL);
   const [paymentsForm, setPaymentsForm] =
     useState<PaymentsForm>(INITIAL_PAYMENTS);
   const [emailForm, setEmailForm] = useState<EmailForm>(INITIAL_EMAIL);
 
   // ── Form helpers ──────────────────────────────────────────
-  function updateGeneral(
-    field: keyof GeneralForm,
-    value: string
-  ): void {
+  function updateGeneral(field: keyof GeneralForm, value: string): void {
     setGeneralForm((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   }
 
-  function updatePayments(
-    field: keyof PaymentsForm,
-    value: string
-  ): void {
+  function updatePayments(field: keyof PaymentsForm, value: string): void {
     setPaymentsForm((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   }
@@ -338,9 +331,7 @@ export function SettingsClient({
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-700" />
                   <div>
-                    <p className="font-medium text-gray-900">
-                      Not Connected
-                    </p>
+                    <p className="font-medium text-gray-900">Not Connected</p>
                     <p className="text-sm text-gray-600">
                       Stripe integration pending setup
                     </p>
@@ -594,8 +585,8 @@ export function SettingsClient({
                           {user.role === ADMIN_ROLE.SUPER_ADMIN
                             ? "Super Admin"
                             : user.role === ADMIN_ROLE.ADMIN
-                              ? "Admin"
-                              : "Viewer"}
+                            ? "Admin"
+                            : "Viewer"}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
@@ -632,7 +623,8 @@ export function SettingsClient({
                 </p>
                 <p className="text-sm text-gray-600">
                   Removing a user immediately revokes their access. This cannot
-                  be undone. Use the &quot;Remove&quot; button in the users table above.
+                  be undone. Use the &quot;Remove&quot; button in the users
+                  table above.
                 </p>
               </div>
             </div>
@@ -706,11 +698,7 @@ export function SettingsClient({
                 >
                   Cancel
                 </AdminButton>
-                <AdminButton
-                  variant="primary"
-                  className="flex-1"
-                  disabled
-                >
+                <AdminButton variant="primary" className="flex-1" disabled>
                   Send Invite
                 </AdminButton>
               </div>

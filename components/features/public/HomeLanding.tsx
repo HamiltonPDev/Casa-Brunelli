@@ -84,37 +84,37 @@ const FEATURES = [
     icon: BedDouble,
     title: "4 Luxury Bedrooms",
     description: "Spacious en-suite rooms with views across the Tuscan hills.",
-    gradient: "from-[#E8F5E9] to-[#F5F3EF]",
+    gradient: "from-mint-tint to-cream",
   },
   {
     icon: Waves,
     title: "Private Pool",
     description: "A heated infinity pool surrounded by cypresses and lavender.",
-    gradient: "from-[#F5F3EF] to-[#EEF4EE]",
+    gradient: "from-cream to-mint-pale",
   },
   {
     icon: UtensilsCrossed,
     title: "Tuscan Kitchen",
     description: "Fully equipped stone kitchen for authentic Italian cooking.",
-    gradient: "from-[#FFF8ED] to-[#F5F3EF]",
+    gradient: "from-warm-honey to-cream",
   },
   {
     icon: Leaf,
     title: "2 Acres of Gardens",
     description: "Terraced olive groves, lemon trees, and rose gardens.",
-    gradient: "from-[#E8F5E9] to-[#F0F7F0]",
+    gradient: "from-mint-tint to-mint-light",
   },
   {
     icon: Car,
     title: "Private Parking",
     description: "Gated parking for up to 4 vehicles on the estate.",
-    gradient: "from-[#F5F3EF] to-[#F0EDE8]",
+    gradient: "from-cream to-warm-sand",
   },
   {
     icon: Wifi,
     title: "High-Speed Wi-Fi",
     description: "Fibre-optic internet throughout the villa.",
-    gradient: "from-[#EEF4EE] to-[#F5F3EF]",
+    gradient: "from-mint-pale to-cream",
   },
 ] as const;
 
@@ -223,7 +223,10 @@ export function HomeLanding() {
       if (!heroRef.current) return;
       const heroHeight = heroRef.current.offsetHeight;
       const scrolled = window.scrollY;
-      const progress = Math.min(scrolled / (heroHeight - window.innerHeight), 1);
+      const progress = Math.min(
+        scrolled / (heroHeight - window.innerHeight),
+        1
+      );
       setScrollProgress(Math.max(0, progress));
     };
 
@@ -273,7 +276,9 @@ export function HomeLanding() {
                 <div
                   className="absolute inset-0"
                   style={{
-                    transform: `translateY(${isActive ? photoProgress * -8 : 0}%)`,
+                    transform: `translateY(${
+                      isActive ? photoProgress * -8 : 0
+                    }%)`,
                     transition: "transform 0.1s linear",
                   }}
                 >
@@ -288,7 +293,10 @@ export function HomeLanding() {
                   />
                 </div>
                 {/* Dark overlay for text contrast */}
-                <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.48)" }} />
+                <div
+                  className="absolute inset-0"
+                  style={{ backgroundColor: "rgba(0,0,0,0.48)" }}
+                />
               </motion.div>
             );
           })}
@@ -298,12 +306,17 @@ export function HomeLanding() {
             className="absolute inset-0 pointer-events-none"
             style={{
               zIndex: 3,
-              background: `radial-gradient(circle at center, transparent 40%, rgba(0,0,0,${0.1 + scrollProgress * 0.25}) 85%)`,
+              background: `radial-gradient(circle at center, transparent 40%, rgba(0,0,0,${
+                0.1 + scrollProgress * 0.25
+              }) 85%)`,
             }}
           />
 
           {/* Floating particles */}
-          <div className="absolute inset-0 pointer-events-none" style={{ zIndex: 4 }}>
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{ zIndex: 4 }}
+          >
             {Array.from({ length: 10 }).map((_, i) => (
               <motion.div
                 key={i}
@@ -346,7 +359,10 @@ export function HomeLanding() {
             >
               <div
                 className="px-4 py-2 rounded-full border text-sm font-medium text-white"
-                style={{ backgroundColor: "rgba(0,0,0,0.35)", borderColor: "rgba(255,255,255,0.2)" }}
+                style={{
+                  backgroundColor: "rgba(0,0,0,0.35)",
+                  borderColor: "rgba(255,255,255,0.2)",
+                }}
               >
                 {currentPhoto.description}
               </div>
@@ -365,7 +381,11 @@ export function HomeLanding() {
             >
               {HERO_PHOTOS.map((photo, idx) => {
                 const isActive = currentPhoto === photo;
-                const photoProgress = isActive ? getPhotoProgress(photo, scrollProgress) : scrollProgress > photo.range[1] ? 1 : 0;
+                const photoProgress = isActive
+                  ? getPhotoProgress(photo, scrollProgress)
+                  : scrollProgress > photo.range[1]
+                  ? 1
+                  : 0;
                 return (
                   <div
                     key={idx}
@@ -423,7 +443,8 @@ export function HomeLanding() {
                     color: "var(--golden-wheat)",
                     letterSpacing: "-0.03em",
                     whiteSpace: "pre-line",
-                    textShadow: "0 4px 20px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)",
+                    textShadow:
+                      "0 4px 20px rgba(0,0,0,0.5), 0 2px 8px rgba(0,0,0,0.3)",
                   }}
                 >
                   {currentMilestone.headline}
@@ -446,20 +467,43 @@ export function HomeLanding() {
                     <motion.div
                       className="w-12 h-0.5 rounded-full"
                       style={{ backgroundColor: "var(--golden-wheat)" }}
-                      animate={{ opacity: [0.5, 1, 0.5], scaleX: [0.8, 1.2, 0.8] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                      animate={{
+                        opacity: [0.5, 1, 0.5],
+                        scaleX: [0.8, 1.2, 0.8],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                      }}
                     />
                     <motion.div
                       className="w-2 h-2 rounded-full"
                       style={{ backgroundColor: "var(--golden-wheat)" }}
-                      animate={{ opacity: [0.6, 1, 0.6], scale: [0.8, 1.2, 0.8] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                      animate={{
+                        opacity: [0.6, 1, 0.6],
+                        scale: [0.8, 1.2, 0.8],
+                      }}
+                      transition={{
+                        duration: 2,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 0.5,
+                      }}
                     />
                     <motion.div
                       className="w-12 h-0.5 rounded-full"
                       style={{ backgroundColor: "var(--golden-wheat)" }}
-                      animate={{ opacity: [0.5, 1, 0.5], scaleX: [0.8, 1.2, 0.8] }}
-                      transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                      animate={{
+                        opacity: [0.5, 1, 0.5],
+                        scaleX: [0.8, 1.2, 0.8],
+                      }}
+                      transition={{
+                        duration: 3,
+                        repeat: Infinity,
+                        ease: "easeInOut",
+                        delay: 1,
+                      }}
                     />
                   </motion.div>
                 )}
@@ -546,7 +590,11 @@ export function HomeLanding() {
               {/* Mouse icon */}
               <motion.div
                 animate={{ y: [0, 8, 0], opacity: [0.7, 1, 0.7] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
                 className="relative"
               >
                 <div
@@ -555,7 +603,11 @@ export function HomeLanding() {
                 >
                   <motion.div
                     animate={{ y: [0, 8, 0], opacity: [1, 0.3, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: "easeInOut",
+                    }}
                     className="w-1 h-3 rounded-full mt-2"
                     style={{ backgroundColor: "var(--terracotta-gold)" }}
                   />
@@ -570,7 +622,11 @@ export function HomeLanding() {
                   textShadow: "0 2px 8px rgba(0,0,0,0.5)",
                 }}
                 animate={{ opacity: [0.6, 1, 0.6] }}
-                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+                transition={{
+                  duration: 3,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                }}
               >
                 Scroll to explore
               </motion.p>
@@ -578,9 +634,17 @@ export function HomeLanding() {
               {/* Chevron */}
               <motion.div
                 animate={{ y: [0, 6, 0], opacity: [0.4, 1, 0.4] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                transition={{
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut",
+                  delay: 0.5,
+                }}
               >
-                <ChevronDown size={18} style={{ color: "rgba(192,175,126,0.6)" }} />
+                <ChevronDown
+                  size={18}
+                  style={{ color: "rgba(192,175,126,0.6)" }}
+                />
               </motion.div>
 
               {/* Floating particles around scroll indicator */}
@@ -621,7 +685,10 @@ export function HomeLanding() {
               exit={{ y: 80, opacity: 0 }}
               transition={{ type: "spring", stiffness: 300, damping: 30 }}
               className="fixed bottom-0 left-0 right-0 z-20"
-              style={{ backgroundColor: "rgba(45,58,46,0.95)", backdropFilter: "blur(12px)" }}
+              style={{
+                backgroundColor: "rgba(45,58,46,0.95)",
+                backdropFilter: "blur(12px)",
+              }}
             >
               <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
@@ -631,7 +698,10 @@ export function HomeLanding() {
                   >
                     Book Direct
                   </p>
-                  <p className="text-sm font-serif" style={{ color: "var(--golden-wheat)" }}>
+                  <p
+                    className="text-sm font-serif"
+                    style={{ color: "var(--golden-wheat)" }}
+                  >
                     Reserve your Tuscan escape — no commissions, no middlemen
                   </p>
                 </div>
@@ -654,12 +724,27 @@ export function HomeLanding() {
           ═══════════════════════════════════════════════════════ */}
       <div className="relative z-30" style={{ backgroundColor: "white" }}>
         {/* Stats strip */}
-        <div className="border-b" style={{ backgroundColor: "white", borderColor: "rgba(139,157,131,0.1)" }}>
+        <div
+          className="border-b"
+          style={{
+            backgroundColor: "white",
+            borderColor: "rgba(139,157,131,0.1)",
+          }}
+        >
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {STATS.map(({ value, label }, i) => (
-                <FadeInView key={label} delay={i * 0.1} className="flex flex-col gap-1">
-                  <span className="font-serif text-4xl" style={{ color: "var(--dark-forest)" }}>{value}</span>
+                <FadeInView
+                  key={label}
+                  delay={i * 0.1}
+                  className="flex flex-col gap-1"
+                >
+                  <span
+                    className="font-serif text-4xl"
+                    style={{ color: "var(--dark-forest)" }}
+                  >
+                    {value}
+                  </span>
                   <Eyebrow color="muted">{label}</Eyebrow>
                 </FadeInView>
               ))}
@@ -668,7 +753,10 @@ export function HomeLanding() {
         </div>
 
         {/* Features Section */}
-        <div style={{ backgroundColor: "var(--cream)" }} className="py-20 lg:py-28">
+        <div
+          style={{ backgroundColor: "var(--cream)" }}
+          className="py-20 lg:py-28"
+        >
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
             <FadeInView className="mb-14">
               <SectionHeader
@@ -713,19 +801,19 @@ export function HomeLanding() {
                     icon: Home,
                     title: "Authentic Architecture",
                     desc: "18th-century Tuscan villa restored with original materials",
-                    gradient: "from-[#E8F5E9] to-[#F5F3EF]",
+                    gradient: "from-mint-tint to-cream",
                   },
                   {
                     icon: Bed,
                     title: "4 Luxury Bedrooms",
                     desc: "Spacious suites with en-suite bathrooms and countryside views",
-                    gradient: "from-[#F5F3EF] to-[#FFF8ED]",
+                    gradient: "from-cream to-warm-honey",
                   },
                   {
                     icon: Users,
                     title: "Sleeps Up to 8 Guests",
                     desc: "Perfect for family gatherings and group retreats",
-                    gradient: "from-[#FFF8ED] to-[#E8F5E9]",
+                    gradient: "from-warm-honey to-mint-tint",
                   },
                 ].map(({ icon, title, desc, gradient }, i) => (
                   <FeatureCard
@@ -742,10 +830,18 @@ export function HomeLanding() {
                 <SectionHeading size="lg" className="mb-3">
                   Scroll Back to Explore the Villa
                 </SectionHeading>
-                <p className="text-sm mb-6" style={{ color: "rgba(61,82,67,0.7)" }}>
-                  Experience Casa Brunelli through our immersive scroll journey — from exterior to every intimate detail.
+                <p
+                  className="text-sm mb-6"
+                  style={{ color: "rgba(61,82,67,0.7)" }}
+                >
+                  Experience Casa Brunelli through our immersive scroll journey
+                  — from exterior to every intimate detail.
                 </p>
-                <Button onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}>
+                <Button
+                  onClick={() =>
+                    window.scrollTo({ top: 0, behavior: "smooth" })
+                  }
+                >
                   <ArrowUp size={14} />
                   Back to Top
                 </Button>
@@ -755,7 +851,10 @@ export function HomeLanding() {
         </div>
 
         {/* Pricing Section */}
-        <div style={{ backgroundColor: "var(--cream)" }} className="py-20 lg:py-28">
+        <div
+          style={{ backgroundColor: "var(--cream)" }}
+          className="py-20 lg:py-28"
+        >
           <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
             <FadeInView className="mb-14">
               <SectionHeader
@@ -800,14 +899,20 @@ export function HomeLanding() {
                   <div>
                     <h3
                       className="font-serif text-base font-medium"
-                      style={{ color: highlight ? "var(--golden-wheat)" : "var(--dark-forest)" }}
+                      style={{
+                        color: highlight
+                          ? "var(--golden-wheat)"
+                          : "var(--dark-forest)",
+                      }}
                     >
                       {name}
                     </h3>
                     <p
                       className="text-xs mt-0.5"
                       style={{
-                        color: highlight ? "var(--sage-variant)" : "rgba(61,82,67,0.6)",
+                        color: highlight
+                          ? "var(--sage-variant)"
+                          : "rgba(61,82,67,0.6)",
                       }}
                     >
                       {period}
@@ -816,7 +921,9 @@ export function HomeLanding() {
                   <p
                     className="font-semibold mt-auto"
                     style={{
-                      color: highlight ? "var(--terracotta-gold)" : "var(--medium-green)",
+                      color: highlight
+                        ? "var(--terracotta-gold)"
+                        : "var(--medium-green)",
                     }}
                   >
                     {rate}

@@ -4,14 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { toast } from "sonner";
-import {
-  CheckCircle2,
-  MapPin,
-  Mail,
-  Phone,
-  Clock,
-  Send,
-} from "lucide-react";
+import { CheckCircle2, MapPin, Mail, Phone, Clock, Send } from "lucide-react";
 import Link from "next/link";
 import { APP_CONFIG } from "@/lib/constants";
 import { Card } from "@/components/ui/public/Card";
@@ -37,8 +30,10 @@ const CONTACT_DETAILS = [
     label: "Address",
     content: (
       <>
-        Via della Collina 12<br />
-        53100 Siena<br />
+        Via della Collina 12
+        <br />
+        53100 Siena
+        <br />
         Tuscany, Italy
       </>
     ),
@@ -109,7 +104,10 @@ export function ContactForm() {
     };
   }, []);
 
-  function updateField<K extends keyof FormState>(key: K, value: FormState[K]): void {
+  function updateField<K extends keyof FormState>(
+    key: K,
+    value: FormState[K]
+  ): void {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 

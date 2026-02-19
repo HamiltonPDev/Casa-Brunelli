@@ -1,7 +1,7 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState, useMemo, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Lock, X, Eye } from "lucide-react";
 import { AdminCard } from "@/components/ui/admin/AdminCard";
@@ -79,19 +79,15 @@ export function CalendarWidget({
   const [isPending, startTransition] = useTransition();
 
   // ── Derived ───────────────────────────────────────────────
-  const calendarDays = useMemo(() => {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const days: (Date | null)[] = [];
+  const year = currentDate.getFullYear();
+  const month = currentDate.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const calendarDays: (Date | null)[] = [];
 
-    for (let i = 0; i < firstDay.getDay(); i++) days.push(null);
-    for (let d = 1; d <= lastDay.getDate(); d++)
-      days.push(new Date(year, month, d));
-
-    return days;
-  }, [currentDate]);
+  for (let i = 0; i < firstDay.getDay(); i++) calendarDays.push(null);
+  for (let d = 1; d <= lastDay.getDate(); d++)
+    calendarDays.push(new Date(year, month, d));
 
   function getBookingForDate(date: Date) {
     const str = toDateStr(date);

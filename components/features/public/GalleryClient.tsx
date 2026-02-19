@@ -1,15 +1,9 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Heart,
-  Info,
-} from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Heart, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -155,24 +149,24 @@ export function GalleryClient() {
     setShowInfo(false);
   };
 
-  const closeLightbox = useCallback(() => {
+  function closeLightbox() {
     setLightboxIndex(null);
     setShowInfo(false);
-  }, []);
+  }
 
-  const goToPrev = useCallback(() => {
+  function goToPrev() {
     if (lightboxIndex === null) return;
     setLightboxIndex(
       (lightboxIndex - 1 + filteredImages.length) % filteredImages.length
     );
     setShowInfo(false);
-  }, [lightboxIndex, filteredImages.length]);
+  }
 
-  const goToNext = useCallback(() => {
+  function goToNext() {
     if (lightboxIndex === null) return;
     setLightboxIndex((lightboxIndex + 1) % filteredImages.length);
     setShowInfo(false);
-  }, [lightboxIndex, filteredImages.length]);
+  }
 
   const toggleFavorite = (id: number, e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -198,9 +192,10 @@ export function GalleryClient() {
 
   // Lock body scroll when lightbox open
   useEffect(() => {
-    document.body.style.overflow =
-      lightboxIndex !== null ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    document.body.style.overflow = lightboxIndex !== null ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [lightboxIndex]);
 
   const currentImage =
@@ -227,9 +222,7 @@ export function GalleryClient() {
                 )}
                 style={{
                   backgroundColor:
-                    selectedCategory === cat.id
-                      ? "#2D3A2E"
-                      : "transparent",
+                    selectedCategory === cat.id ? "#2D3A2E" : "transparent",
                   color:
                     selectedCategory === cat.id
                       ? "white"
@@ -252,15 +245,23 @@ export function GalleryClient() {
         {/* Counter */}
         <div className="flex items-center justify-between mb-8">
           <p className="text-sm" style={{ color: "rgba(61,82,67,0.6)" }}>
-            {filteredImages.length} photo{filteredImages.length !== 1 ? "s" : ""}
+            {filteredImages.length} photo
+            {filteredImages.length !== 1 ? "s" : ""}
             {selectedCategory !== "all" && (
-              <> in <span style={{ color: "#2D3A2E", fontWeight: 500 }}>
-                {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
-              </span></>
+              <>
+                {" "}
+                in{" "}
+                <span style={{ color: "#2D3A2E", fontWeight: 500 }}>
+                  {CATEGORIES.find((c) => c.id === selectedCategory)?.label}
+                </span>
+              </>
             )}
           </p>
           {favorites.size > 0 && (
-            <p className="text-sm flex items-center gap-1.5" style={{ color: "#C0AF7E" }}>
+            <p
+              className="text-sm flex items-center gap-1.5"
+              style={{ color: "#C0AF7E" }}
+            >
               <Heart size={14} fill="#C0AF7E" />
               {favorites.size} saved
             </p>
@@ -308,7 +309,9 @@ export function GalleryClient() {
                   }
                   className={cn(
                     "w-full h-auto object-cover transition-transform duration-500 group-hover:scale-105",
-                    imageLoaded[image.id] ? "opacity-100" : "opacity-0 absolute inset-0"
+                    imageLoaded[image.id]
+                      ? "opacity-100"
+                      : "opacity-0 absolute inset-0"
                   )}
                 />
 
@@ -395,7 +398,10 @@ export function GalleryClient() {
               }}
             >
               {/* Counter */}
-              <span className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>
+              <span
+                className="text-sm"
+                style={{ color: "rgba(255,255,255,0.7)" }}
+              >
                 {(lightboxIndex ?? 0) + 1} / {filteredImages.length}
               </span>
 
@@ -432,9 +438,7 @@ export function GalleryClient() {
                       color: favorites.has(currentImage.id)
                         ? "#2D3A2E"
                         : "white",
-                      fill: favorites.has(currentImage.id)
-                        ? "#2D3A2E"
-                        : "none",
+                      fill: favorites.has(currentImage.id) ? "#2D3A2E" : "none",
                     }}
                   />
                 </button>
@@ -502,11 +506,17 @@ export function GalleryClient() {
                     className="rounded-xl px-6 py-4 max-w-lg text-center"
                     style={{ backgroundColor: "rgba(45,58,46,0.9)" }}
                   >
-                    <p className="text-sm font-medium mb-1" style={{ color: "#F5DEB3" }}>
+                    <p
+                      className="text-sm font-medium mb-1"
+                      style={{ color: "#F5DEB3" }}
+                    >
                       {currentImage.caption}
                     </p>
                     <p className="text-xs" style={{ color: "#8B9D83" }}>
-                      {CATEGORIES.find((c) => c.id === currentImage.category)?.label}
+                      {
+                        CATEGORIES.find((c) => c.id === currentImage.category)
+                          ?.label
+                      }
                     </p>
                   </motion.div>
                 ) : (

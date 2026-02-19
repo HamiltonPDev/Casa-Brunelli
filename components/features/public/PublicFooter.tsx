@@ -269,7 +269,9 @@ export function PublicFooter() {
               Designed by HPS PropTech &amp; Solutions
             </span>
             <span className="flex items-center gap-3">
-              <span>Made with <span className="text-red-400">❤️</span> in Amsterdam</span>
+              <span>
+                Made with <span className="text-red-400">❤️</span> in Amsterdam
+              </span>
               <span style={{ color: "rgba(255,255,255,0.15)" }}>·</span>
               <Link
                 href="/admin"
