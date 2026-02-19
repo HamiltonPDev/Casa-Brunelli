@@ -2,6 +2,7 @@
 
 // ─── Imports ───────────────────────────────────────────────────
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Leaf,
@@ -269,16 +270,23 @@ export function HomeLanding() {
                 style={{ zIndex: isActive ? 2 : 1 }}
               >
                 {/* Photo */}
-                <img
-                  src={photo.url}
-                  alt={photo.alt}
-                  className="w-full h-full object-cover"
-                  loading={photo.range[0] === 0 ? "eager" : "lazy"}
+                <div
+                  className="absolute inset-0"
                   style={{
                     transform: `translateY(${isActive ? photoProgress * -8 : 0}%)`,
                     transition: "transform 0.1s linear",
                   }}
-                />
+                >
+                  <Image
+                    src={photo.url}
+                    alt={photo.alt}
+                    fill
+                    sizes="100vw"
+                    className="object-cover"
+                    priority={photo.range[0] === 0}
+                    quality={80}
+                  />
+                </div>
                 {/* Dark overlay for text contrast */}
                 <div className="absolute inset-0" style={{ backgroundColor: "rgba(0,0,0,0.48)" }} />
               </motion.div>
@@ -709,13 +717,13 @@ export function HomeLanding() {
                   },
                   {
                     icon: Bed,
-                    title: "5 Luxury Bedrooms",
+                    title: "4 Luxury Bedrooms",
                     desc: "Spacious suites with en-suite bathrooms and countryside views",
                     gradient: "from-[#F5F3EF] to-[#FFF8ED]",
                   },
                   {
                     icon: Users,
-                    title: "Sleeps 8–10 Guests",
+                    title: "Sleeps Up to 8 Guests",
                     desc: "Perfect for family gatherings and group retreats",
                     gradient: "from-[#FFF8ED] to-[#E8F5E9]",
                   },

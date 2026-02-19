@@ -18,7 +18,7 @@ export default function GalleryPage() {
     <>
       <PublicNav />
 
-      <main style={{ backgroundColor: "#F5F3EF" }}>
+      <main className="min-h-screen pt-16 md:pt-20" style={{ backgroundColor: "#F5F3EF" }}>
         {/* ─── Hero ──────────────────────────────────────────── */}
         <div
           className="border-b"
