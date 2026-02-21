@@ -485,7 +485,7 @@ export function SeasonalPricingClient({
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          className="w-3 h-3 rounded-full shrink-0"
                           style={{ backgroundColor: season.colorTag }}
                         />
                         <div>
@@ -616,7 +616,7 @@ export function SeasonalPricingClient({
                   className="flex items-center gap-4 p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
                 >
                   <div
-                    className="w-4 h-4 rounded-full flex-shrink-0"
+                    className="w-4 h-4 rounded-full shrink-0"
                     style={{ backgroundColor: season.colorTag }}
                   />
                   <div className="flex-1 min-w-0">

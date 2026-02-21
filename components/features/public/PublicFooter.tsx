@@ -4,18 +4,63 @@
 
 // ─── Imports ───────────────────────────────────────────────────
 import Link from "next/link";
-import { Instagram, Facebook, MapPin, Phone, Mail } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { MapPin, Phone, Mail } from "lucide-react";
+
+// ─── Brand SVG Icons (lucide deprecated brand icons, see #670) ──
+function InstagramIcon({ className }: Readonly<{ className?: string }>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
+  );
+}
+
+function FacebookIcon({ className }: Readonly<{ className?: string }>) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+      aria-hidden="true"
+    >
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  );
+}
 import { APP_CONFIG } from "@/lib/constants";
 
 // ─── Component ─────────────────────────────────────────────────
 export function PublicFooter() {
   const year = new Date().getFullYear();
+  const pathname = usePathname();
 
   return (
     <footer style={{ backgroundColor: "var(--dark-forest)", color: "white" }}>
       {/* ─── CTA Band ────────────────────────────────────────── */}
       <div style={{ backgroundColor: "var(--sage-variant)" }}>
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-12 text-center">
+        <div className="max-w-350 mx-auto px-6 lg:px-8 py-12 text-center">
           <h2
             className="text-3xl mb-3 text-white"
             style={{ fontFamily: "var(--font-display)" }}
@@ -43,7 +88,7 @@ export function PublicFooter() {
         className="border-t"
         style={{ borderColor: "rgba(139,157,131,0.3)" }}
       >
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-16">
+        <div className="max-w-350 mx-auto px-6 lg:px-8 py-16">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 lg:gap-10">
             {/* Column 1 — Brand */}
             <div className="lg:col-span-1">
@@ -82,12 +127,12 @@ export function PublicFooter() {
                 {[
                   {
                     href: "https://instagram.com/casabrunelli",
-                    Icon: Instagram,
+                    Icon: InstagramIcon,
                     label: "Instagram",
                   },
                   {
                     href: "https://facebook.com/casabrunelli",
-                    Icon: Facebook,
+                    Icon: FacebookIcon,
                     label: "Facebook",
                   },
                   {
@@ -142,6 +187,7 @@ export function PublicFooter() {
                       href={link.href}
                       className="text-sm transition-colors duration-300"
                       style={{ color: "white" }}
+                      aria-current={pathname === link.href ? "page" : undefined}
                       onMouseEnter={(e) =>
                         (e.currentTarget.style.color = "var(--sage-green)")
                       }
@@ -259,7 +305,7 @@ export function PublicFooter() {
 
       {/* ─── Bottom bar ───────────────────────────────────────── */}
       <div className="border-t" style={{ borderColor: "rgba(74,95,78,0.6)" }}>
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-6">
+        <div className="max-w-350 mx-auto px-6 lg:px-8 py-6">
           <div
             className="flex flex-col md:flex-row justify-between items-center gap-3 text-xs"
             style={{ color: "#a0a0a0" }}

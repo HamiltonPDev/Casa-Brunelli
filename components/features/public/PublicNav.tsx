@@ -23,7 +23,6 @@ interface PublicNavProps {
 const NAV_ITEMS: NavItem[] = [
   { label: "Home", href: "/" },
   { label: "Gallery", href: "/gallery" },
-  { label: "Availability", href: "/availability" },
   { label: "Contact", href: "/contact" },
 ] as const;
 
@@ -51,7 +50,7 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
   return (
     <header
       className={cn(
-        "fixed top-0 left-0 right-0 z-[200] transition-all duration-500",
+        "fixed top-0 left-0 right-0 z-200 transition-all duration-500",
         isSolidWhite ? "shadow-sm border-b" : "border-b border-transparent"
       )}
       style={{
@@ -59,7 +58,7 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
         borderColor: isSolidWhite ? "rgba(139,157,131,0.2)" : "transparent",
       }}
     >
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+      <div className="max-w-350 mx-auto px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 md:h-20">
           {/* ─── Logo ──────────────────────────────────────────── */}
           <Link
@@ -167,7 +166,7 @@ export function PublicNav({ transparent = false }: PublicNavProps) {
               backgroundColor: "white",
             }}
           >
-            <nav className="max-w-[1400px] mx-auto px-6 py-4 flex flex-col gap-1">
+            <nav className="max-w-350 mx-auto px-6 py-4 flex flex-col gap-1">
               {NAV_ITEMS.map((item) => {
                 const isActive = pathname === item.href;
                 return (

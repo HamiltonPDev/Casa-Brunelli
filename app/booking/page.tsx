@@ -49,7 +49,7 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
     <>
       <PublicNav />
 
-      <main className="min-h-screen pt-16 md:pt-20" style={{ backgroundColor: "#F5F3EF" }}>
+      <main id="main-content" className="min-h-screen pt-16 md:pt-20" style={{ backgroundColor: "#F5F3EF" }}>
         {/* ─── Hero ────────────────────────────────────────────── */}
         <div
           className="border-b"

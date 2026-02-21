@@ -153,7 +153,7 @@ function ThreadList({
                   >
                     {message.name}
                   </span>
-                  <span className="text-xs text-gray-400 flex-shrink-0 ml-2">
+                  <span className="text-xs text-gray-400 shrink-0 ml-2">
                     {formatMessageDate(message.createdAt)}
                   </span>
                 </div>
@@ -225,7 +225,7 @@ function MessageDetail({
               &lt;{message.email}&gt;
             </p>
           </div>
-          <div className="flex items-center gap-2 ml-4 flex-shrink-0">
+          <div className="flex items-center gap-2 ml-4 shrink-0">
             <AdminBadge variant="message" status={message.status} />
             <button
               onClick={onToggleMetadata}
@@ -250,7 +250,7 @@ function MessageDetail({
         {/* Message Body */}
         <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold flex-shrink-0 bg-admin-avatar">
+            <div className="w-10 h-10 rounded-full flex items-center justify-center text-white text-sm font-semibold shrink-0 bg-admin-avatar">
               {getInitials(message.name)}
             </div>
             <div className="flex-1 min-w-0">
@@ -312,7 +312,7 @@ function BookingRequestDetails({
       </h4>
       <div className="grid grid-cols-3 gap-4">
         <div className="flex items-start gap-2">
-          <Calendar className="w-4 h-4 text-forest-green mt-0.5 flex-shrink-0" />
+          <Calendar className="w-4 h-4 text-forest-green mt-0.5 shrink-0" />
           <div>
             <div className="text-xs text-gray-500 mb-0.5">Check-in</div>
             <div className="text-sm font-medium text-gray-900">
@@ -326,7 +326,7 @@ function BookingRequestDetails({
         </div>
         {message.checkOut && (
           <div className="flex items-start gap-2">
-            <Calendar className="w-4 h-4 text-forest-green mt-0.5 flex-shrink-0" />
+            <Calendar className="w-4 h-4 text-forest-green mt-0.5 shrink-0" />
             <div>
               <div className="text-xs text-gray-500 mb-0.5">Check-out</div>
               <div className="text-sm font-medium text-gray-900">
@@ -341,7 +341,7 @@ function BookingRequestDetails({
         )}
         {message.guestCount && (
           <div className="flex items-start gap-2">
-            <Users className="w-4 h-4 text-forest-green mt-0.5 flex-shrink-0" />
+            <Users className="w-4 h-4 text-forest-green mt-0.5 shrink-0" />
             <div>
               <div className="text-xs text-gray-500 mb-0.5">Guests</div>
               <div className="text-sm font-medium text-gray-900">
@@ -352,7 +352,7 @@ function BookingRequestDetails({
         )}
         {message.totalPrice && (
           <div className="flex items-start gap-2">
-            <Euro className="w-4 h-4 text-forest-green mt-0.5 flex-shrink-0" />
+            <Euro className="w-4 h-4 text-forest-green mt-0.5 shrink-0" />
             <div>
               <div className="text-xs text-gray-500 mb-0.5">Est. Total</div>
               <div className="text-sm font-medium text-gray-900">

@@ -35,7 +35,7 @@ export function FeatureCard({
       whileHover={{ scale: 1.03, y: -4 }}
       className={cn(
         "flex flex-col gap-4 p-6 rounded-2xl border cursor-default",
-        gradient && `bg-gradient-to-br ${gradient}`,
+        gradient && `bg-linear-to-br ${gradient}`,
         className
       )}
       style={{ borderColor: "rgba(139,157,131,0.2)" }}

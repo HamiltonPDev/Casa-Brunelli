@@ -1,9 +1,9 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, ChevronLeft, ChevronRight, Heart, Info } from "lucide-react";
+import { X, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -135,9 +135,10 @@ const CATEGORIES: { id: Category; label: string }[] = [
 export function GalleryClient() {
   const [selectedCategory, setSelectedCategory] = useState<Category>("all");
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
-  const [favorites, setFavorites] = useState<Set<number>>(new Set());
   const [showInfo, setShowInfo] = useState(false);
   const [imageLoaded, setImageLoaded] = useState<Record<number, boolean>>({});
+  const lightboxRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
 
   const filteredImages =
     selectedCategory === "all"
@@ -145,6 +146,8 @@ export function GalleryClient() {
       : GALLERY_IMAGES.filter((img) => img.category === selectedCategory);
 
   const openLightbox = (index: number) => {
+    // Save the element that triggered the lightbox for focus restoration
+    triggerRef.current = document.activeElement as HTMLElement;
     setLightboxIndex(index);
     setShowInfo(false);
   };
@@ -152,6 +155,8 @@ export function GalleryClient() {
   function closeLightbox() {
     setLightboxIndex(null);
     setShowInfo(false);
+    // Restore focus to the trigger element — WCAG 2.1.2
+    triggerRef.current?.focus();
   }
 
   function goToPrev() {
@@ -168,27 +173,57 @@ export function GalleryClient() {
     setShowInfo(false);
   }
 
-  const toggleFavorite = (id: number, e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setFavorites((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  // Keyboard navigation
+  // Keyboard navigation + focus trap — WCAG 2.1.1 & 2.1.2
   useEffect(() => {
+    if (lightboxIndex === null) return;
+
     const handler = (e: KeyboardEvent) => {
-      if (lightboxIndex === null) return;
-      if (e.key === "Escape") closeLightbox();
-      if (e.key === "ArrowLeft") goToPrev();
-      if (e.key === "ArrowRight") goToNext();
+      if (e.key === "Escape") {
+        closeLightbox();
+        return;
+      }
+      if (e.key === "ArrowLeft") {
+        goToPrev();
+        return;
+      }
+      if (e.key === "ArrowRight") {
+        goToNext();
+        return;
+      }
+
+      // Focus trap — keep Tab within lightbox
+      if (e.key === "Tab" && lightboxRef.current) {
+        const focusable = lightboxRef.current.querySelectorAll<HTMLElement>(
+          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+        );
+        if (focusable.length === 0) return;
+
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+
+        if (e.shiftKey && document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
     };
+
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
-  }, [lightboxIndex, closeLightbox, goToPrev, goToNext]);
+  });
+
+  // Auto-focus close button when lightbox opens
+  useEffect(() => {
+    if (lightboxIndex !== null && lightboxRef.current) {
+      const closeBtn = lightboxRef.current.querySelector<HTMLElement>(
+        '[aria-label="Close lightbox"]'
+      );
+      closeBtn?.focus();
+    }
+  }, [lightboxIndex]);
 
   // Lock body scroll when lightbox open
   useEffect(() => {
@@ -205,20 +240,26 @@ export function GalleryClient() {
     <>
       {/* ─── Category filter tabs ──────────────────────────── */}
       <div
-        className="sticky top-[64px] z-40 border-b"
+        className="sticky top-16 z-40 border-b"
         style={{
           backgroundColor: "white",
           borderColor: "rgba(139,157,131,0.15)",
         }}
       >
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
-          <div className="flex gap-2 overflow-x-auto py-4 scrollbar-hide">
+        <div className="max-w-350 mx-auto px-6 lg:px-8">
+          <div
+            className="flex gap-2 overflow-x-auto py-4 scrollbar-hide"
+            role="tablist"
+            aria-label="Photo categories"
+          >
             {CATEGORIES.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setSelectedCategory(cat.id)}
+                role="tab"
+                aria-selected={selectedCategory === cat.id}
                 className={cn(
-                  "px-5 py-2 rounded-xl whitespace-nowrap text-sm font-medium transition-all duration-200 flex-shrink-0"
+                  "px-5 py-2 rounded-xl whitespace-nowrap text-sm font-medium transition-all duration-200 shrink-0"
                 )}
                 style={{
                   backgroundColor:
@@ -241,7 +282,7 @@ export function GalleryClient() {
       </div>
 
       {/* ─── Masonry gallery ───────────────────────────────── */}
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-12">
+      <div className="max-w-350 mx-auto px-6 lg:px-8 py-12">
         {/* Counter */}
         <div className="flex items-center justify-between mb-8">
           <p className="text-sm" style={{ color: "rgba(61,82,67,0.6)" }}>
@@ -257,15 +298,6 @@ export function GalleryClient() {
               </>
             )}
           </p>
-          {favorites.size > 0 && (
-            <p
-              className="text-sm flex items-center gap-1.5"
-              style={{ color: "#C0AF7E" }}
-            >
-              <Heart size={14} fill="#C0AF7E" />
-              {favorites.size} saved
-            </p>
-          )}
         </div>
 
         <AnimatePresence mode="wait">
@@ -287,6 +319,15 @@ export function GalleryClient() {
                 className="break-inside-avoid mb-5 group relative cursor-pointer overflow-hidden rounded-2xl"
                 style={{ borderColor: "rgba(139,157,131,0.2)" }}
                 onClick={() => openLightbox(idx)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    openLightbox(idx);
+                  }
+                }}
+                aria-label={`View ${image.alt}`}
               >
                 {/* Skeleton while loading */}
                 {!imageLoaded[image.id] && (
@@ -317,50 +358,24 @@ export function GalleryClient() {
 
                 {/* Hover overlay */}
                 <div
-                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-between p-5"
+                  className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-5"
                   style={{
                     background:
                       "linear-gradient(to top, rgba(45,58,46,0.92) 0%, rgba(45,58,46,0.4) 60%, transparent 100%)",
                   }}
                 >
-                  {/* Top: favorite button */}
-                  <div className="flex justify-end">
-                    <button
-                      onClick={(e) => toggleFavorite(image.id, e)}
-                      className="w-9 h-9 rounded-full flex items-center justify-center transition-all"
-                      style={{
-                        backgroundColor: favorites.has(image.id)
-                          ? "#C0AF7E"
-                          : "rgba(255,255,255,0.15)",
-                        backdropFilter: "blur(4px)",
-                      }}
-                      aria-label="Toggle favorite"
-                    >
-                      <Heart
-                        size={15}
-                        style={{
-                          color: favorites.has(image.id) ? "#2D3A2E" : "white",
-                          fill: favorites.has(image.id) ? "#2D3A2E" : "none",
-                        }}
-                      />
-                    </button>
-                  </div>
-
-                  {/* Bottom: caption + category */}
-                  <div>
-                    <span
-                      className="inline-block px-2 py-0.5 rounded-full text-xs mb-2"
-                      style={{
-                        backgroundColor: "rgba(139,157,131,0.5)",
-                        color: "white",
-                      }}
-                    >
-                      {CATEGORIES.find((c) => c.id === image.category)?.label}
-                    </span>
-                    <p className="text-sm text-white leading-snug">
-                      {image.caption}
-                    </p>
-                  </div>
+                  <span
+                    className="inline-block px-2 py-0.5 rounded-full text-xs mb-2 w-fit"
+                    style={{
+                      backgroundColor: "rgba(139,157,131,0.5)",
+                      color: "white",
+                    }}
+                  >
+                    {CATEGORIES.find((c) => c.id === image.category)?.label}
+                  </span>
+                  <p className="text-sm text-white leading-snug">
+                    {image.caption}
+                  </p>
                 </div>
               </div>
             ))}
@@ -376,11 +391,15 @@ export function GalleryClient() {
         )}
       </div>
 
-      {/* ─── Lightbox ──────────────────────────────────────── */}
+      {/* ─── Lightbox (with focus trap — WCAG 2.1.2) ─────── */}
       <AnimatePresence>
         {currentImage && (
           <motion.div
+            ref={lightboxRef}
             key="lightbox"
+            role="dialog"
+            aria-modal="true"
+            aria-label={`Photo: ${currentImage.alt}`}
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -418,35 +437,16 @@ export function GalleryClient() {
                       ? "rgba(139,157,131,0.6)"
                       : "rgba(255,255,255,0.1)",
                   }}
-                  aria-label="Toggle info"
+                  aria-label={showInfo ? "Hide photo info" : "Show photo info"}
+                  aria-expanded={showInfo}
                 >
                   <Info size={18} style={{ color: "white" }} />
-                </button>
-                <button
-                  onClick={(e) => toggleFavorite(currentImage.id, e)}
-                  className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
-                  style={{
-                    backgroundColor: favorites.has(currentImage.id)
-                      ? "#C0AF7E"
-                      : "rgba(255,255,255,0.1)",
-                  }}
-                  aria-label="Toggle favorite"
-                >
-                  <Heart
-                    size={18}
-                    style={{
-                      color: favorites.has(currentImage.id)
-                        ? "#2D3A2E"
-                        : "white",
-                      fill: favorites.has(currentImage.id) ? "#2D3A2E" : "none",
-                    }}
-                  />
                 </button>
                 <button
                   onClick={closeLightbox}
                   className="w-10 h-10 rounded-full flex items-center justify-center transition-all"
                   style={{ backgroundColor: "rgba(255,255,255,0.1)" }}
-                  aria-label="Close"
+                  aria-label="Close lightbox"
                 >
                   <X size={18} style={{ color: "white" }} />
                 </button>
@@ -552,7 +552,7 @@ export function GalleryClient() {
                       setShowInfo(false);
                     }}
                     className={cn(
-                      "flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200",
+                      "shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-all duration-200",
                       idx === lightboxIndex
                         ? "border-white scale-110 opacity-100"
                         : "border-transparent opacity-50 hover:opacity-80"

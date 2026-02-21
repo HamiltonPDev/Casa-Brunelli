@@ -5,7 +5,6 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import { CheckCircle2, MapPin, Mail, Phone, Clock, Send } from "lucide-react";
-import Link from "next/link";
 import { APP_CONFIG } from "@/lib/constants";
 import { Card } from "@/components/ui/public/Card";
 import { Button } from "@/components/ui/public/Button";
@@ -111,7 +110,7 @@ export function ContactForm() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
-  async function handleSubmit(e: React.FormEvent): Promise<void> {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     if (status === "loading" || status === "success") return;
 
@@ -293,7 +292,7 @@ export function ContactForm() {
                   className="flex items-start gap-4"
                 >
                   <div
-                    className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
+                    className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
                     style={{ backgroundColor: "rgba(139,157,131,0.1)" }}
                   >
                     <Icon size={18} style={{ color: "var(--sage-variant)" }} />
@@ -325,7 +324,7 @@ export function ContactForm() {
           </h3>
 
           <div
-            className="aspect-[4/3] rounded-xl border overflow-hidden relative"
+            className="aspect-4/3 rounded-xl border overflow-hidden relative"
             style={{
               backgroundColor: "var(--cream)",
               borderColor: "rgba(139,157,131,0.2)",

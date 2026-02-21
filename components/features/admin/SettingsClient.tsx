@@ -100,7 +100,7 @@ const INITIAL_EMAIL: EmailForm = {
 function ComingSoonBanner({ feature }: Readonly<{ feature: string }>) {
   return (
     <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
-      <Construction className="w-5 h-5 text-amber-600 flex-shrink-0" />
+      <Construction className="w-5 h-5 text-amber-600 shrink-0" />
       <div>
         <p className="text-sm font-medium text-amber-800">
           Coming Soon — {feature}
@@ -616,7 +616,7 @@ export function SettingsClient({
 
           <AdminCard title="Danger Zone">
             <div className="flex items-start gap-4 p-4 border-2 border-red-200 rounded-lg bg-red-50">
-              <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium text-gray-900 mb-1">
                   Remove User Access
@@ -635,7 +635,7 @@ export function SettingsClient({
       {/* Sticky save bar */}
       {hasChanges && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-          <div className="max-w-screen-xl mx-auto px-8 py-4 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
               You have unsaved changes
