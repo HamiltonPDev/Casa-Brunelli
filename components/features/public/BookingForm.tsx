@@ -172,7 +172,7 @@ export function BookingForm({
     return Object.keys(newErrors).length === 0;
   }
 
-  async function handleSubmit(e: React.FormEvent): Promise<void> {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     if (status === "loading" || status === "success") return;
 
@@ -521,7 +521,7 @@ export function BookingForm({
                 {PAYMENT_POLICIES.map((item) => (
                   <li key={item.strong} className="flex items-start gap-2">
                     <div
-                      className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
+                      className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
                       style={{ backgroundColor: "var(--sage-variant)" }}
                     />
                     <p>

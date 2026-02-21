@@ -2,9 +2,9 @@
 
 // components/ui/public/FadeInView.tsx
 // Atom — wraps children in a whileInView fade+slide animation
-// Replaces 16 repeated motion.div initial/whileInView blocks
+// Respects prefers-reduced-motion (WCAG 2.3.3)
 
-import { motion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 
 interface FadeInViewProps {
@@ -25,6 +25,13 @@ export function FadeInView({
   y = 24,
   className,
 }: FadeInViewProps) {
+  const prefersReducedMotion = useReducedMotion();
+
+  // When user prefers reduced motion, render without animation
+  if (prefersReducedMotion) {
+    return <div className={className}>{children}</div>;
+  }
+
   return (
     <motion.div
       initial={{ opacity: 0, y }}

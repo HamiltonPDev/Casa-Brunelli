@@ -6,20 +6,12 @@ import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Leaf,
-  Waves,
   UtensilsCrossed,
-  Wifi,
-  Car,
-  BedDouble,
   Star,
-  Home,
-  Bed,
-  Users,
-  ArrowUp,
   ChevronDown,
+  Sparkles,
 } from "lucide-react";
 import { Eyebrow } from "@/components/ui/public/Eyebrow";
-import { SectionHeading } from "@/components/ui/public/SectionHeading";
 import { Button } from "@/components/ui/public/Button";
 import { FadeInView } from "@/components/ui/public/FadeInView";
 import { SectionHeader } from "@/components/shared/public/SectionHeader";
@@ -36,41 +28,31 @@ interface HeroMilestone {
 }
 
 // ─── Constants ─────────────────────────────────────────────────
+
+/**
+ * Hero milestones — reduced from 5 to 3 to keep hero at 200vh.
+ * Content that was repeated in features (bedrooms, pool, gardens)
+ * is now only in the hero scroll, not duplicated below.
+ */
 const HERO_MILESTONES: HeroMilestone[] = [
   {
     minProgress: 0,
-    maxProgress: 0.2,
+    maxProgress: 0.33,
     eyebrow: "Tuscany, Italy · Direct Booking",
     headline: "Casa\nBrunelli",
     sub: "A private luxury villa nestled in the Tuscan hills.",
     align: "center",
   },
   {
-    minProgress: 0.2,
-    maxProgress: 0.4,
-    eyebrow: "The Villa",
-    headline: "Authentic\nTuscan Living",
-    sub: "18th-century architecture, lovingly restored for modern comfort.",
-    align: "left",
-  },
-  {
-    minProgress: 0.4,
-    maxProgress: 0.6,
+    minProgress: 0.33,
+    maxProgress: 0.66,
     eyebrow: "The Estate",
-    headline: "2 Acres of\nPrivate Gardens",
-    sub: "Olive groves, lemon trees, a heated infinity pool.",
-    align: "right",
-  },
-  {
-    minProgress: 0.6,
-    maxProgress: 0.8,
-    eyebrow: "Sleeps up to 8",
-    headline: "4 Luxury\nBedrooms",
-    sub: "En-suite rooms with views across the rolling Tuscan hills.",
+    headline: "Authentic\nTuscan Living",
+    sub: "18th-century architecture, 4 en-suite bedrooms, heated pool, 2 acres of private gardens.",
     align: "left",
   },
   {
-    minProgress: 0.8,
+    minProgress: 0.66,
     maxProgress: 1,
     eyebrow: "Book Direct & Save",
     headline: "Your Escape\nAwaits",
@@ -79,42 +61,32 @@ const HERO_MILESTONES: HeroMilestone[] = [
   },
 ];
 
+/**
+ * Features — 3 COMPLEMENTARY amenities not shown in the hero scroll.
+ * Hero already covers: bedrooms, pool, gardens, architecture.
+ * These add NEW info: housekeeping, local experiences, kitchen.
+ */
 const FEATURES = [
   {
-    icon: BedDouble,
-    title: "4 Luxury Bedrooms",
-    description: "Spacious en-suite rooms with views across the Tuscan hills.",
+    icon: Sparkles,
+    title: "Daily Housekeeping",
+    description:
+      "Professional cleaning service included. Fresh linens, towels, and a spotless villa every day.",
     gradient: "from-mint-tint to-cream",
   },
   {
-    icon: Waves,
-    title: "Private Pool",
-    description: "A heated infinity pool surrounded by cypresses and lavender.",
-    gradient: "from-cream to-mint-pale",
+    icon: Leaf,
+    title: "Concierge Service",
+    description:
+      "Wine tastings, truffle hunting, private chefs, airport transfers — we arrange it all.",
+    gradient: "from-cream to-warm-honey",
   },
   {
     icon: UtensilsCrossed,
-    title: "Tuscan Kitchen",
-    description: "Fully equipped stone kitchen for authentic Italian cooking.",
-    gradient: "from-warm-honey to-cream",
-  },
-  {
-    icon: Leaf,
-    title: "2 Acres of Gardens",
-    description: "Terraced olive groves, lemon trees, and rose gardens.",
-    gradient: "from-mint-tint to-mint-light",
-  },
-  {
-    icon: Car,
-    title: "Private Parking",
-    description: "Gated parking for up to 4 vehicles on the estate.",
-    gradient: "from-cream to-warm-sand",
-  },
-  {
-    icon: Wifi,
-    title: "High-Speed Wi-Fi",
-    description: "Fibre-optic internet throughout the villa.",
-    gradient: "from-mint-pale to-cream",
+    title: "Fully Equipped Kitchen",
+    description:
+      "Stone kitchen with professional appliances. We stock local produce for your arrival.",
+    gradient: "from-warm-honey to-mint-tint",
   },
 ] as const;
 
@@ -152,7 +124,7 @@ const SEASONS = [
   },
 ] as const;
 
-// ─── Hero photos (from PhotoHeroScene.tsx prototype) ──────────
+// ─── Hero photos — 3 to match 3 milestones ──────────────────
 interface HeroPhoto {
   url: string;
   alt: string;
@@ -165,34 +137,23 @@ const HERO_PHOTOS: HeroPhoto[] = [
     url: "https://images.unsplash.com/photo-1660071170186-4997c864a320?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
     alt: "Aerial view of Casa Brunelli nestled in Tuscan hills",
     description: "Welcome to Casa Brunelli",
-    range: [0, 0.2],
-  },
-  {
-    url: "https://images.unsplash.com/photo-1715037629851-47fc8f53593a?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
-    alt: "Rolling vineyards and olive groves surrounding the estate",
-    description: "Tuscan Countryside",
-    range: [0.2, 0.4],
+    range: [0, 0.33],
   },
   {
     url: "https://images.unsplash.com/photo-1721852474658-884e1881fe31?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
     alt: "Historic entrance to the restored Tuscan villa",
-    description: "Historic Entrance",
-    range: [0.4, 0.6],
-  },
-  {
-    url: "https://images.unsplash.com/photo-1692719630299-d7e5bcce2add?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
-    alt: "Infinity pool overlooking the valley",
-    description: "Luxury Pool & Terrace",
-    range: [0.6, 0.8],
+    description: "Authentic Tuscan Estate",
+    range: [0.33, 0.66],
   },
   {
     url: "https://images.unsplash.com/photo-1566288940278-2b24d1c0c4cd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixlib=rb-4.1.0&q=80&w=1080",
     alt: "Elegant interior with authentic Italian design",
-    description: "Luxury Interiors",
-    range: [0.8, 1.0],
+    description: "Your Private Retreat",
+    range: [0.66, 1.0],
   },
 ];
 
+// ─── Helper functions ─────────────────────────────────────────
 function getCurrentPhoto(progress: number): HeroPhoto {
   return (
     HERO_PHOTOS.find((p) => progress >= p.range[0] && progress < p.range[1]) ??
@@ -238,7 +199,7 @@ export function HomeLanding() {
   const currentMilestone = getCurrentMilestone(scrollProgress);
   const currentPhoto = getCurrentPhoto(scrollProgress);
   const showScrollIndicator = scrollProgress < 0.08;
-  const showCTA = scrollProgress > 0.88;
+  const showCTA = scrollProgress > 0.85;
 
   const alignClass =
     currentMilestone.align === "left"
@@ -250,10 +211,10 @@ export function HomeLanding() {
   return (
     <div style={{ backgroundColor: "#F5F3EF" }}>
       {/* ═══════════════════════════════════════════════════════
-          SCROLL HERO (5x viewport)
+          SCROLL HERO (200vh — 2 screens of scroll)
           ═══════════════════════════════════════════════════════ */}
-      <div ref={heroRef} style={{ height: "500vh" }} className="relative">
-        {/* Fixed background — real photos with crossfade */}
+      <div ref={heroRef} style={{ height: "200vh" }} className="relative">
+        {/* Fixed background — photos with crossfade */}
         <div className="fixed inset-0 z-0">
           {HERO_PHOTOS.map((photo) => {
             const isActive = currentPhoto === photo;
@@ -272,7 +233,6 @@ export function HomeLanding() {
                 }}
                 style={{ zIndex: isActive ? 2 : 1 }}
               >
-                {/* Photo */}
                 <div
                   className="absolute inset-0"
                   style={{
@@ -345,16 +305,16 @@ export function HomeLanding() {
           </div>
         </div>
 
-        {/* Photo description pill (visible mid-scroll) */}
+        {/* Photo description pill */}
         <AnimatePresence>
-          {scrollProgress > 0.05 && scrollProgress < 0.93 && (
+          {scrollProgress > 0.05 && scrollProgress < 0.9 && (
             <motion.div
               key={currentPhoto.description}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.4 }}
-              className="fixed bottom-28 left-1/2 -translate-x-1/2 z-20"
+              className="fixed bottom-24 left-1/2 -translate-x-1/2 z-20"
               style={{ backdropFilter: "blur(12px)" }}
             >
               <div
@@ -372,12 +332,12 @@ export function HomeLanding() {
 
         {/* Progress dots */}
         <AnimatePresence>
-          {scrollProgress > 0.05 && scrollProgress < 0.93 && (
+          {scrollProgress > 0.05 && scrollProgress < 0.9 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed bottom-14 left-1/2 -translate-x-1/2 z-20 flex gap-2"
+              className="fixed bottom-12 left-1/2 -translate-x-1/2 z-20 flex gap-2"
             >
               {HERO_PHOTOS.map((photo, idx) => {
                 const isActive = currentPhoto === photo;
@@ -402,14 +362,6 @@ export function HomeLanding() {
                       animate={{ width: `${photoProgress * 100}%` }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
                     />
-                    {isActive && (
-                      <motion.div
-                        className="absolute inset-0 rounded-full"
-                        style={{ backgroundColor: "rgba(255,255,255,0.3)" }}
-                        animate={{ opacity: [0.4, 0.9, 0.4] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      />
-                    )}
                   </div>
                 );
               })}
@@ -450,13 +402,13 @@ export function HomeLanding() {
                   {currentMilestone.headline}
                 </h1>
                 <p
-                  className="text-base md:text-lg max-w-sm"
+                  className="text-base md:text-lg max-w-md"
                   style={{ color: "var(--sage-variant)" }}
                 >
                   {currentMilestone.sub}
                 </p>
 
-                {/* ─── Decorative divider (center only) ──────── */}
+                {/* Decorative divider (center milestones only) */}
                 {currentMilestone.align === "center" && (
                   <motion.div
                     className="flex items-center justify-center gap-4 mt-2"
@@ -508,7 +460,7 @@ export function HomeLanding() {
                   </motion.div>
                 )}
 
-                {/* ─── Accent particles around title (center only) */}
+                {/* Accent particles around title (center only) */}
                 {currentMilestone.align === "center" && (
                   <div className="absolute inset-0 pointer-events-none">
                     {[...Array(6)].map((_, i) => (
@@ -541,43 +493,31 @@ export function HomeLanding() {
           </div>
         </div>
 
-        {/* Left progress bar (fixed) */}
-        <div className="fixed left-6 top-1/2 -translate-y-1/2 z-20 hidden lg:flex flex-col items-center gap-2">
+        {/* Left progress dots (desktop only) */}
+        <div className="fixed left-6 top-1/2 -translate-y-1/2 z-20 hidden lg:flex flex-col items-center gap-4">
           {HERO_MILESTONES.map((m, i) => {
             const isActive =
               scrollProgress >= m.minProgress && scrollProgress < m.maxProgress;
             const isPast = scrollProgress >= m.maxProgress;
             return (
-              <div key={i} className="flex items-center gap-2">
-                <div
-                  className="rounded-full transition-all duration-300"
-                  style={{
-                    width: isActive ? 8 : 4,
-                    height: isActive ? 8 : 4,
-                    backgroundColor: isActive
-                      ? "#C0AF7E"
-                      : isPast
-                      ? "#8B9D83"
-                      : "rgba(139,157,131,0.3)",
-                  }}
-                />
-                {i < HERO_MILESTONES.length - 1 && (
-                  <div
-                    className="absolute"
-                    style={{
-                      width: 1,
-                      height: 24,
-                      backgroundColor: "rgba(139,157,131,0.2)",
-                      transform: "translateX(-6px) translateY(10px)",
-                    }}
-                  />
-                )}
-              </div>
+              <div
+                key={i}
+                className="rounded-full transition-all duration-300"
+                style={{
+                  width: isActive ? 8 : 4,
+                  height: isActive ? 8 : 4,
+                  backgroundColor: isActive
+                    ? "var(--terracotta-gold)"
+                    : isPast
+                    ? "var(--sage-variant)"
+                    : "rgba(139,157,131,0.3)",
+                }}
+              />
             );
           })}
         </div>
 
-        {/* Scroll indicator (fixed bottom) */}
+        {/* Scroll indicator */}
         <AnimatePresence>
           {showScrollIndicator && (
             <motion.div
@@ -676,7 +616,7 @@ export function HomeLanding() {
           )}
         </AnimatePresence>
 
-        {/* CTA panel slides up at end of scroll */}
+        {/* CTA panel at end of scroll */}
         <AnimatePresence>
           {showCTA && (
             <motion.div
@@ -690,7 +630,7 @@ export function HomeLanding() {
                 backdropFilter: "blur(12px)",
               }}
             >
-              <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+              <div className="max-w-350 mx-auto px-6 lg:px-8 py-5 flex flex-col sm:flex-row items-center justify-between gap-4">
                 <div>
                   <p
                     className="text-xs tracking-[0.3em] uppercase font-semibold mb-1"
@@ -705,7 +645,7 @@ export function HomeLanding() {
                     Reserve your Tuscan escape — no commissions, no middlemen
                   </p>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                   <Button href="/availability" variant="gold">
                     Check Availability
                   </Button>
@@ -722,7 +662,7 @@ export function HomeLanding() {
       {/* ═══════════════════════════════════════════════════════
           CONTENT SECTIONS (below hero, z-30 over fixed)
           ═══════════════════════════════════════════════════════ */}
-      <div className="relative z-30" style={{ backgroundColor: "white" }}>
+      <div id="main-content" className="relative z-30" style={{ backgroundColor: "white" }}>
         {/* Stats strip */}
         <div
           className="border-b"
@@ -731,7 +671,7 @@ export function HomeLanding() {
             borderColor: "rgba(139,157,131,0.1)",
           }}
         >
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-12">
+          <div className="max-w-350 mx-auto px-6 lg:px-8 py-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
               {STATS.map(({ value, label }, i) => (
                 <FadeInView
@@ -752,20 +692,20 @@ export function HomeLanding() {
           </div>
         </div>
 
-        {/* Features Section */}
+        {/* Features Section — 3 complementary amenities */}
         <div
           style={{ backgroundColor: "var(--cream)" }}
           className="py-20 lg:py-28"
         >
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+          <div className="max-w-350 mx-auto px-6 lg:px-8">
             <FadeInView className="mb-14">
               <SectionHeader
-                eyebrow="The Villa"
-                heading="Everything You Need for the Perfect Stay"
-                subtitle="Casa Brunelli combines authentic Tuscan architecture with every modern comfort."
+                eyebrow="Your Stay"
+                heading="Services Included with Every Booking"
+                subtitle="Beyond the villa itself, we ensure every detail of your stay is taken care of."
               />
             </FadeInView>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               {FEATURES.map(({ icon, title, description, gradient }, i) => (
                 <FeatureCard
                   key={title}
@@ -780,82 +720,12 @@ export function HomeLanding() {
           </div>
         </div>
 
-        {/* Virtual tour teaser */}
-        <div style={{ backgroundColor: "white" }} className="py-20 lg:py-28">
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="rounded-2xl p-10 lg:p-16 text-center"
-              style={{
-                background:
-                  "linear-gradient(135deg, rgba(139,157,131,0.08) 0%, rgba(192,175,126,0.08) 100%)",
-                border: "1px solid rgba(139,157,131,0.2)",
-              }}
-            >
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-                {[
-                  {
-                    icon: Home,
-                    title: "Authentic Architecture",
-                    desc: "18th-century Tuscan villa restored with original materials",
-                    gradient: "from-mint-tint to-cream",
-                  },
-                  {
-                    icon: Bed,
-                    title: "4 Luxury Bedrooms",
-                    desc: "Spacious suites with en-suite bathrooms and countryside views",
-                    gradient: "from-cream to-warm-honey",
-                  },
-                  {
-                    icon: Users,
-                    title: "Sleeps Up to 8 Guests",
-                    desc: "Perfect for family gatherings and group retreats",
-                    gradient: "from-warm-honey to-mint-tint",
-                  },
-                ].map(({ icon, title, desc, gradient }, i) => (
-                  <FeatureCard
-                    key={title}
-                    icon={icon}
-                    title={title}
-                    description={desc}
-                    gradient={gradient}
-                    delay={i * 0.15}
-                  />
-                ))}
-              </div>
-              <FadeInView delay={0.5}>
-                <SectionHeading size="lg" className="mb-3">
-                  Scroll Back to Explore the Villa
-                </SectionHeading>
-                <p
-                  className="text-sm mb-6"
-                  style={{ color: "rgba(61,82,67,0.7)" }}
-                >
-                  Experience Casa Brunelli through our immersive scroll journey
-                  — from exterior to every intimate detail.
-                </p>
-                <Button
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
-                >
-                  <ArrowUp size={14} />
-                  Back to Top
-                </Button>
-              </FadeInView>
-            </motion.div>
-          </div>
-        </div>
-
         {/* Pricing Section */}
         <div
-          style={{ backgroundColor: "var(--cream)" }}
+          style={{ backgroundColor: "white" }}
           className="py-20 lg:py-28"
         >
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+          <div className="max-w-350 mx-auto px-6 lg:px-8">
             <FadeInView className="mb-14">
               <SectionHeader
                 eyebrow="Seasonal Rates"
@@ -864,7 +734,7 @@ export function HomeLanding() {
               />
             </FadeInView>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {SEASONS.map(({ name, period, rate, highlight }, i) => (
                 <motion.div
                   key={name}
@@ -931,12 +801,6 @@ export function HomeLanding() {
                 </motion.div>
               ))}
             </div>
-
-            <div className="flex justify-center">
-              <Button href="/availability" size="lg">
-                Check Live Availability &amp; Rates
-              </Button>
-            </div>
           </div>
         </div>
 
@@ -945,7 +809,7 @@ export function HomeLanding() {
           className="py-20 lg:py-28"
           style={{ backgroundColor: "var(--dark-forest)" }}
         >
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+          <div className="max-w-350 mx-auto px-6 lg:px-8">
             <FadeInView className="mb-14">
               <SectionHeader
                 eyebrow="Why Book Direct"
@@ -1009,7 +873,7 @@ export function HomeLanding() {
             borderColor: "rgba(139,157,131,0.1)",
           }}
         >
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+          <div className="max-w-350 mx-auto px-6 lg:px-8">
             <FadeInView className="flex flex-col items-center text-center gap-6">
               <SectionHeader
                 eyebrow="Ready to Visit?"

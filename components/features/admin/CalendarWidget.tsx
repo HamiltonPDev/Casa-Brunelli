@@ -76,7 +76,7 @@ export function CalendarWidget({
   const [blockNote, setBlockNote] = useState("");
   const [blockedDates, setBlockedDates] =
     useState<BlockedDate[]>(initialBlockedDates);
-  const [isPending, startTransition] = useTransition();
+  const [, startTransition] = useTransition();
 
   // ── Derived ───────────────────────────────────────────────
   const year = currentDate.getFullYear();

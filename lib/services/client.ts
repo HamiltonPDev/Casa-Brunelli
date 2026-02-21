@@ -85,6 +85,7 @@ async function request<T>(
     // Strip `success` flag, pass everything else as T.
     // Routes return either { success, data } or { success, data, pagination, ... }
     // By removing `success` and extracting the rest, the service type decides the shape.
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { success: _success, ...rest } = json;
 
     // If the route wraps its payload in `data` AND has no siblings, unwrap it.

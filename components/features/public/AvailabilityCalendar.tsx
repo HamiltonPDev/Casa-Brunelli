@@ -173,7 +173,7 @@ export function AvailabilityCalendar() {
     }
 
     function getBandPosition(
-      date: Date,
+      _date: Date,
       state: DayState,
       idx: number
     ): BandPosition {
@@ -308,7 +308,7 @@ export function AvailabilityCalendar() {
 
   // ─── Render ────────────────────────────────────────────────
   return (
-    <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-8">
+    <div className="max-w-350 mx-auto px-6 lg:px-8 py-8">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ═══ Calendar column (2/3) ══════════════════════════ */}
         <div className="lg:col-span-2 space-y-4">
@@ -520,7 +520,7 @@ export function AvailabilityCalendar() {
                           }}
                           disabled={state !== "available"}
                           className={cn(
-                            "w-full aspect-square min-h-[44px] p-2 border flex flex-col items-stretch justify-between transition-all duration-150",
+                            "w-full aspect-square min-h-11 p-2 border flex flex-col items-stretch justify-between transition-all duration-150",
                             borderRadiusClass,
                             state === "available" &&
                               !isCIn &&

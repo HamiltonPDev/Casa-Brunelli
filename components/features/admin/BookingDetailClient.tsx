@@ -75,12 +75,13 @@ function paymentTypeIcon(type: string): "success" | "error" | "info" {
 // ─── Component ─────────────────────────────────────────────────
 export function BookingDetailClient({
   booking,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for future "approved by" display
   adminName,
 }: BookingDetailClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState<string | null>(null);
   const [depositPaid, setDepositPaid] = useState(booking.depositPaid);
-  const [balancePaid, setBalancePaid] = useState(booking.balancePaid);
+  const [balancePaid] = useState(booking.balancePaid);
   const [status, setStatus] = useState(booking.status);
 
   async function handleMarkDepositPaid() {
@@ -332,7 +333,7 @@ export function BookingDetailClient({
             <div className="space-y-6">
               {timeline.map((event, i) => (
                 <div key={i} className="flex gap-4">
-                  <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                  <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
                     <TimelineIcon type={event.type} />
                   </div>
                   <div className="flex-1 min-w-0">

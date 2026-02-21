@@ -2,7 +2,6 @@
 // Server Component — Contact page with Figma design
 
 import type { Metadata } from "next";
-import Link from "next/link";
 import { PublicNav } from "@/components/features/public/PublicNav";
 import { PublicFooter } from "@/components/features/public/PublicFooter";
 import { ContactForm } from "@/components/features/public/ContactForm";
@@ -18,7 +17,7 @@ export default function ContactPage() {
     <>
       <PublicNav />
 
-      <main className="min-h-screen pt-16 md:pt-20" style={{ backgroundColor: "#F5F3EF" }}>
+      <main id="main-content" className="min-h-screen pt-16 md:pt-20" style={{ backgroundColor: "#F5F3EF" }}>
         {/* ─── Hero ──────────────────────────────────────────── */}
         <div
           className="border-b"
@@ -49,39 +48,7 @@ export default function ContactPage() {
           <ContactForm />
         </section>
 
-        {/* ─── Footer CTA ────────────────────────────────────── */}
-        <div
-          className="border-t"
-          style={{
-            background: "linear-gradient(to bottom, #F5F3EF, white)",
-            borderColor: "rgba(139,157,131,0.1)",
-          }}
-        >
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-16 lg:py-24">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2
-                className="font-serif text-3xl lg:text-4xl mb-4"
-                style={{ color: "#2D3A2E" }}
-              >
-                Ready to Book Your Tuscan Escape?
-              </h2>
-              <p
-                className="text-lg mb-8"
-                style={{ color: "rgba(61,82,67,0.8)" }}
-              >
-                Check our availability calendar and reserve your perfect dates
-                at Casa Brunelli.
-              </p>
-              <Link
-                href="/availability"
-                className="inline-flex items-center px-8 py-4 rounded-xl text-sm font-semibold text-white transition-all hover:opacity-90 active:scale-[0.98]"
-                style={{ backgroundColor: "#2D3A2E" }}
-              >
-                Check Availability
-              </Link>
-            </div>
-          </div>
-        </div>
+        {/* Footer CTA removed — PublicFooter already has a CTA band */}
       </main>
 
       <PublicFooter />
