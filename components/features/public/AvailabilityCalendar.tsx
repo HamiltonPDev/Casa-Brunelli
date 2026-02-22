@@ -60,8 +60,12 @@ const MONTH_NAMES = [
 ] as const;
 
 // ─── Helpers ───────────────────────────────────────────────────
+/** Format date as yyyy-MM-dd using LOCAL timezone (not UTC) to avoid off-by-one errors */
 function toISO(date: Date): string {
-  return date.toISOString().split("T")[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function addMonths(d: Date, n: number): Date {
@@ -72,7 +76,7 @@ function addMonths(d: Date, n: number): Date {
 
 async function fetchAvailability(
   from: string,
-  to: string
+  to: string,
 ): Promise<Map<string, DayAvailability>> {
   const res = await fetch(`/api/availability?from=${from}&to=${to}`);
   if (!res.ok) throw new Error("Failed to fetch");
@@ -91,7 +95,7 @@ function calcNights(a: string, b: string): number {
   return Math.round(
     (new Date(b + "T00:00:00").getTime() -
       new Date(a + "T00:00:00").getTime()) /
-      86400000
+      86400000,
   );
 }
 
@@ -111,7 +115,7 @@ export function AvailabilityCalendar() {
     return d;
   });
   const [availMap, setAvailMap] = useState<Map<string, DayAvailability>>(
-    new Map()
+    new Map(),
   );
   const [fetchState, setFetchState] = useState<{
     loading: boolean;
@@ -175,7 +179,7 @@ export function AvailabilityCalendar() {
     function getBandPosition(
       _date: Date,
       state: DayState,
-      idx: number
+      idx: number,
     ): BandPosition {
       if (state === "available" || state === "past") return "single";
       const prevState = idx > 0 ? getState(monthDates[idx - 1]) : null;
@@ -262,10 +266,10 @@ export function AvailabilityCalendar() {
       selection.phase === "done"
         ? selection.checkOut
         : selection.phase === "start" &&
-          hoverISO &&
-          hoverISO > selection.checkIn
-        ? hoverISO
-        : null;
+            hoverISO &&
+            hoverISO > selection.checkIn
+          ? hoverISO
+          : null;
     if (!end) return false;
     const checkIn =
       selection.phase === "start"
@@ -300,7 +304,7 @@ export function AvailabilityCalendar() {
 
   const minStayRequired =
     selection.phase === "start" || selection.phase === "done"
-      ? availMap.get(selection.checkIn)?.minStay ?? null
+      ? (availMap.get(selection.checkIn)?.minStay ?? null)
       : null;
 
   const cells = buildGrid(viewMonth.getFullYear(), viewMonth.getMonth());
@@ -526,7 +530,7 @@ export function AvailabilityCalendar() {
                               !isCIn &&
                               !isCOut &&
                               "hover:border-sage-variant",
-                            isT && !isCIn && !isCOut && "ring-2 ring-offset-1"
+                            isT && !isCIn && !isCOut && "ring-2 ring-offset-1",
                           )}
                           style={{
                             backgroundColor: bg,
@@ -535,8 +539,8 @@ export function AvailabilityCalendar() {
                               isCIn || isCOut
                                 ? "var(--sage-variant)"
                                 : inRange
-                                ? "rgba(139,157,131,0.4)"
-                                : "rgba(139,157,131,0.15)",
+                                  ? "rgba(139,157,131,0.4)"
+                                  : "rgba(139,157,131,0.15)",
                             cursor: cursorStyle,
                             ...(isT && !isCIn && !isCOut
                               ? {
@@ -695,7 +699,7 @@ export function AvailabilityCalendar() {
                   >
                     {selection.phase === "start" || selection.phase === "done"
                       ? new Date(
-                          selection.checkIn + "T00:00:00"
+                          selection.checkIn + "T00:00:00",
                         ).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short",
@@ -716,7 +720,7 @@ export function AvailabilityCalendar() {
                   >
                     {selection.phase === "done"
                       ? new Date(
-                          selection.checkOut + "T00:00:00"
+                          selection.checkOut + "T00:00:00",
                         ).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short",
@@ -801,7 +805,7 @@ export function AvailabilityCalendar() {
                   >
                     {Array.from(
                       { length: MAX_GUESTS - MIN_GUESTS + 1 },
-                      (_, i) => i + MIN_GUESTS
+                      (_, i) => i + MIN_GUESTS,
                     ).map((n) => (
                       <option key={n} value={n}>
                         {n} {n === 1 ? "guest" : "guests"}
@@ -820,7 +824,7 @@ export function AvailabilityCalendar() {
                   onClick={() => {
                     if (selection.phase === "done" && !hasMinStayViolation) {
                       router.push(
-                        `/booking?checkIn=${selection.checkIn}&checkOut=${selection.checkOut}&guests=${guests}`
+                        `/booking?checkIn=${selection.checkIn}&checkOut=${selection.checkOut}&guests=${guests}`,
                       );
                     }
                   }}

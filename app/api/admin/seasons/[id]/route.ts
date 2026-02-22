@@ -13,7 +13,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -60,7 +60,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     console.error("[API] PATCH /api/admin/seasons/[id]:", error);
     return Response.json(
       { success: false, error: "Failed to update season" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -71,7 +71,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -84,7 +84,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
     console.error("[API] DELETE /api/admin/seasons/[id]:", error);
     return Response.json(
       { success: false, error: "Failed to delete season" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

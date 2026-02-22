@@ -3,7 +3,6 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { addDays } from "@/lib/utils";
 import {
   BOOKING_STATUS,
   SEASON_STATUS,
@@ -35,6 +34,13 @@ function toISODate(date: Date): string {
   return date.toISOString().split("T")[0];
 }
 
+/** UTC-safe addDaysUTC — avoids local-timezone drift from lib/utils addDaysUTC */
+function addDaysUTC(date: Date, days: number): Date {
+  const result = new Date(date);
+  result.setUTCDate(result.getUTCDate() + days);
+  return result;
+}
+
 function parseDateParam(raw: string | null, fallback: Date): Date {
   if (!raw) return fallback;
   const d = new Date(raw + "T00:00:00Z");
@@ -54,11 +60,11 @@ export async function GET(request: NextRequest) {
     today.setUTCHours(0, 0, 0, 0);
 
     const from = parseDateParam(searchParams.get("from"), today);
-    const to = parseDateParam(searchParams.get("to"), addDays(today, 90));
+    const to = parseDateParam(searchParams.get("to"), addDaysUTC(today, 90));
 
     // Clamp: from can't be in the past; range can't exceed 365 days
     const clampedFrom = from < today ? today : from;
-    const maxTo = addDays(clampedFrom, 365);
+    const maxTo = addDaysUTC(clampedFrom, 365);
     const clampedTo = to > maxTo ? maxTo : to;
 
     // ─── Fetch blocked data in parallel ──────────────────────
@@ -115,7 +121,7 @@ export async function GET(request: NextRequest) {
       out.setUTCHours(0, 0, 0, 0);
       while (cur < out) {
         bookedDates.add(toISODate(cur));
-        cur = addDays(cur, 1);
+        cur = addDaysUTC(cur, 1);
       }
     }
 
@@ -127,6 +133,7 @@ export async function GET(request: NextRequest) {
 
     const days: DayAvailability[] = [];
     let current = new Date(clampedFrom);
+    current.setUTCHours(0, 0, 0, 0);
 
     while (current <= clampedTo) {
       const iso = toISODate(current);
@@ -182,7 +189,7 @@ export async function GET(request: NextRequest) {
         minStay,
       });
 
-      current = addDays(current, 1);
+      current = addDaysUTC(current, 1);
     }
 
     const response: AvailabilityResponse = {

@@ -18,6 +18,19 @@ import { SectionHeader } from "@/components/shared/public/SectionHeader";
 import { FeatureCard } from "@/components/shared/public/FeatureCard";
 
 // ─── Types ─────────────────────────────────────────────────────
+
+/** Season card data pre-formatted by the Server Component (page.tsx). */
+export interface SeasonCard {
+  name: string;
+  period: string;
+  rate: string;
+  highlight: boolean;
+}
+
+interface HomeLandingProps {
+  seasons: SeasonCard[];
+}
+
 interface HeroMilestone {
   minProgress: number;
   maxProgress: number;
@@ -97,33 +110,6 @@ const STATS = [
   { value: "30 km", label: "from Florence" },
 ] as const;
 
-const SEASONS = [
-  {
-    name: "High Summer",
-    period: "Jun 15 – Aug 31",
-    rate: "from €750/night",
-    highlight: true,
-  },
-  {
-    name: "Spring Blossom",
-    period: "Apr 1 – Jun 14",
-    rate: "from €550/night",
-    highlight: false,
-  },
-  {
-    name: "Autumn Harvest",
-    period: "Sep 1 – Nov 15",
-    rate: "from €600/night",
-    highlight: false,
-  },
-  {
-    name: "Winter Retreat",
-    period: "Nov 16 – Mar 31",
-    rate: "from €450/night",
-    highlight: false,
-  },
-] as const;
-
 // ─── Hero photos — 3 to match 3 milestones ──────────────────
 interface HeroPhoto {
   url: string;
@@ -169,13 +155,13 @@ function getPhotoProgress(photo: HeroPhoto, progress: number): number {
 function getCurrentMilestone(progress: number): HeroMilestone {
   return (
     HERO_MILESTONES.find(
-      (m) => progress >= m.minProgress && progress < m.maxProgress
+      (m) => progress >= m.minProgress && progress < m.maxProgress,
     ) ?? HERO_MILESTONES[HERO_MILESTONES.length - 1]
   );
 }
 
 // ─── Component ─────────────────────────────────────────────────
-export function HomeLanding() {
+export function HomeLanding({ seasons }: Readonly<HomeLandingProps>) {
   const [scrollProgress, setScrollProgress] = useState(0);
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -186,7 +172,7 @@ export function HomeLanding() {
       const scrolled = window.scrollY;
       const progress = Math.min(
         scrolled / (heroHeight - window.innerHeight),
-        1
+        1,
       );
       setScrollProgress(Math.max(0, progress));
     };
@@ -205,8 +191,8 @@ export function HomeLanding() {
     currentMilestone.align === "left"
       ? "items-start text-left pl-12 lg:pl-24"
       : currentMilestone.align === "right"
-      ? "items-end text-right pr-12 lg:pr-24"
-      : "items-center text-center";
+        ? "items-end text-right pr-12 lg:pr-24"
+        : "items-center text-center";
 
   return (
     <div style={{ backgroundColor: "#F5F3EF" }}>
@@ -344,8 +330,8 @@ export function HomeLanding() {
                 const photoProgress = isActive
                   ? getPhotoProgress(photo, scrollProgress)
                   : scrollProgress > photo.range[1]
-                  ? 1
-                  : 0;
+                    ? 1
+                    : 0;
                 return (
                   <div
                     key={idx}
@@ -509,8 +495,8 @@ export function HomeLanding() {
                   backgroundColor: isActive
                     ? "var(--terracotta-gold)"
                     : isPast
-                    ? "var(--sage-variant)"
-                    : "rgba(139,157,131,0.3)",
+                      ? "var(--sage-variant)"
+                      : "rgba(139,157,131,0.3)",
                 }}
               />
             );
@@ -662,7 +648,11 @@ export function HomeLanding() {
       {/* ═══════════════════════════════════════════════════════
           CONTENT SECTIONS (below hero, z-30 over fixed)
           ═══════════════════════════════════════════════════════ */}
-      <div id="main-content" className="relative z-30" style={{ backgroundColor: "white" }}>
+      <div
+        id="main-content"
+        className="relative z-30"
+        style={{ backgroundColor: "white" }}
+      >
         {/* Stats strip */}
         <div
           className="border-b"
@@ -721,10 +711,7 @@ export function HomeLanding() {
         </div>
 
         {/* Pricing Section */}
-        <div
-          style={{ backgroundColor: "white" }}
-          className="py-20 lg:py-28"
-        >
+        <div style={{ backgroundColor: "white" }} className="py-20 lg:py-28">
           <div className="max-w-350 mx-auto px-6 lg:px-8">
             <FadeInView className="mb-14">
               <SectionHeader
@@ -735,7 +722,7 @@ export function HomeLanding() {
             </FadeInView>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {SEASONS.map(({ name, period, rate, highlight }, i) => (
+              {seasons.map(({ name, period, rate, highlight }, i) => (
                 <motion.div
                   key={name}
                   initial={{ opacity: 0, y: 20 }}

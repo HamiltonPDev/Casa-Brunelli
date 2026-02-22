@@ -56,7 +56,7 @@ async function parseError(res: Response): Promise<string> {
  */
 async function request<T>(
   url: string,
-  init: RequestInit
+  init: RequestInit,
 ): Promise<ApiResult<T>> {
   try {
     const res = await fetch(url, {
@@ -119,7 +119,7 @@ export function apiPatch<T>(url: string, body: unknown): Promise<ApiResult<T>> {
 /** DELETE request with JSON body */
 export function apiDelete<T>(
   url: string,
-  body: unknown
+  body: unknown,
 ): Promise<ApiResult<T>> {
   return request<T>(url, { method: "DELETE", body: JSON.stringify(body) });
 }
