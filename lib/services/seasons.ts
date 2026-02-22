@@ -2,7 +2,7 @@
 // ═══ Seasons Service — CRUD for Seasonal Pricing ═══
 
 import type { ApiResult } from "./client";
-import { apiPost, apiPatch } from "./client";
+import { apiPost, apiPatch, apiDelete } from "./client";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -41,7 +41,7 @@ interface SeasonPayload {
 
 /** Create a new season. */
 export function createSeason(
-  payload: SeasonPayload
+  payload: SeasonPayload,
 ): Promise<ApiResult<SeasonData>> {
   return apiPost("/api/admin/seasons", payload);
 }
@@ -49,14 +49,14 @@ export function createSeason(
 /** Update an existing season by ID. */
 export function updateSeason(
   id: string,
-  payload: Partial<SeasonPayload> & { status?: string }
+  payload: Partial<SeasonPayload> & { status?: string },
 ): Promise<ApiResult<SeasonData>> {
   return apiPatch(`/api/admin/seasons/${id}`, payload);
 }
 
 /** Duplicate a season (creates a copy with "(Copy)" in the name). */
 export function duplicateSeason(
-  season: SeasonPayload
+  season: SeasonPayload,
 ): Promise<ApiResult<SeasonData>> {
   return apiPost("/api/admin/seasons", {
     ...season,
@@ -65,15 +65,21 @@ export function duplicateSeason(
 }
 
 /** Archive a season by setting its status to ARCHIVED. */
-export function archiveSeason(
-  id: string
-): Promise<ApiResult<SeasonData>> {
+export function archiveSeason(id: string): Promise<ApiResult<SeasonData>> {
   return apiPatch(`/api/admin/seasons/${id}`, { status: "ARCHIVED" });
 }
 
 /** Activate one season by ID. */
-export function activateSeason(
-  id: string
-): Promise<ApiResult<SeasonData>> {
+export function activateSeason(id: string): Promise<ApiResult<SeasonData>> {
   return apiPatch(`/api/admin/seasons/${id}`, { status: "ACTIVE" });
+}
+
+/** Deactivate a season by setting its status to INACTIVE. */
+export function deactivateSeason(id: string): Promise<ApiResult<SeasonData>> {
+  return apiPatch(`/api/admin/seasons/${id}`, { status: "INACTIVE" });
+}
+
+/** Permanently delete a season from the database. */
+export function deleteSeason(id: string): Promise<ApiResult<void>> {
+  return apiDelete(`/api/admin/seasons/${id}`, {});
 }
