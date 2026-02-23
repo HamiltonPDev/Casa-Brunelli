@@ -45,8 +45,12 @@ model Booking {
 
   @@index([guestEmail])
   @@index([checkIn])
+  @@index([checkOut])
   @@index([status])
   @@index([guestUserId])
+  @@index([createdAt])
+  /// Compound index for the date overlap query (availability check)
+  @@index([status, checkIn, checkOut])
 }
 
 enum BookingStatus {
@@ -147,6 +151,7 @@ model DowOverride {
   amount    Decimal      @db.Decimal(10, 2)
   createdAt DateTime     @default(now())
 
+  @@unique([seasonId, dayOfWeek])
   @@index([seasonId])
 }
 
@@ -161,20 +166,20 @@ enum OverrideType {
 // Admin authentication and access control
 // ═══════════════════════════════════════════════════════════════
 model AdminUser {
-  id               String           @id @default(cuid())
-  email            String           @unique
+  id               String            @id @default(cuid())
+  email            String            @unique
   passwordHash     String
   name             String
-  role             AdminRole        @default(ADMIN)
+  role             AdminRole         @default(ADMIN)
   lastLoginAt      DateTime?
   messages         ContactMessage[]
   unavailableDates UnavailableDate[]
   emailTemplates   EmailTemplate[]
   auditLogs        AuditLog[]
-  createdAt        DateTime         @default(now())
-  updatedAt        DateTime         @updatedAt
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
-  @@index([email])
+  /// @@index([email]) — removed: redundant with @unique on email
 }
 
 enum AdminRole {
@@ -196,7 +201,7 @@ model UnavailableDate {
   createdAt DateTime   @default(now())
 
   @@unique([date])
-  @@index([date])
+  /// @@index([date]) — removed: redundant with @@unique([date])
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -215,7 +220,7 @@ model GuestUser {
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  @@index([email])
+  /// @@index([email]) — removed: redundant with @unique on email
   @@index([lastBookingAt])
 }
 
@@ -266,7 +271,7 @@ model PaymentTransaction {
   createdAt       DateTime      @default(now())
 
   @@index([bookingId])
-  @@index([stripePaymentId])
+  /// @@index([stripePaymentId]) — removed: redundant with @unique on stripePaymentId
   @@index([status])
 }
 

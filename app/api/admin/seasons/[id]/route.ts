@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import type { OverrideType } from "@prisma/client";
 import type { SeasonStatus } from "@/lib/constants";
 import { updateSeasonSchema, validationError } from "@/lib/validations/admin";
 
@@ -29,19 +30,33 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
     const body = parsed.data;
 
+    // Build update data — separated to preserve Prisma type inference
+    const updateData: Parameters<typeof prisma.season.update>[0]["data"] = {
+      ...(body.name && { name: body.name }),
+      ...(body.colorTag && { colorTag: body.colorTag }),
+      ...(body.startDate && { startDate: new Date(body.startDate) }),
+      ...(body.endDate && { endDate: new Date(body.endDate) }),
+      ...(body.baseRate !== undefined && { baseRate: body.baseRate }),
+      ...(body.minStay !== undefined && { minStay: body.minStay }),
+      ...(body.priority !== undefined && { priority: body.priority }),
+      ...(body.notes !== undefined && { notes: body.notes }),
+      ...(body.status && { status: body.status as SeasonStatus }),
+    };
+
+    if (body.dowOverrides) {
+      updateData.dowOverrides = {
+        deleteMany: {},
+        create: body.dowOverrides.map((o) => ({
+          dayOfWeek: o.dayOfWeek,
+          type: o.type as OverrideType,
+          amount: o.amount,
+        })),
+      };
+    }
+
     const updated = await prisma.season.update({
       where: { id },
-      data: {
-        ...(body.name && { name: body.name }),
-        ...(body.colorTag && { colorTag: body.colorTag }),
-        ...(body.startDate && { startDate: new Date(body.startDate) }),
-        ...(body.endDate && { endDate: new Date(body.endDate) }),
-        ...(body.baseRate !== undefined && { baseRate: body.baseRate }),
-        ...(body.minStay !== undefined && { minStay: body.minStay }),
-        ...(body.priority !== undefined && { priority: body.priority }),
-        ...(body.notes !== undefined && { notes: body.notes }),
-        ...(body.status && { status: body.status as SeasonStatus }),
-      },
+      data: updateData,
       include: { dowOverrides: true },
     });
 
@@ -79,7 +94,7 @@ export async function DELETE(_request: Request, { params }: RouteParams) {
 
   try {
     await prisma.season.delete({ where: { id } });
-    return Response.json({ success: true });
+    return Response.json({ success: true, data: { id } });
   } catch (error) {
     console.error("[API] DELETE /api/admin/seasons/[id]:", error);
     return Response.json(

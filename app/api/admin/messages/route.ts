@@ -1,4 +1,3 @@
-import { NextRequest } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUS } from "@/lib/constants";
@@ -8,12 +7,12 @@ import { MESSAGE_STATUS } from "@/lib/constants";
 // Optional ?status= filter (UNREAD | READ | REPLIED).
 // Protected: admin session required.
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   const session = await auth();
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -25,7 +24,7 @@ export async function GET(request: NextRequest) {
       where:
         statusParam &&
         Object.values(MESSAGE_STATUS).includes(
-          statusParam as (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS]
+          statusParam as (typeof MESSAGE_STATUS)[keyof typeof MESSAGE_STATUS],
         )
           ? {
               status:
@@ -38,12 +37,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return Response.json({ success: true, data: messages });
+    // Serialize Decimal fields — totalPrice is Decimal? in Prisma
+    const data = messages.map((m) => ({
+      ...m,
+      totalPrice: m.totalPrice ? Number(m.totalPrice) : null,
+    }));
+
+    return Response.json({ success: true, data });
   } catch (error) {
     console.error("[API] GET /admin/messages failed:", error);
     return Response.json(
       { success: false, error: "Failed to fetch messages" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

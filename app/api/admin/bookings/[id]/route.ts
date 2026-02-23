@@ -13,7 +13,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -33,7 +33,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     if (!booking) {
       return Response.json(
         { success: false, error: "Booking not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -53,7 +53,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     console.error("[API] GET /api/admin/bookings/[id]:", error);
     return Response.json(
       { success: false, error: "Failed to fetch booking" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -66,7 +66,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -81,6 +81,15 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     }
 
     const { status, depositPaid, balancePaid } = parsed.data;
+
+    // Check existence first — Prisma P2025 on update gives a generic 500
+    const existing = await prisma.booking.findUnique({ where: { id } });
+    if (!existing) {
+      return Response.json(
+        { success: false, error: "Booking not found" },
+        { status: 404 },
+      );
+    }
 
     const updated = await prisma.booking.update({
       where: { id },
@@ -103,7 +112,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     console.error("[API] PATCH /api/admin/bookings/[id]:", error);
     return Response.json(
       { success: false, error: "Failed to update booking" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
