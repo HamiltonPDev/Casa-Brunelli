@@ -4,6 +4,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { calculateNights, formatDateLong } from "@/lib/utils";
+import { calculateBookingTotal } from "@/lib/pricing";
 import { MAX_GUESTS, MIN_GUESTS } from "@/lib/constants";
 import { PublicNav } from "@/components/features/public/PublicNav";
 import { PublicFooter } from "@/components/features/public/PublicFooter";
@@ -41,6 +42,11 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
 
   const nights = calculateNights(checkIn, checkOut);
   if (nights <= 0) redirect("/availability");
+
+  // Calculate pricing server-side (single DB query, pure math)
+  const checkInDate = new Date(checkIn + "T00:00:00Z");
+  const checkOutDate = new Date(checkOut + "T00:00:00Z");
+  const pricing = await calculateBookingTotal(checkInDate, checkOutDate);
 
   const checkInLabel = formatDateLong(checkIn);
   const checkOutLabel = formatDateLong(checkOut);
@@ -81,6 +87,9 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
             checkOut={checkOut}
             nights={nights}
             guests={guests}
+            totalPrice={pricing.totalPrice}
+            depositAmount={pricing.depositAmount}
+            balanceAmount={pricing.balanceAmount}
           />
         </div>
       </main>

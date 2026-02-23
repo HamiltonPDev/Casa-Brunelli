@@ -1,14 +1,9 @@
 // app/api/availability/route.ts
 // Public endpoint — no auth required Returns available dates, nightly rates, and min-stay for a date range
 
-import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import {
-  BOOKING_STATUS,
-  SEASON_STATUS,
-  OVERRIDE_TYPE,
-  DEFAULT_NIGHTLY_RATE,
-} from "@/lib/constants";
+import { calculateNightlyRate } from "@/lib/pricing";
+import { BOOKING_STATUS, SEASON_STATUS } from "@/lib/constants";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -52,7 +47,7 @@ function parseDateParam(raw: string | null, fallback: Date): Date {
 //   from  yyyy-MM-dd  (default: today)
 //   to    yyyy-MM-dd  (default: today + 90 days)
 
-export async function GET(request: NextRequest) {
+export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
 
@@ -146,7 +141,12 @@ export async function GET(request: NextRequest) {
       let minStay: number | null = null;
 
       if (isAvailable) {
-        // Find highest-priority active season for this date
+        // Use the shared pure pricing function (same logic as calculateBookingTotal)
+        const rateResult = calculateNightlyRate(current, activeSeasons);
+        rate = rateResult.rate;
+        seasonName = rateResult.seasonName;
+
+        // Find matching season for minStay (calculateNightlyRate doesn't return it)
         const matchingSeason = activeSeasons.find((s) => {
           const start = new Date(s.startDate);
           start.setUTCHours(0, 0, 0, 0);
@@ -154,29 +154,7 @@ export async function GET(request: NextRequest) {
           end.setUTCHours(0, 0, 0, 0);
           return current >= start && current <= end;
         });
-
-        if (matchingSeason) {
-          seasonName = matchingSeason.name;
-          minStay = matchingSeason.minStay;
-
-          // Apply DOW override if present
-          const dow = current.getUTCDay();
-          const override = matchingSeason.dowOverrides.find(
-            (o) => o.dayOfWeek === dow
-          );
-
-          let baseRate = Number(matchingSeason.baseRate);
-          if (override) {
-            const amount = Number(override.amount);
-            if (override.type === OVERRIDE_TYPE.ADD) baseRate += amount;
-            else if (override.type === OVERRIDE_TYPE.SUBTRACT) baseRate -= amount;
-            else if (override.type === OVERRIDE_TYPE.CUSTOM) baseRate = amount;
-          }
-          rate = Math.max(0, baseRate);
-        } else {
-          // No active season — use default rate (no DB query needed)
-          rate = DEFAULT_NIGHTLY_RATE;
-        }
+        minStay = matchingSeason?.minStay ?? null;
       }
 
       days.push({
@@ -198,7 +176,7 @@ export async function GET(request: NextRequest) {
       to: toISODate(clampedTo),
     };
 
-    return NextResponse.json({ success: true, data: response }, {
+    return Response.json({ success: true, data: response }, {
       headers: {
         // Cache for 5 minutes — public, stale-while-revalidate
         "Cache-Control": "public, s-maxage=300, stale-while-revalidate=60",
@@ -206,9 +184,9 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("[API] GET /api/availability error:", error);
-    return NextResponse.json(
+    return Response.json(
       { success: false, error: "Failed to fetch availability" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

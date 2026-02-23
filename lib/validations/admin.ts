@@ -10,6 +10,8 @@ import {
   MESSAGE_STATUS,
   SEASON_STATUS,
   OVERRIDE_TYPE,
+  MIN_GUESTS,
+  MAX_GUESTS,
 } from "@/lib/constants";
 
 // ═══════════════════════════════════════════════════════════════
@@ -144,6 +146,38 @@ export const deleteUnavailableDatesSchema = z.object({
         .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Date must be yyyy-MM-dd" })
     )
     .min(1, { error: "At least one date is required" }),
+});
+
+// ═══════════════════════════════════════════════════════════════
+// BOOKING REQUEST (public — no auth, but uses shared validation)
+// ═══════════════════════════════════════════════════════════════
+
+/** POST /api/booking-request — public booking inquiry form */
+export const bookingRequestSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  email: z.email("Invalid email address"),
+  phone: z.string().optional(),
+  checkIn: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Date must be yyyy-MM-dd" }),
+  checkOut: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Date must be yyyy-MM-dd" }),
+  guestCount: z.number().int().min(MIN_GUESTS).max(MAX_GUESTS),
+  specialRequests: z.string().max(1000).optional(),
+});
+
+// ═══════════════════════════════════════════════════════════════
+// CONTACT (public — no auth, but uses shared validation helper)
+// ═══════════════════════════════════════════════════════════════
+
+/** POST /api/contact — public contact form submission */
+export const contactSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters").max(100),
+  email: z.email("Invalid email address"),
+  phone: z.string().optional(),
+  subject: z.string().min(3, "Subject too short").max(200),
+  message: z.string().min(10, "Message too short").max(5000),
 });
 
 // ═══════════════════════════════════════════════════════════════

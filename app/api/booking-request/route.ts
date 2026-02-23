@@ -3,45 +3,38 @@
 // Creates a ContactMessage of type BOOKING_REQUEST (Messages-First flow)
 // No Booking record is created here — admin approves from the Messages module
 
-import { NextRequest, NextResponse } from "next/server";
-import { z } from "zod/v4";
 import { prisma } from "@/lib/prisma";
 import { calculateBookingTotal } from "@/lib/pricing";
 import {
   MESSAGE_TYPE,
-  MAX_GUESTS,
-  MIN_GUESTS,
+  BOOKING_STATUS,
   DEPOSIT_PERCENTAGE,
 } from "@/lib/constants";
-
-// ─── Validation Schema ─────────────────────────────────────────
-
-const bookingRequestSchema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters").max(100),
-  email: z.email("Invalid email address"),
-  phone: z.string().optional(),
-  checkIn: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be yyyy-MM-dd"),
-  checkOut: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be yyyy-MM-dd"),
-  guestCount: z.number().int().min(MIN_GUESTS).max(MAX_GUESTS),
-  specialRequests: z.string().max(1000).optional(),
-});
+import {
+  bookingRequestSchema,
+  validationError,
+} from "@/lib/validations/admin";
 
 // ─── POST /api/booking-request ─────────────────────────────────
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
   try {
     const body = await request.json();
     const parsed = bookingRequestSchema.safeParse(body);
 
     if (!parsed.success) {
-      return NextResponse.json(
-        { success: false, error: "Invalid input", issues: parsed.error.issues },
-        { status: 400 }
-      );
+      return validationError(parsed.error);
     }
 
-    const { name, email, phone, checkIn, checkOut, guestCount, specialRequests } =
-      parsed.data;
+    const {
+      name,
+      email,
+      phone,
+      checkIn,
+      checkOut,
+      guestCount,
+      specialRequests,
+    } = parsed.data;
 
     // Parse dates at midnight UTC
     const checkInDate = new Date(checkIn + "T00:00:00Z");
@@ -49,18 +42,45 @@ export async function POST(request: NextRequest) {
 
     // Validate date logic
     if (checkInDate >= checkOutDate) {
-      return NextResponse.json(
+      return Response.json(
         { success: false, error: "Check-out must be after check-in" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     const today = new Date();
     today.setUTCHours(0, 0, 0, 0);
     if (checkInDate < today) {
-      return NextResponse.json(
+      return Response.json(
         { success: false, error: "Check-in date cannot be in the past" },
-        { status: 400 }
+        { status: 400 },
+      );
+    }
+
+    // ── Availability check: reject if dates overlap existing bookings ──
+    const overlapping = await prisma.booking.findFirst({
+      where: {
+        status: {
+          in: [
+            BOOKING_STATUS.PENDING,
+            BOOKING_STATUS.CONFIRMED,
+            BOOKING_STATUS.COMPLETED,
+          ],
+        },
+        checkIn: { lt: checkOutDate },
+        checkOut: { gt: checkInDate },
+      },
+      select: { id: true },
+    });
+
+    if (overlapping) {
+      return Response.json(
+        {
+          success: false,
+          error:
+            "The selected dates are not available. Please choose different dates.",
+        },
+        { status: 409 },
       );
     }
 
@@ -102,7 +122,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(
+    return Response.json(
       {
         success: true,
         data: {
@@ -114,13 +134,13 @@ export async function POST(request: NextRequest) {
           minStayValid: pricing.minStayValid,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("[API] POST /api/booking-request error:", error);
-    return NextResponse.json(
+    return Response.json(
       { success: false, error: "Failed to submit booking request" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

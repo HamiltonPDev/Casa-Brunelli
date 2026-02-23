@@ -22,7 +22,7 @@ export async function GET(request: Request) {
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -31,11 +31,19 @@ export async function GET(request: Request) {
   const to = searchParams.get("to");
 
   try {
+    // Build a single `date` filter to avoid spread overwrite when both params exist
+    const dateFilter =
+      from || to
+        ? {
+            date: {
+              ...(from && { gte: new Date(from + "T00:00:00Z") }),
+              ...(to && { lte: new Date(to + "T00:00:00Z") }),
+            },
+          }
+        : {};
+
     const dates = await prisma.unavailableDate.findMany({
-      where: {
-        ...(from && { date: { gte: new Date(from + "T00:00:00Z") } }),
-        ...(to && { date: { lte: new Date(to + "T00:00:00Z") } }),
-      },
+      where: dateFilter,
       orderBy: { date: "asc" },
       include: {
         admin: { select: { name: true } },
@@ -47,7 +55,7 @@ export async function GET(request: Request) {
     console.error("[API] GET /api/admin/unavailable-dates:", error);
     return Response.json(
       { success: false, error: "Failed to fetch unavailable dates" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -59,7 +67,7 @@ export async function POST(request: Request) {
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -84,13 +92,13 @@ export async function POST(request: Request) {
 
     return Response.json(
       { success: true, data: { created: result.count } },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error("[API] POST /api/admin/unavailable-dates:", error);
     return Response.json(
       { success: false, error: "Failed to block dates" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -102,7 +110,7 @@ export async function DELETE(request: Request) {
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -128,7 +136,7 @@ export async function DELETE(request: Request) {
     console.error("[API] DELETE /api/admin/unavailable-dates:", error);
     return Response.json(
       { success: false, error: "Failed to unblock dates" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

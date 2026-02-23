@@ -3,10 +3,11 @@
 //
 // This is THE business-critical action:
 // 1. Validates the message is a BOOKING_REQUEST with dates/guests
-// 2. Recalculates pricing (or uses admin override)
-// 3. Creates or links a GuestUser
-// 4. Creates a Booking record
-// 5. Marks the message as REPLIED
+// 2. Checks for date overlap (double-booking prevention)
+// 3. Recalculates pricing (or uses admin override)
+// 4. Creates or links a GuestUser (INSIDE the transaction)
+// 5. Creates a Booking record
+// 6. Marks the message as REPLIED
 //
 // Protected: admin session required. Validated with Zod.
 
@@ -14,7 +15,12 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { calculateBookingTotal } from "@/lib/pricing";
 import { calculateNights } from "@/lib/utils";
-import { MESSAGE_TYPE, MESSAGE_STATUS, DEPOSIT_PERCENTAGE } from "@/lib/constants";
+import {
+  MESSAGE_TYPE,
+  MESSAGE_STATUS,
+  BOOKING_STATUS,
+  DEPOSIT_PERCENTAGE,
+} from "@/lib/constants";
 import { promoteMessageSchema, validationError } from "@/lib/validations/admin";
 
 interface RouteParams {
@@ -27,7 +33,7 @@ export async function POST(request: Request, { params }: RouteParams) {
   if (!session) {
     return Response.json(
       { success: false, error: "Unauthorized" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -41,6 +47,7 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (!parsed.success) {
       return validationError(parsed.error);
     }
+
     // ── 2. Fetch the message ──────────────────────────────────
     const message = await prisma.contactMessage.findUnique({
       where: { id },
@@ -49,99 +56,142 @@ export async function POST(request: Request, { params }: RouteParams) {
     if (!message) {
       return Response.json(
         { success: false, error: "Message not found" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
     // ── 3. Validate it's a BOOKING_REQUEST with required data ─
     if (message.type !== MESSAGE_TYPE.BOOKING_REQUEST) {
       return Response.json(
-        { success: false, error: "Only BOOKING_REQUEST messages can be promoted to bookings" },
-        { status: 400 }
+        {
+          success: false,
+          error:
+            "Only BOOKING_REQUEST messages can be promoted to bookings",
+        },
+        { status: 400 },
       );
     }
 
     if (!message.checkIn || !message.checkOut || !message.guestCount) {
       return Response.json(
-        { success: false, error: "Message is missing booking data (checkIn, checkOut, or guestCount)" },
-        { status: 400 }
+        {
+          success: false,
+          error:
+            "Message is missing booking data (checkIn, checkOut, or guestCount)",
+        },
+        { status: 400 },
       );
     }
 
-    // ── 4. Calculate pricing ──────────────────────────────────
-    const pricing = await calculateBookingTotal(message.checkIn, message.checkOut);
+    // ── 4. Check for date overlap (double-booking prevention) ─
+    // A booking overlaps if its checkIn < our checkOut AND its checkOut > our checkIn
+    const overlapping = await prisma.booking.findFirst({
+      where: {
+        status: {
+          in: [
+            BOOKING_STATUS.PENDING,
+            BOOKING_STATUS.CONFIRMED,
+            BOOKING_STATUS.COMPLETED,
+          ],
+        },
+        checkIn: { lt: message.checkOut },
+        checkOut: { gt: message.checkIn },
+      },
+      select: { id: true, checkIn: true, checkOut: true, guestName: true },
+    });
+
+    if (overlapping) {
+      return Response.json(
+        {
+          success: false,
+          error: `Date conflict: overlaps with booking for ${overlapping.guestName} (${overlapping.checkIn.toISOString().slice(0, 10)} → ${overlapping.checkOut.toISOString().slice(0, 10)})`,
+        },
+        { status: 409 },
+      );
+    }
+
+    // ── 5. Calculate pricing ──────────────────────────────────
+    const pricing = await calculateBookingTotal(
+      message.checkIn,
+      message.checkOut,
+    );
     const nights = calculateNights(message.checkIn, message.checkOut);
 
     // Admin can override the total price (e.g., discount for repeat guest)
     const totalPrice = parsed.data.totalPriceOverride ?? pricing.totalPrice;
-    const depositAmount = Math.round(totalPrice * DEPOSIT_PERCENTAGE * 100) / 100;
+    const depositAmount =
+      Math.round(totalPrice * DEPOSIT_PERCENTAGE * 100) / 100;
 
-    // ── 5. Upsert GuestUser (auto-create for new guests) ────
-    const guestUser = await prisma.guestUser.upsert({
-      where: { email: message.email },
-      update: {
-        name: message.name,
-        phone: message.phone,
-        lastBookingAt: new Date(),
-        totalBookings: { increment: 1 },
-      },
-      create: {
-        email: message.email,
-        name: message.name,
-        phone: message.phone,
-        totalBookings: 1,
-        lastBookingAt: new Date(),
-      },
-    });
+    // ── 6. Transaction: upsert GuestUser + create Booking + mark message ─
+    // GuestUser upsert is INSIDE the transaction to prevent orphans if
+    // booking creation fails.
+    const result = await prisma.$transaction(async (tx) => {
+      const guestUser = await tx.guestUser.upsert({
+        where: { email: message.email },
+        update: {
+          name: message.name,
+          phone: message.phone,
+          lastBookingAt: new Date(),
+          totalBookings: { increment: 1 },
+        },
+        create: {
+          email: message.email,
+          name: message.name,
+          phone: message.phone,
+          totalBookings: 1,
+          lastBookingAt: new Date(),
+        },
+      });
 
-    // ── 6. Create Booking + mark message as REPLIED (transaction) ─
-    const [booking] = await prisma.$transaction([
-      prisma.booking.create({
+      const booking = await tx.booking.create({
         data: {
-          checkIn: message.checkIn,
-          checkOut: message.checkOut,
+          checkIn: message.checkIn!,
+          checkOut: message.checkOut!,
           numberOfNights: nights,
-          guestCount: message.guestCount,
+          guestCount: message.guestCount!,
           guestName: message.name,
           guestEmail: message.email,
           guestPhone: message.phone,
           totalPrice,
           depositAmount,
           specialRequests: parsed.data.notes ?? null,
-          approvedBy: session.user.id,
+          approvedBy: session.user!.id,
           approvedAt: new Date(),
           guestUserId: guestUser.id,
         },
-      }),
-      prisma.contactMessage.update({
+      });
+
+      await tx.contactMessage.update({
         where: { id },
         data: {
           status: MESSAGE_STATUS.REPLIED,
-          repliedBy: session.user.id,
+          repliedBy: session.user!.id,
           repliedAt: new Date(),
         },
-      }),
-    ]);
+      });
+
+      return { booking, guestUser };
+    });
 
     return Response.json(
       {
         success: true,
         data: {
-          bookingId: booking.id,
-          guestUserId: guestUser.id,
-          totalPrice: Number(booking.totalPrice),
-          depositAmount: Number(booking.depositAmount),
+          bookingId: result.booking.id,
+          guestUserId: result.guestUser.id,
+          totalPrice: Number(result.booking.totalPrice),
+          depositAmount: Number(result.booking.depositAmount),
           nights,
           minStayValid: pricing.minStayValid,
         },
       },
-      { status: 201 }
+      { status: 201 },
     );
   } catch (error) {
     console.error(`[API] POST /admin/messages/${id}/promote failed:`, error);
     return Response.json(
       { success: false, error: "Failed to promote message to booking" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

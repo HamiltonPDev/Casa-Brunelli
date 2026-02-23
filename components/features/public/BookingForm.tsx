@@ -28,6 +28,9 @@ interface BookingFormProps {
   checkOut: string; // yyyy-MM-dd
   nights: number;
   guests?: number; // pre-filled from availability selection
+  totalPrice: number; // server-calculated total for the date range
+  depositAmount: number; // 30% deposit
+  balanceAmount: number; // 70% balance (totalPrice - depositAmount)
 }
 
 interface FormState {
@@ -115,6 +118,9 @@ export function BookingForm({
   checkOut,
   nights,
   guests = 2,
+  totalPrice,
+  depositAmount,
+  balanceAmount,
 }: Readonly<BookingFormProps>) {
   const router = useRouter();
 
@@ -503,6 +509,42 @@ export function BookingForm({
                 value={`${nights} night${nights !== 1 ? "s" : ""}`}
               />
 
+              {/* Pricing breakdown */}
+              <div
+                className="mt-4 pt-4 border-t space-y-2"
+                style={{ borderColor: "rgba(139,157,131,0.1)" }}
+              >
+                <p
+                  className="text-xs font-medium uppercase tracking-wider mb-3"
+                  style={{ color: "#3D524380" }}
+                >
+                  Estimated Pricing
+                </p>
+                <SummaryRow
+                  label={`${nights} night${nights !== 1 ? "s" : ""} avg.`}
+                  value={formatEur(totalPrice / nights)}
+                />
+                <div
+                  className="pt-3 mt-3 border-t"
+                  style={{ borderColor: "rgba(139,157,131,0.1)" }}
+                >
+                  <div className="flex justify-between items-center text-sm font-semibold">
+                    <span style={{ color: "var(--dark-forest)" }}>Total</span>
+                    <span style={{ color: "var(--dark-forest)" }}>
+                      {formatEur(totalPrice)}
+                    </span>
+                  </div>
+                </div>
+                <SummaryRow
+                  label="Deposit (30%)"
+                  value={formatEur(depositAmount)}
+                />
+                <SummaryRow
+                  label="Balance (70%)"
+                  value={formatEur(balanceAmount)}
+                />
+              </div>
+
               <div
                 className="mt-4 pt-4 border-t text-xs"
                 style={{
@@ -510,7 +552,7 @@ export function BookingForm({
                   color: "#3D524380",
                 }}
               >
-                Final pricing will be confirmed in our reply. Rates vary by
+                Final pricing will be confirmed in our reply. Rates may vary by
                 season.
               </div>
             </Card>
