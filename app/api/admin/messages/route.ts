@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireAuth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUS } from "@/lib/constants";
 
@@ -8,13 +8,8 @@ import { MESSAGE_STATUS } from "@/lib/constants";
 // Protected: admin session required.
 
 export async function GET(request: Request) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { denied } = await requireAuth();
+  if (denied) return denied;
 
   const { searchParams } = new URL(request.url);
   const statusParam = searchParams.get("status");

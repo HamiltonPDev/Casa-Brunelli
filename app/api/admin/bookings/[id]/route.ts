@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireAuth, requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { BookingStatus } from "@/lib/constants";
 import { updateBookingSchema, validationError } from "@/lib/validations/admin";
@@ -9,13 +9,8 @@ interface RouteParams {
 
 // ─── GET /api/admin/bookings/[id] ─────────────────────────────
 export async function GET(_request: Request, { params }: RouteParams) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { denied } = await requireAuth();
+  if (denied) return denied;
 
   const { id } = await params;
 
@@ -62,13 +57,8 @@ export async function GET(_request: Request, { params }: RouteParams) {
 // Update booking status: { status: BookingStatus }
 // Or toggle payment flags: { depositPaid?: boolean, balancePaid?: boolean }
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { denied } = await requireWrite();
+  if (denied) return denied;
 
   const { id } = await params;
 

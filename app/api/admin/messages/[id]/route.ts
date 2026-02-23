@@ -1,24 +1,18 @@
-import { NextRequest } from "next/server";
-import { auth } from "@/lib/auth";
+import { requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUS } from "@/lib/constants";
 import { updateMessageSchema, validationError } from "@/lib/validations/admin";
 
 // ─── PATCH /api/admin/messages/[id] ────────────────────────────
 // Updates the status of a ContactMessage (READ | REPLIED).
-// Protected: admin session required. Validated with Zod.
+// Protected: admin write access required. Validated with Zod.
 
 export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  request: Request,
+  { params }: { params: Promise<{ id: string }> },
 ) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const { session, denied } = await requireWrite();
+  if (denied) return denied;
 
   const { id } = await params;
 

@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireWrite, requireSuperAdmin } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { OverrideType } from "@prisma/client";
 import type { SeasonStatus } from "@/lib/constants";
@@ -10,13 +10,8 @@ interface RouteParams {
 
 // ─── PATCH /api/admin/seasons/[id] ────────────────────────────
 export async function PATCH(request: Request, { params }: RouteParams) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { denied } = await requireWrite();
+  if (denied) return denied;
 
   const { id } = await params;
 
@@ -82,13 +77,8 @@ export async function PATCH(request: Request, { params }: RouteParams) {
 
 // ─── DELETE /api/admin/seasons/[id] ───────────────────────────
 export async function DELETE(_request: Request, { params }: RouteParams) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { denied } = await requireSuperAdmin();
+  if (denied) return denied;
 
   const { id } = await params;
 

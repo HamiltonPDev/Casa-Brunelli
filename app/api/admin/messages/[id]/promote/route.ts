@@ -11,7 +11,7 @@
 //
 // Protected: admin session required. Validated with Zod.
 
-import { auth } from "@/lib/auth";
+import { requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { calculateBookingTotal } from "@/lib/pricing";
 import { calculateNights } from "@/lib/utils";
@@ -29,13 +29,8 @@ interface RouteParams {
 
 // ─── POST /api/admin/messages/[id]/promote ─────────────────────
 export async function POST(request: Request, { params }: RouteParams) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { session, denied } = await requireWrite();
+  if (denied) return denied;
 
   const { id } = await params;
 
@@ -155,7 +150,7 @@ export async function POST(request: Request, { params }: RouteParams) {
           totalPrice,
           depositAmount,
           specialRequests: parsed.data.notes ?? null,
-          approvedBy: session.user!.id,
+          approvedBy: session.user.id,
           approvedAt: new Date(),
           guestUserId: guestUser.id,
         },
@@ -165,7 +160,7 @@ export async function POST(request: Request, { params }: RouteParams) {
         where: { id },
         data: {
           status: MESSAGE_STATUS.REPLIED,
-          repliedBy: session.user!.id,
+          repliedBy: session.user.id,
           repliedAt: new Date(),
         },
       });
