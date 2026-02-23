@@ -1,9 +1,9 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminBadge } from "@/components/admin/AdminBadge";
-import { CalendarWidget } from "@/components/admin/CalendarWidget";
-import type { CalendarBooking } from "@/components/admin/CalendarWidget";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
+import { CalendarWidget } from "@/components/features/admin/CalendarWidget";
+import type { CalendarBooking } from "@/components/features/admin/CalendarWidget";
 import { formatCurrency, formatDateRange } from "@/lib/utils";
 import { BOOKING_STATUS } from "@/lib/constants";
 import {
@@ -44,6 +44,7 @@ export default async function AdminDashboardPage() {
     lastMonthRevenue,
     calendarBookings,
     upcomingCheckIns,
+    unavailableDates,
   ] = await Promise.all([
     // Pending unread messages
     prisma.contactMessage.count({
@@ -110,6 +111,12 @@ export default async function AdminDashboardPage() {
       orderBy: { checkIn: "asc" },
       take: 5,
     }),
+
+    // Unavailable dates for calendar widget
+    prisma.unavailableDate.findMany({
+      where: { date: { gte: startOfMonth } },
+      orderBy: { date: "asc" },
+    }),
   ]);
 
   // ── Derived values ────────────────────────────────────────
@@ -129,6 +136,12 @@ export default async function AdminDashboardPage() {
     guestCount: b.guestCount,
     status: b.status,
     totalPrice: Number(b.totalPrice),
+  }));
+
+  // Serialize UnavailableDates for CalendarWidget
+  const blockedDates = unavailableDates.map((ud) => ({
+    date: ud.date.toISOString().split("T")[0],
+    note: ud.reason ?? undefined,
   }));
 
   const kpis = [
@@ -214,7 +227,7 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Calendar Widget — Full Width */}
-      <CalendarWidget bookings={calendarData} />
+      <CalendarWidget bookings={calendarData} initialBlockedDates={blockedDates} />
 
       {/* Bottom row: Recent Bookings + Today sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

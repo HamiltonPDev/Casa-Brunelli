@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { MessagesClient } from "@/components/admin/MessagesClient";
+import { MessagesClient } from "@/components/features/admin/MessagesClient";
 
 // ─── Messages Page ─────────────────────────────────────────────
 // Server Component — fetches all ContactMessages server-side.

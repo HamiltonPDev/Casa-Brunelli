@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChevronLeft, ChevronRight, Loader2, AlertCircle, Users, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MAX_GUESTS, MIN_GUESTS } from "@/lib/constants";
-import { Card } from "@/components/ui/Card";
+import { Card } from "@/components/ui/public/Card";
 import type { DayAvailability } from "@/app/api/availability/route";
 
 // ─── Types ─────────────────────────────────────────────────────

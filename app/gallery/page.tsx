@@ -3,9 +3,9 @@
 
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PublicNav } from "@/components/public/PublicNav";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { GalleryClient } from "@/components/public/GalleryClient";
+import { PublicNav } from "@/components/features/public/PublicNav";
+import { PublicFooter } from "@/components/features/public/PublicFooter";
+import { GalleryClient } from "@/components/features/public/GalleryClient";
 
 export const metadata: Metadata = {
   title: "Photo Gallery",

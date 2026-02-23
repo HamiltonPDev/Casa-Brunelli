@@ -2,9 +2,9 @@
 // Server Component — wraps the client-side AvailabilityCalendar
 
 import type { Metadata } from "next";
-import { PublicNav } from "@/components/public/PublicNav";
-import { PublicFooter } from "@/components/public/PublicFooter";
-import { AvailabilityCalendar } from "@/components/public/AvailabilityCalendar";
+import { PublicNav } from "@/components/features/public/PublicNav";
+import { PublicFooter } from "@/components/features/public/PublicFooter";
+import { AvailabilityCalendar } from "@/components/features/public/AvailabilityCalendar";
 
 export const metadata: Metadata = {
   title: "Availability & Rates",

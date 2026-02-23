@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { SettingsClient } from "@/components/admin/SettingsClient";
+import { SettingsClient } from "@/components/features/admin/SettingsClient";
 
 export const metadata: Metadata = { title: "Settings" };
 export const dynamic = "force-dynamic";

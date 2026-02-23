@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { BOOKING_STATUS } from "@/lib/constants";
 import type { BookingStatus } from "@/lib/constants";
+import { updateBookingSchema, validationError } from "@/lib/validations/admin";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -73,33 +73,21 @@ export async function PATCH(request: Request, { params }: RouteParams) {
   const { id } = await params;
 
   try {
-    const body = (await request.json()) as {
-      status?: string;
-      depositPaid?: boolean;
-      balancePaid?: boolean;
-    };
+    const body = await request.json();
+    const parsed = updateBookingSchema.safeParse(body);
 
-    // Validate status if provided
-    if (
-      body.status &&
-      !Object.values(BOOKING_STATUS).includes(body.status as BookingStatus)
-    ) {
-      return Response.json(
-        { success: false, error: "Invalid status value" },
-        { status: 400 }
-      );
+    if (!parsed.success) {
+      return validationError(parsed.error);
     }
+
+    const { status, depositPaid, balancePaid } = parsed.data;
 
     const updated = await prisma.booking.update({
       where: { id },
       data: {
-        ...(body.status && { status: body.status as BookingStatus }),
-        ...(body.depositPaid !== undefined && {
-          depositPaid: body.depositPaid,
-        }),
-        ...(body.balancePaid !== undefined && {
-          balancePaid: body.balancePaid,
-        }),
+        ...(status && { status: status as BookingStatus }),
+        ...(depositPaid !== undefined && { depositPaid }),
+        ...(balancePaid !== undefined && { balancePaid }),
       },
     });
 

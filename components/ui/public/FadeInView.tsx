@@ -1,6 +1,6 @@
 "use client";
 
-// components/ui/FadeInView.tsx
+// components/ui/public/FadeInView.tsx
 // Atom — wraps children in a whileInView fade+slide animation
 // Replaces 16 repeated motion.div initial/whileInView blocks
 

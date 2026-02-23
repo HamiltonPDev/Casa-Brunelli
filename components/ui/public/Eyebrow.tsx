@@ -1,4 +1,4 @@
-// components/ui/Eyebrow.tsx
+// components/ui/public/Eyebrow.tsx
 // Atom — small uppercase label above section titles
 
 import { cn } from "@/lib/utils";

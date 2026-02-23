@@ -12,10 +12,11 @@ import {
   Info,
   RefreshCcw,
 } from "lucide-react";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminBadge } from "@/components/admin/AdminBadge";
-import { AdminButton } from "@/components/admin/AdminButton";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminBadge } from "@/components/ui/admin/AdminBadge";
+import { AdminButton } from "@/components/ui/admin/AdminButton";
 import { formatCurrency } from "@/lib/utils";
+import { updateBooking } from "@/lib/services/bookings";
 
 // ─── Types ─────────────────────────────────────────────────────
 interface Payment {
@@ -82,35 +83,26 @@ export function BookingDetailClient({
   const [balancePaid, setBalancePaid] = useState(booking.balancePaid);
   const [status, setStatus] = useState(booking.status);
 
-  async function patchBooking(data: Record<string, unknown>) {
-    const res = await fetch(`/api/admin/bookings/${booking.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    return res.json() as Promise<{ success: boolean }>;
-  }
-
   async function handleMarkDepositPaid() {
     setLoading("deposit");
-    const result = await patchBooking({ depositPaid: true });
+    const result = await updateBooking(booking.id, { depositPaid: true });
     if (result.success) {
       setDepositPaid(true);
       toast.success("Deposit marked as paid");
     } else {
-      toast.error("Failed to update deposit status");
+      toast.error(result.error);
     }
     setLoading(null);
   }
 
   async function handleCancelBooking() {
     setLoading("cancel");
-    const result = await patchBooking({ status: "CANCELLED" });
+    const result = await updateBooking(booking.id, { status: "CANCELLED" });
     if (result.success) {
       setStatus("CANCELLED");
       toast.success("Booking cancelled");
     } else {
-      toast.error("Failed to cancel booking");
+      toast.error(result.error);
     }
     setLoading(null);
   }

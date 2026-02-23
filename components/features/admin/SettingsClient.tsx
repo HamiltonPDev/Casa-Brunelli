@@ -1,7 +1,7 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
   Upload,
@@ -14,11 +14,13 @@ import {
   CheckCircle,
   AlertTriangle,
   X,
+  Construction,
 } from "lucide-react";
-import { AdminCard } from "@/components/admin/AdminCard";
-import { AdminButton } from "@/components/admin/AdminButton";
-import { AdminField } from "@/components/admin/AdminField";
+import { AdminCard } from "@/components/ui/admin/AdminCard";
+import { AdminButton } from "@/components/ui/admin/AdminButton";
+import { AdminField } from "@/components/ui/admin/AdminField";
 import { cn } from "@/lib/utils";
+import { ADMIN_ROLE } from "@/lib/constants";
 
 // ─── Types ─────────────────────────────────────────────────────
 type SettingsTab = "general" | "payments" | "email" | "access";
@@ -44,70 +46,148 @@ interface SettingsClientProps {
   adminUsers: AdminUser[];
 }
 
+interface GeneralForm {
+  propertyName: string;
+  address: string;
+  contactEmail: string;
+  phone: string;
+  locale: string;
+  currency: string;
+}
+
+interface PaymentsForm {
+  depositPercentage: string;
+  refundWindow: string;
+  taxRate: string;
+}
+
+interface EmailForm {
+  fromName: string;
+  fromEmail: string;
+}
+
+// ─── Constants ─────────────────────────────────────────────────
+const TABS: { id: SettingsTab; label: string }[] = [
+  { id: "general", label: "General" },
+  { id: "payments", label: "Payments" },
+  { id: "email", label: "Email" },
+  { id: "access", label: "Access" },
+];
+
+const INITIAL_GENERAL: GeneralForm = {
+  propertyName: "Casa Brunelli",
+  address: "Via della Collina 12, 53100 Siena, Tuscany, Italy",
+  contactEmail: "info@casabrunelli.it",
+  phone: "+39 0577 123456",
+  locale: "en-GB",
+  currency: "EUR",
+};
+
+const INITIAL_PAYMENTS: PaymentsForm = {
+  depositPercentage: "30",
+  refundWindow: "14",
+  taxRate: "10",
+};
+
+const INITIAL_EMAIL: EmailForm = {
+  fromName: "Casa Brunelli",
+  fromEmail: "noreply@casabrunelli.it",
+};
+
+// ─── Private Sub-Components ────────────────────────────────────
+
+/** Banner shown on sections that are not yet wired to real APIs */
+function ComingSoonBanner({ feature }: Readonly<{ feature: string }>) {
+  return (
+    <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
+      <Construction className="w-5 h-5 text-amber-600 flex-shrink-0" />
+      <div>
+        <p className="text-sm font-medium text-amber-800">
+          Coming Soon — {feature}
+        </p>
+        <p className="text-xs text-amber-600 mt-0.5">
+          This section is a UI preview. Changes are not persisted yet.
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ─── Component ─────────────────────────────────────────────────
 export function SettingsClient({
   emailTemplates,
   adminUsers,
-}: SettingsClientProps) {
+}: Readonly<SettingsClientProps>) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("general");
   const [copied, setCopied] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [showInviteModal, setShowInviteModal] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-  // General form state
-  const [propertyName, setPropertyName] = useState("Casa Brunelli");
-  const [address, setAddress] = useState(
-    "Via della Collina 12, 53100 Siena, Tuscany, Italy"
-  );
-  const [contactEmail, setContactEmail] = useState("info@casabrunelli.it");
-  const [phone, setPhone] = useState("+39 0577 123456");
-  const [locale, setLocale] = useState("en-GB");
-  const [currency, setCurrency] = useState("EUR");
+  // Form state — grouped by tab
+  const [generalForm, setGeneralForm] =
+    useState<GeneralForm>(INITIAL_GENERAL);
+  const [paymentsForm, setPaymentsForm] =
+    useState<PaymentsForm>(INITIAL_PAYMENTS);
+  const [emailForm, setEmailForm] = useState<EmailForm>(INITIAL_EMAIL);
 
-  // Payments state
-  const [depositPercentage, setDepositPercentage] = useState("30");
-  const [refundWindow, setRefundWindow] = useState("14");
-  const [taxRate, setTaxRate] = useState("10");
-
-  // Email state
-  const [fromName, setFromName] = useState("Casa Brunelli");
-  const [fromEmail, setFromEmail] = useState("noreply@casabrunelli.it");
-
-  function markChanged<T>(setter: (v: T) => void) {
-    return (v: T) => {
-      setter(v);
-      setHasChanges(true);
-    };
+  // ── Form helpers ──────────────────────────────────────────
+  function updateGeneral(
+    field: keyof GeneralForm,
+    value: string
+  ): void {
+    setGeneralForm((prev) => ({ ...prev, [field]: value }));
+    setHasChanges(true);
   }
 
-  function handleCopy(text: string, key: string) {
+  function updatePayments(
+    field: keyof PaymentsForm,
+    value: string
+  ): void {
+    setPaymentsForm((prev) => ({ ...prev, [field]: value }));
+    setHasChanges(true);
+  }
+
+  function updateEmail(field: keyof EmailForm, value: string): void {
+    setEmailForm((prev) => ({ ...prev, [field]: value }));
+    setHasChanges(true);
+  }
+
+  // ── Handlers ──────────────────────────────────────────────
+  function handleCopy(text: string, key: string): void {
     void navigator.clipboard.writeText(text);
     setCopied(key);
     setTimeout(() => setCopied(null), 2000);
   }
 
-  function handleSave() {
-    setSaving(true);
-    setTimeout(() => {
-      setSaving(false);
+  function handleSave(): void {
+    // TODO: Create API route POST /api/admin/settings to persist settings
+    // The endpoint should:
+    // 1. Validate with Zod schema in lib/validations/admin.ts
+    // 2. Update a Settings model in Prisma (or use env vars for some)
+    // 3. Return the saved settings
+    // For now, simulate success:
+    startTransition(async () => {
+      // TODO: Replace with real API call:
+      // const result = await updateSettings({ general: generalForm, payments: paymentsForm, email: emailForm });
+      // if (!result.success) { toast.error(result.error); return; }
+      await new Promise((resolve) => setTimeout(resolve, 500));
       setHasChanges(false);
       toast.success("Settings saved successfully");
-    }, 800);
+    });
   }
 
-  function handleDiscard() {
+  function handleDiscard(): void {
+    // TODO: When API exists, refetch current settings from server
+    // For now, reset to initial values:
+    setGeneralForm(INITIAL_GENERAL);
+    setPaymentsForm(INITIAL_PAYMENTS);
+    setEmailForm(INITIAL_EMAIL);
     setHasChanges(false);
     toast.info("Changes discarded");
   }
 
-  const TABS: { id: SettingsTab; label: string }[] = [
-    { id: "general", label: "General" },
-    { id: "payments", label: "Payments" },
-    { id: "email", label: "Email" },
-    { id: "access", label: "Access" },
-  ];
-
+  // ── Render ────────────────────────────────────────────────
   return (
     <div className="space-y-6 pb-24">
       {/* Header */}
@@ -141,39 +221,41 @@ export function SettingsClient({
       {/* ── General ────────────────────────────────────────── */}
       {activeTab === "general" && (
         <div className="space-y-6">
+          <ComingSoonBanner feature="Property Settings API" />
+
           <AdminCard title="Property Information">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
                 <AdminField
                   label="Property Name"
-                  value={propertyName}
-                  onChange={markChanged(setPropertyName)}
+                  value={generalForm.propertyName}
+                  onChange={(v) => updateGeneral("propertyName", v)}
                 />
               </div>
               <div className="md:col-span-2">
                 <AdminField
                   type="textarea"
                   label="Address"
-                  value={address}
-                  onChange={markChanged(setAddress)}
+                  value={generalForm.address}
+                  onChange={(v) => updateGeneral("address", v)}
                 />
               </div>
               <AdminField
                 type="email"
                 label="Contact Email"
-                value={contactEmail}
-                onChange={markChanged(setContactEmail)}
+                value={generalForm.contactEmail}
+                onChange={(v) => updateGeneral("contactEmail", v)}
               />
               <AdminField
                 label="Phone"
-                value={phone}
-                onChange={markChanged(setPhone)}
+                value={generalForm.phone}
+                onChange={(v) => updateGeneral("phone", v)}
               />
               <AdminField
                 type="select"
                 label="Locale"
-                value={locale}
-                onChange={markChanged(setLocale)}
+                value={generalForm.locale}
+                onChange={(v) => updateGeneral("locale", v)}
                 options={[
                   { value: "en-GB", label: "English (UK)" },
                   { value: "en-US", label: "English (US)" },
@@ -184,8 +266,8 @@ export function SettingsClient({
               <AdminField
                 type="select"
                 label="Currency"
-                value={currency}
-                onChange={markChanged(setCurrency)}
+                value={generalForm.currency}
+                onChange={(v) => updateGeneral("currency", v)}
                 options={[
                   { value: "EUR", label: "Euro (€)" },
                   { value: "USD", label: "US Dollar ($)" },
@@ -201,6 +283,7 @@ export function SettingsClient({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Logo
                 </label>
+                {/* TODO: Implement file upload via API route + cloud storage (S3/Cloudinary) */}
                 <div className="flex items-center gap-4">
                   <div className="w-32 h-32 border-2 border-dashed border-gray-300 rounded-lg flex items-center justify-center bg-gray-50">
                     <Upload className="w-8 h-8 text-gray-400" />
@@ -210,6 +293,7 @@ export function SettingsClient({
                       variant="secondary"
                       size="sm"
                       icon={<Upload className="w-4 h-4" />}
+                      disabled
                     >
                       Upload Logo
                     </AdminButton>
@@ -241,20 +325,29 @@ export function SettingsClient({
       {/* ── Payments ───────────────────────────────────────── */}
       {activeTab === "payments" && (
         <div className="space-y-6">
+          <ComingSoonBanner feature="Stripe Integration" />
+
           <AdminCard title="Stripe Integration">
             <div className="space-y-4">
+              {/* TODO: Connect real Stripe account status via Stripe API
+                 1. Create API route GET /api/admin/stripe/status
+                 2. Check if STRIPE_SECRET_KEY env var is set
+                 3. Call stripe.accounts.retrieve() to get real status
+                 4. Show connect/disconnect button based on real state */}
               <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-700" />
                   <div>
-                    <p className="font-medium text-gray-900">Connected</p>
+                    <p className="font-medium text-gray-900">
+                      Not Connected
+                    </p>
                     <p className="text-sm text-gray-600">
-                      Account: acct_1A2B3C4D5E6F
+                      Stripe integration pending setup
                     </p>
                   </div>
                 </div>
-                <AdminButton variant="secondary" size="sm">
-                  Disconnect
+                <AdminButton variant="secondary" size="sm" disabled>
+                  Connect Stripe
                 </AdminButton>
               </div>
 
@@ -262,6 +355,7 @@ export function SettingsClient({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Webhook Secret
                 </label>
+                {/* TODO: Read webhook secret status from env (masked) */}
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -289,16 +383,16 @@ export function SettingsClient({
               <div>
                 <AdminField
                   label="Deposit Percentage"
-                  value={depositPercentage}
-                  onChange={markChanged(setDepositPercentage)}
+                  value={paymentsForm.depositPercentage}
+                  onChange={(v) => updatePayments("depositPercentage", v)}
                 />
                 <p className="text-sm text-gray-500 mt-1">Default: 30%</p>
               </div>
               <div>
                 <AdminField
                   label="Refund Window (days)"
-                  value={refundWindow}
-                  onChange={markChanged(setRefundWindow)}
+                  value={paymentsForm.refundWindow}
+                  onChange={(v) => updatePayments("refundWindow", v)}
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Days before check-in
@@ -307,8 +401,8 @@ export function SettingsClient({
               <div>
                 <AdminField
                   label="Tax Rate (%)"
-                  value={taxRate}
-                  onChange={markChanged(setTaxRate)}
+                  value={paymentsForm.taxRate}
+                  onChange={(v) => updatePayments("taxRate", v)}
                 />
                 <p className="text-sm text-gray-500 mt-1">
                   Applied to all bookings
@@ -322,8 +416,14 @@ export function SettingsClient({
       {/* ── Email ──────────────────────────────────────────── */}
       {activeTab === "email" && (
         <div className="space-y-6">
+          <ComingSoonBanner feature="Email Provider (Resend)" />
+
           <AdminCard title="Email Provider">
             <div className="space-y-4">
+              {/* TODO: Integrate Resend API
+                 1. Add RESEND_API_KEY to env
+                 2. Create API route POST /api/admin/email/test to send test email
+                 3. Show connection status based on API key validity */}
               <div className="flex items-center gap-3 p-4 bg-gray-50 border border-gray-200 rounded-lg">
                 <div className="flex-1">
                   <p className="font-medium text-gray-900">Resend</p>
@@ -335,6 +435,7 @@ export function SettingsClient({
                   variant="ghost"
                   size="sm"
                   icon={<Send className="w-4 h-4" />}
+                  disabled
                 >
                   Send Test Email
                 </AdminButton>
@@ -346,19 +447,24 @@ export function SettingsClient({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <AdminField
                 label="From Name"
-                value={fromName}
-                onChange={markChanged(setFromName)}
+                value={emailForm.fromName}
+                onChange={(v) => updateEmail("fromName", v)}
               />
               <AdminField
                 type="email"
                 label="From Email"
-                value={fromEmail}
-                onChange={markChanged(setFromEmail)}
+                value={emailForm.fromEmail}
+                onChange={(v) => updateEmail("fromEmail", v)}
               />
             </div>
           </AdminCard>
 
           <AdminCard title="Email Templates">
+            {/* TODO: Create API routes for email template CRUD
+               1. GET /api/admin/email-templates — list all
+               2. GET /api/admin/email-templates/[id] — get template with HTML body
+               3. PATCH /api/admin/email-templates/[id] — update template
+               4. Create a template editor component (could use react-email) */}
             <div className="overflow-x-auto -mx-6 -mb-6">
               <table className="w-full">
                 <thead>
@@ -394,12 +500,20 @@ export function SettingsClient({
                       </td>
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-3">
-                          <button className="text-sm text-admin-sage hover:text-admin-sage-hover font-medium flex items-center gap-1">
+                          {/* TODO: Implement template preview modal */}
+                          <button
+                            className="text-sm text-admin-sage hover:text-admin-sage-hover font-medium flex items-center gap-1 disabled:opacity-40"
+                            disabled
+                          >
                             <Eye className="w-4 h-4" />
                             Preview
                           </button>
                           <span className="text-gray-300">|</span>
-                          <button className="text-sm text-admin-sage hover:text-admin-sage-hover font-medium">
+                          {/* TODO: Implement template editor page/modal */}
+                          <button
+                            className="text-sm text-admin-sage hover:text-admin-sage-hover font-medium disabled:opacity-40"
+                            disabled
+                          >
                             Edit
                           </button>
                         </div>
@@ -416,10 +530,14 @@ export function SettingsClient({
       {/* ── Access ─────────────────────────────────────────── */}
       {activeTab === "access" && (
         <div className="space-y-6">
+          <ComingSoonBanner feature="User Management API" />
+
           <AdminCard
             title="Users"
             subtitle="Manage admin access"
             actions={
+              // TODO: Create API route POST /api/admin/users/invite
+              // Should send email invitation with temporary password or magic link
               <AdminButton
                 variant="primary"
                 size="sm"
@@ -467,16 +585,17 @@ export function SettingsClient({
                         <span
                           className={cn(
                             "inline-flex items-center px-2 py-1 rounded-md text-xs font-medium",
-                            user.role === "SUPER_ADMIN" || user.role === "ADMIN"
+                            user.role === ADMIN_ROLE.SUPER_ADMIN ||
+                              user.role === ADMIN_ROLE.ADMIN
                               ? "bg-admin-sage/10 text-admin-sage"
                               : "bg-gray-100 text-gray-700"
                           )}
                         >
-                          {user.role === "SUPER_ADMIN"
+                          {user.role === ADMIN_ROLE.SUPER_ADMIN
                             ? "Super Admin"
-                            : user.role === "ADMIN"
-                            ? "Admin"
-                            : "Viewer"}
+                            : user.role === ADMIN_ROLE.ADMIN
+                              ? "Admin"
+                              : "Viewer"}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
@@ -487,6 +606,8 @@ export function SettingsClient({
                           : "Never"}
                       </td>
                       <td className="px-6 py-4 text-right">
+                        {/* TODO: Create API route DELETE /api/admin/users/[id]
+                            Should revoke access and log the action in AuditLog */}
                         <button
                           disabled={idx === 0}
                           className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1 ml-auto disabled:opacity-30 disabled:cursor-not-allowed"
@@ -511,7 +632,7 @@ export function SettingsClient({
                 </p>
                 <p className="text-sm text-gray-600">
                   Removing a user immediately revokes their access. This cannot
-                  be undone. Use the "Remove" button in the users table above.
+                  be undone. Use the &quot;Remove&quot; button in the users table above.
                 </p>
               </div>
             </div>
@@ -533,7 +654,7 @@ export function SettingsClient({
               </AdminButton>
               <AdminButton
                 variant="primary"
-                loading={saving}
+                loading={isPending}
                 onClick={handleSave}
               >
                 Save Changes
@@ -559,6 +680,8 @@ export function SettingsClient({
               </button>
             </div>
             <div className="space-y-4">
+              {/* TODO: Wire invite form to POST /api/admin/users/invite
+                 Should create AdminUser with temporary password + send email */}
               <AdminField
                 type="email"
                 label="Email Address"
@@ -568,8 +691,11 @@ export function SettingsClient({
                 type="select"
                 label="Role"
                 options={[
-                  { value: "ADMIN", label: "Admin — Full access" },
-                  { value: "VIEWER", label: "Viewer — Read-only access" },
+                  { value: ADMIN_ROLE.ADMIN, label: "Admin — Full access" },
+                  {
+                    value: ADMIN_ROLE.VIEWER,
+                    label: "Viewer — Read-only access",
+                  },
                 ]}
               />
               <div className="flex items-center gap-3 pt-4">
@@ -583,10 +709,7 @@ export function SettingsClient({
                 <AdminButton
                   variant="primary"
                   className="flex-1"
-                  onClick={() => {
-                    toast.success("Invite sent!");
-                    setShowInviteModal(false);
-                  }}
+                  disabled
                 >
                   Send Invite
                 </AdminButton>
