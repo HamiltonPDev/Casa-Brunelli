@@ -230,10 +230,22 @@ Response.json({ success: false, error: "msg" }, { status: 4xx/5xx });
 
 Always use `cn()` for conditional classes.
 
-**Tokens:** `--dark-forest` #2D3A2E · `--medium-green` #3D5243 · `--sage-variant` #8B9D83
+**Core tokens:** `--dark-forest` #2D3A2E · `--medium-green` #3D5243 · `--sage-variant` #8B9D83
 `--terracotta-gold` #C0AF7E · `--cream` #F5F3EF · `--forest-green` #1A4A3A · `--golden-wheat` #F5DEB3
 
-**Layout:** `max-w-[1400px] mx-auto px-6 lg:px-8`
+**Gradient tints:** `--mint-pale` #EEF4EE · `--mint-light` #F0F7F0 · `--warm-honey` #FFF8ED · `--warm-sand` #F0EDE8
+
+**Status backgrounds:** `--status-confirmed-bg` #E9F5EC · `--status-cancelled-bg` #FEF2F2 · `--status-completed-bg` #EFF6FF
+
+**Tailwind token classes** (via `@theme` bridge in globals.css): `bg-forest-green`, `text-forest-green`, `bg-admin-sage`, `text-admin-sage`, `bg-admin-avatar`, `text-status-confirmed`, `border-status-confirmed`, etc.
+
+**Tailwind v4 canonical classes** — use these, NOT the legacy forms:
+- `shrink-0` not `flex-shrink-0`
+- `max-w-350` not `max-w-[1400px]`
+- `bg-linear-to-br` not `bg-gradient-to-br`
+- `z-200` not `z-[200]`
+
+**Layout:** `max-w-350 mx-auto px-6 lg:px-8`
 
 ---
 
