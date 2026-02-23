@@ -1,17 +1,12 @@
-import { auth } from "@/lib/auth";
+import { requireAuth, requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { OverrideType } from "@/lib/constants";
 import { createSeasonSchema, validationError } from "@/lib/validations/admin";
 
 // ─── GET /api/admin/seasons ────────────────────────────────────
 export async function GET() {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const { denied } = await requireAuth();
+  if (denied) return denied;
 
   try {
     const seasons = await prisma.season.findMany({
@@ -40,13 +35,8 @@ export async function GET() {
 
 // ─── POST /api/admin/seasons ───────────────────────────────────
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const { denied } = await requireWrite();
+  if (denied) return denied;
 
   try {
     const raw = await request.json();

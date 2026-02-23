@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { requireAuth, requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BOOKING_STATUS } from "@/lib/constants";
 import type { BookingStatus } from "@/lib/constants";
@@ -7,13 +7,8 @@ import { bulkUpdateBookingsSchema, validationError } from "@/lib/validations/adm
 // ─── GET /api/admin/bookings ───────────────────────────────────
 // Supports query params: search, status, dateFrom, dateTo, guests, page
 export async function GET(request: Request) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const { denied } = await requireAuth();
+  if (denied) return denied;
 
   const { searchParams } = new URL(request.url);
   const search = searchParams.get("search") ?? "";
@@ -87,13 +82,8 @@ export async function GET(request: Request) {
 // ─── PATCH /api/admin/bookings ─────────────────────────────────
 // Bulk status update: { ids: string[], status: BookingStatus }
 export async function PATCH(request: Request) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
+  const { denied } = await requireWrite();
+  if (denied) return denied;
 
   try {
     const body = await request.json();

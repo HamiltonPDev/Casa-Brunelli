@@ -7,7 +7,7 @@
 //
 // Protected: admin session required. Validated with Zod.
 
-import { auth } from "@/lib/auth";
+import { requireAuth, requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   createUnavailableDatesSchema,
@@ -18,13 +18,8 @@ import {
 // ─── GET /api/admin/unavailable-dates ──────────────────────────
 // Optional query params: ?from=2025-06-01&to=2025-12-31
 export async function GET(request: Request) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { denied } = await requireAuth();
+  if (denied) return denied;
 
   const { searchParams } = new URL(request.url);
   const from = searchParams.get("from");
@@ -63,13 +58,8 @@ export async function GET(request: Request) {
 // ─── POST /api/admin/unavailable-dates ─────────────────────────
 // Body: { dates: ["2025-07-04", "2025-07-05"], reason?: "Owner vacation" }
 export async function POST(request: Request) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { session, denied } = await requireWrite();
+  if (denied) return denied;
 
   try {
     const body = await request.json();
@@ -106,13 +96,8 @@ export async function POST(request: Request) {
 // ─── DELETE /api/admin/unavailable-dates ───────────────────────
 // Body: { dates: ["2025-07-04", "2025-07-05"] }
 export async function DELETE(request: Request) {
-  const session = await auth();
-  if (!session) {
-    return Response.json(
-      { success: false, error: "Unauthorized" },
-      { status: 401 },
-    );
-  }
+  const { denied } = await requireWrite();
+  if (denied) return denied;
 
   try {
     const body = await request.json();

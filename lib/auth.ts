@@ -111,3 +111,73 @@ export function canWrite(role: AdminRole): boolean {
 export function canRead(role: AdminRole): boolean {
   return Object.values(ADMIN_ROLE).includes(role);
 }
+
+// ─── Route Guard Helpers ───────────────────────────────────────
+// Return a 401/403 Response if the check fails, or null if OK.
+// Usage in API routes:
+//   const { session, denied } = await requireWrite();
+//   if (denied) return denied;
+//   // session is guaranteed non-null here
+
+/** Admin session shape returned by route guards */
+export interface AdminSession {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: AdminRole;
+  };
+}
+
+type AuthResult =
+  | { session: AdminSession; denied: null }
+  | { session: null; denied: Response };
+
+/** Require an authenticated admin session. Returns 401 Response if not authenticated. */
+export async function requireAuth(): Promise<AuthResult> {
+  const session = await auth();
+  if (!session?.user) {
+    return {
+      session: null,
+      denied: Response.json(
+        { success: false, error: "Unauthorized" },
+        { status: 401 },
+      ),
+    };
+  }
+  return { session: session as AdminSession, denied: null };
+}
+
+/** Require write permissions (ADMIN or SUPER_ADMIN). Returns 403 if VIEWER. */
+export async function requireWrite(): Promise<AuthResult> {
+  const result = await requireAuth();
+  if (result.denied) return result;
+
+  if (!canWrite(result.session.user.role)) {
+    return {
+      session: null,
+      denied: Response.json(
+        { success: false, error: "Forbidden: insufficient permissions" },
+        { status: 403 },
+      ),
+    };
+  }
+  return result;
+}
+
+/** Require SUPER_ADMIN role. Returns 403 if not. */
+export async function requireSuperAdmin(): Promise<AuthResult> {
+  const result = await requireAuth();
+  if (result.denied) return result;
+
+  if (!isSuperAdmin(result.session.user.role)) {
+    return {
+      session: null,
+      denied: Response.json(
+        { success: false, error: "Forbidden: super admin access required" },
+        { status: 403 },
+      ),
+    };
+  }
+  return result;
+}
