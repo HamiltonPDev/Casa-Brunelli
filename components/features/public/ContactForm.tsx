@@ -6,6 +6,7 @@ import { motion, AnimatePresence, type Variants } from "framer-motion";
 import { toast } from "sonner";
 import { CheckCircle2, MapPin, Mail, Phone, Clock, Send } from "lucide-react";
 import { APP_CONFIG } from "@/lib/constants";
+import { sendContactMessage } from "@/lib/services/contact";
 import { Card } from "@/components/ui/public/Card";
 import { Button } from "@/components/ui/public/Button";
 import { FormField } from "@/components/ui/public/FormField";
@@ -17,6 +18,10 @@ interface FormState {
   email: string;
   subject: string;
   message: string;
+}
+
+interface FormErrors {
+  [key: string]: string;
 }
 
 type SubmitStatus = "idle" | "loading" | "success";
@@ -93,6 +98,7 @@ export function ContactForm() {
     subject: "",
     message: "",
   });
+  const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<SubmitStatus>("idle");
   const resetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -105,63 +111,69 @@ export function ContactForm() {
 
   function updateField<K extends keyof FormState>(
     key: K,
-    value: FormState[K]
+    value: FormState[K],
   ): void {
     setForm((prev) => ({ ...prev, [key]: value }));
+    if (errors[key]) {
+      setErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
   }
 
-  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>): Promise<void> {
+  function validate(): boolean {
+    const newErrors: FormErrors = {};
+
+    if (!form.name.trim() || form.name.trim().length < 2)
+      newErrors.name = "Name must be at least 2 characters";
+    if (!form.email.trim()) newErrors.email = "Email is required";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+      newErrors.email = "Invalid email address";
+    if (form.subject.trim() && form.subject.trim().length < 3)
+      newErrors.subject = "Subject must be at least 3 characters";
+    if (!form.message.trim() || form.message.trim().length < 10)
+      newErrors.message = "Message must be at least 10 characters";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  async function handleSubmit(
+    e: React.SubmitEvent<HTMLFormElement>,
+  ): Promise<void> {
     e.preventDefault();
     if (status === "loading" || status === "success") return;
 
-    if (!form.name.trim()) {
-      toast.error("Please enter your name.");
-      return;
-    }
-    if (!form.email.trim()) {
-      toast.error("Please enter your email address.");
-      return;
-    }
-    if (!form.message.trim()) {
-      toast.error("Please enter your message.");
+    if (!validate()) {
+      toast.error("Please fix the errors in the form");
       return;
     }
 
     setStatus("loading");
 
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: form.name.trim(),
-          email: form.email.trim(),
-          subject: form.subject.trim() || "General enquiry",
-          message: form.message.trim(),
-        }),
-      });
+    const result = await sendContactMessage({
+      name: form.name.trim(),
+      email: form.email.trim(),
+      subject: form.subject.trim() || "General enquiry",
+      message: form.message.trim(),
+    });
 
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        const msg =
-          data.issues?.[0]?.message ?? data.error ?? "Something went wrong";
-        toast.error(msg);
-        setStatus("idle");
-        return;
-      }
-
-      setStatus("success");
-
-      // Reset form after 4 seconds
-      resetTimerRef.current = setTimeout(() => {
-        setStatus("idle");
-        setForm({ name: "", email: "", subject: "", message: "" });
-      }, 4000);
-    } catch {
-      toast.error("Network error. Please try again.");
+    if (!result.success) {
+      toast.error(result.error);
       setStatus("idle");
+      return;
     }
+
+    setStatus("success");
+
+    // Reset form after 4 seconds
+    resetTimerRef.current = setTimeout(() => {
+      setStatus("idle");
+      setForm({ name: "", email: "", subject: "", message: "" });
+      setErrors({});
+    }, 4000);
   }
 
   return (
@@ -222,6 +234,7 @@ export function ContactForm() {
                     onChange={(v) => updateField("name", v)}
                     placeholder="Maria Rossi"
                     autoComplete="name"
+                    error={errors.name}
                   />
                   <FormField
                     id="contact-email"
@@ -232,6 +245,7 @@ export function ContactForm() {
                     onChange={(v) => updateField("email", v)}
                     placeholder="you@example.com"
                     autoComplete="email"
+                    error={errors.email}
                   />
                 </div>
 
@@ -243,6 +257,7 @@ export function ContactForm() {
                   value={form.subject}
                   onChange={(v) => updateField("subject", v)}
                   placeholder="Question about availability, facilities…"
+                  error={errors.subject}
                 />
 
                 {/* Message */}
@@ -255,6 +270,7 @@ export function ContactForm() {
                   value={form.message}
                   onChange={(v) => updateField("message", v)}
                   placeholder="Tell us how we can help…"
+                  error={errors.message}
                 />
 
                 {/* Submit */}
