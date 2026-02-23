@@ -21,16 +21,16 @@ export async function PATCH(
   }
 
   const { id } = await params;
-  const body = await request.json();
-  const parsed = updateMessageSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return validationError(parsed.error);
-  }
-
-  const { status } = parsed.data;
 
   try {
+    const body = await request.json();
+    const parsed = updateMessageSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const { status } = parsed.data;
     const updated = await prisma.contactMessage.update({
       where: { id },
       data: {

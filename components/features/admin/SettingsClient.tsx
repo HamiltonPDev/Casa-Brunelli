@@ -100,7 +100,7 @@ const INITIAL_EMAIL: EmailForm = {
 function ComingSoonBanner({ feature }: Readonly<{ feature: string }>) {
   return (
     <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
-      <Construction className="w-5 h-5 text-amber-600 flex-shrink-0" />
+      <Construction className="w-5 h-5 text-amber-600 shrink-0" />
       <div>
         <p className="text-sm font-medium text-amber-800">
           Coming Soon — {feature}
@@ -125,25 +125,18 @@ export function SettingsClient({
   const [isPending, startTransition] = useTransition();
 
   // Form state — grouped by tab
-  const [generalForm, setGeneralForm] =
-    useState<GeneralForm>(INITIAL_GENERAL);
+  const [generalForm, setGeneralForm] = useState<GeneralForm>(INITIAL_GENERAL);
   const [paymentsForm, setPaymentsForm] =
     useState<PaymentsForm>(INITIAL_PAYMENTS);
   const [emailForm, setEmailForm] = useState<EmailForm>(INITIAL_EMAIL);
 
   // ── Form helpers ──────────────────────────────────────────
-  function updateGeneral(
-    field: keyof GeneralForm,
-    value: string
-  ): void {
+  function updateGeneral(field: keyof GeneralForm, value: string): void {
     setGeneralForm((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   }
 
-  function updatePayments(
-    field: keyof PaymentsForm,
-    value: string
-  ): void {
+  function updatePayments(field: keyof PaymentsForm, value: string): void {
     setPaymentsForm((prev) => ({ ...prev, [field]: value }));
     setHasChanges(true);
   }
@@ -338,9 +331,7 @@ export function SettingsClient({
                 <div className="flex items-center gap-3">
                   <CheckCircle className="w-5 h-5 text-green-700" />
                   <div>
-                    <p className="font-medium text-gray-900">
-                      Not Connected
-                    </p>
+                    <p className="font-medium text-gray-900">Not Connected</p>
                     <p className="text-sm text-gray-600">
                       Stripe integration pending setup
                     </p>
@@ -594,8 +585,8 @@ export function SettingsClient({
                           {user.role === ADMIN_ROLE.SUPER_ADMIN
                             ? "Super Admin"
                             : user.role === ADMIN_ROLE.ADMIN
-                              ? "Admin"
-                              : "Viewer"}
+                            ? "Admin"
+                            : "Viewer"}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
@@ -625,14 +616,15 @@ export function SettingsClient({
 
           <AdminCard title="Danger Zone">
             <div className="flex items-start gap-4 p-4 border-2 border-red-200 rounded-lg bg-red-50">
-              <AlertTriangle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
               <div>
                 <p className="font-medium text-gray-900 mb-1">
                   Remove User Access
                 </p>
                 <p className="text-sm text-gray-600">
                   Removing a user immediately revokes their access. This cannot
-                  be undone. Use the &quot;Remove&quot; button in the users table above.
+                  be undone. Use the &quot;Remove&quot; button in the users
+                  table above.
                 </p>
               </div>
             </div>
@@ -643,7 +635,7 @@ export function SettingsClient({
       {/* Sticky save bar */}
       {hasChanges && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-50">
-          <div className="max-w-screen-xl mx-auto px-8 py-4 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-8 py-4 flex items-center justify-between">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
               You have unsaved changes
@@ -706,11 +698,7 @@ export function SettingsClient({
                 >
                   Cancel
                 </AdminButton>
-                <AdminButton
-                  variant="primary"
-                  className="flex-1"
-                  disabled
-                >
+                <AdminButton variant="primary" className="flex-1" disabled>
                   Send Invite
                 </AdminButton>
               </div>

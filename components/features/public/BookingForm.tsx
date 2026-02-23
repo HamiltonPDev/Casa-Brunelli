@@ -6,7 +6,12 @@ import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Calendar, Users, Edit } from "lucide-react";
 import { formatDateShort, formatDateLong, formatEur } from "@/lib/utils";
-import { MAX_GUESTS, MIN_GUESTS, COUNTRIES } from "@/lib/constants";
+import {
+  MAX_GUESTS,
+  MIN_GUESTS,
+  COUNTRIES,
+  BALANCE_DUE_DAYS_BEFORE_CHECKIN,
+} from "@/lib/constants";
 import {
   submitBookingRequest,
   type BookingRequestResult,
@@ -50,11 +55,14 @@ type SubmitStatus = "idle" | "loading" | "success";
 
 const PAYMENT_POLICIES = [
   { strong: "Deposit:", text: "30% due at booking confirmation" },
-  { strong: "Balance:", text: "Due 14 days before check-in" },
+  {
+    strong: "Balance:",
+    text: `Due ${BALANCE_DUE_DAYS_BEFORE_CHECKIN} days before check-in`,
+  },
   { strong: "Payment:", text: "Secure payment link via Stripe" },
   {
     strong: "Cancellation:",
-    text: "Free cancellation up to 14 days before check-in",
+    text: `Free cancellation up to ${BALANCE_DUE_DAYS_BEFORE_CHECKIN} days before check-in`,
   },
 ] as const;
 
@@ -164,7 +172,7 @@ export function BookingForm({
     return Object.keys(newErrors).length === 0;
   }
 
-  async function handleSubmit(e: React.FormEvent): Promise<void> {
+  async function handleSubmit(e: React.SubmitEvent<HTMLFormElement>): Promise<void> {
     e.preventDefault();
     if (status === "loading" || status === "success") return;
 
@@ -513,7 +521,7 @@ export function BookingForm({
                 {PAYMENT_POLICIES.map((item) => (
                   <li key={item.strong} className="flex items-start gap-2">
                     <div
-                      className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0"
+                      className="w-1.5 h-1.5 rounded-full mt-2 shrink-0"
                       style={{ backgroundColor: "var(--sage-variant)" }}
                     />
                     <p>

@@ -10,6 +10,9 @@ import {
   Edit,
   Copy,
   Archive,
+  Play,
+  Pause,
+  Trash2,
   X,
 } from "lucide-react";
 import { AdminCard } from "@/components/ui/admin/AdminCard";
@@ -24,6 +27,8 @@ import {
   duplicateSeason as duplicateSeasonApi,
   archiveSeason,
   activateSeason,
+  deactivateSeason,
+  deleteSeason,
 } from "@/lib/services/seasons";
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -183,11 +188,7 @@ function SeasonModal({
           />
         </div>
         <div className="flex items-center gap-3 p-6 border-t border-gray-200">
-          <AdminButton
-            variant="secondary"
-            onClick={onClose}
-            className="flex-1"
-          >
+          <AdminButton variant="secondary" onClick={onClose} className="flex-1">
             Cancel
           </AdminButton>
           <AdminButton
@@ -214,6 +215,7 @@ export function SeasonalPricingClient({
   const [showModal, setShowModal] = useState(false);
   const [editingSeason, setEditingSeason] = useState<Season | null>(null);
   const [form, setForm] = useState<SeasonFormData>(EMPTY_FORM);
+  const [deletingSeasonId, setDeletingSeasonId] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   // ── Modal openers ─────────────────────────────────────────
@@ -307,15 +309,62 @@ export function SeasonalPricingClient({
       if (result.success) {
         setSeasons((prev) =>
           prev.map((s) =>
-            s.id === seasonId
-              ? { ...s, status: SEASON_STATUS.ARCHIVED }
-              : s
+            s.id === seasonId ? { ...s, status: SEASON_STATUS.ARCHIVED } : s
           )
         );
         toast.success("Season archived");
       } else {
         toast.error(result.error);
       }
+    });
+  }
+
+  function handleDeactivate(seasonId: string): void {
+    startTransition(async () => {
+      const result = await deactivateSeason(seasonId);
+
+      if (result.success) {
+        setSeasons((prev) =>
+          prev.map((s) =>
+            s.id === seasonId ? { ...s, status: SEASON_STATUS.INACTIVE } : s
+          )
+        );
+        toast.success("Season deactivated");
+      } else {
+        toast.error(result.error);
+      }
+    });
+  }
+
+  function handleActivate(seasonId: string): void {
+    startTransition(async () => {
+      const result = await activateSeason(seasonId);
+
+      if (result.success) {
+        setSeasons((prev) =>
+          prev.map((s) =>
+            s.id === seasonId ? { ...s, status: SEASON_STATUS.ACTIVE } : s
+          )
+        );
+        toast.success("Season activated");
+      } else {
+        toast.error(result.error);
+      }
+    });
+  }
+
+  function handleDelete(seasonId: string): void {
+    startTransition(async () => {
+      const result = await deleteSeason(seasonId);
+
+      if (result.success) {
+        setSeasons((prev) => prev.filter((s) => s.id !== seasonId));
+        setSelectedIds((prev) => prev.filter((id) => id !== seasonId));
+        toast.success("Season deleted");
+      } else {
+        toast.error(result.error);
+      }
+      setDeletingSeasonId(null);
     });
   }
 
@@ -491,7 +540,7 @@ export function SeasonalPricingClient({
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div
-                          className="w-3 h-3 rounded-full flex-shrink-0"
+                          className="w-3 h-3 rounded-full shrink-0"
                           style={{ backgroundColor: season.colorTag }}
                         />
                         <div>
@@ -537,8 +586,8 @@ export function SeasonalPricingClient({
                               {d.type === "ADD"
                                 ? "+"
                                 : d.type === "SUBTRACT"
-                                  ? "-"
-                                  : "="}
+                                ? "-"
+                                : "="}
                               €{d.amount}
                             </span>
                           ))}
@@ -564,8 +613,8 @@ export function SeasonalPricingClient({
                         {season.status === SEASON_STATUS.ACTIVE
                           ? "Active"
                           : season.status === SEASON_STATUS.ARCHIVED
-                            ? "Archived"
-                            : "Inactive"}
+                          ? "Archived"
+                          : "Inactive"}
                       </AdminBadge>
                     </td>
                     <td className="px-6 py-4 text-right">
@@ -585,13 +634,42 @@ export function SeasonalPricingClient({
                         >
                           <Copy className="w-4 h-4 text-gray-600" />
                         </button>
+                        {season.status === SEASON_STATUS.ACTIVE ? (
+                          <button
+                            onClick={() => handleDeactivate(season.id)}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Deactivate"
+                            disabled={isPending}
+                          >
+                            <Pause className="w-4 h-4 text-gray-600" />
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => handleActivate(season.id)}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Activate"
+                            disabled={isPending}
+                          >
+                            <Play className="w-4 h-4 text-gray-600" />
+                          </button>
+                        )}
+                        {season.status !== SEASON_STATUS.ARCHIVED && (
+                          <button
+                            onClick={() => handleArchive(season.id)}
+                            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Archive"
+                            disabled={isPending}
+                          >
+                            <Archive className="w-4 h-4 text-gray-600" />
+                          </button>
+                        )}
                         <button
-                          onClick={() => handleArchive(season.id)}
-                          className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-                          title="Archive"
+                          onClick={() => setDeletingSeasonId(season.id)}
+                          className="p-2 hover:bg-red-50 rounded-lg transition-colors"
+                          title="Delete"
                           disabled={isPending}
                         >
-                          <Archive className="w-4 h-4 text-gray-600" />
+                          <Trash2 className="w-4 h-4 text-red-500" />
                         </button>
                       </div>
                     </td>
@@ -622,7 +700,7 @@ export function SeasonalPricingClient({
                   className="flex items-center gap-4 p-3 rounded-lg border border-gray-200 hover:bg-gray-50"
                 >
                   <div
-                    className="w-4 h-4 rounded-full flex-shrink-0"
+                    className="w-4 h-4 rounded-full shrink-0"
                     style={{ backgroundColor: season.colorTag }}
                   />
                   <div className="flex-1 min-w-0">
@@ -686,6 +764,53 @@ export function SeasonalPricingClient({
           onSave={handleSave}
           onClose={() => setShowModal(false)}
         />
+      )}
+
+      {/* Delete confirmation dialog */}
+      {deletingSeasonId && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-sm w-full shadow-2xl">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                  <Trash2 className="w-5 h-5 text-red-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    Delete Season
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    Are you sure? This action cannot be undone.
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600">
+                Season{" "}
+                <span className="font-medium text-gray-900">
+                  {seasons.find((s) => s.id === deletingSeasonId)?.name}
+                </span>{" "}
+                will be permanently removed from the database.
+              </p>
+            </div>
+            <div className="flex items-center gap-3 p-6 border-t border-gray-200">
+              <AdminButton
+                variant="secondary"
+                onClick={() => setDeletingSeasonId(null)}
+                className="flex-1"
+              >
+                Cancel
+              </AdminButton>
+              <AdminButton
+                variant="danger"
+                loading={isPending}
+                onClick={() => handleDelete(deletingSeasonId)}
+                className="flex-1"
+              >
+                Delete
+              </AdminButton>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

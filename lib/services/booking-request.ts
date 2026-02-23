@@ -33,7 +33,7 @@ export interface BookingRequestResult {
  * Creates a ContactMessage of type BOOKING_REQUEST (Messages-First flow).
  */
 export function submitBookingRequest(
-  payload: BookingRequestPayload
+  payload: BookingRequestPayload,
 ): Promise<ApiResult<BookingRequestResult>> {
   return apiPost<BookingRequestResult>("/api/booking-request", payload);
 }

@@ -56,7 +56,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-[#FAFAF9] flex">
+    <div className="min-h-screen bg-admin-bg flex">
       {/* ── Sidebar ──────────────────────────────────────────── */}
       <aside
         className={cn(
@@ -183,7 +183,7 @@ export function AdminShell({ children, user }: AdminShellProps) {
 
         {/* Page Content */}
         <main className="flex-1 overflow-auto">
-          <div className="max-w-[1280px] mx-auto px-6 py-6">{children}</div>
+          <div className="max-w-7xl mx-auto px-6 py-6">{children}</div>
         </main>
       </div>
     </div>

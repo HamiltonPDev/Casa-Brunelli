@@ -63,17 +63,15 @@ export async function POST(request: Request) {
     );
   }
 
-  const body = await request.json();
-  const parsed = createUnavailableDatesSchema.safeParse(body);
-
-  // I
-  if (!parsed.success) {
-    return validationError(parsed.error);
-  }
-
-  const { dates, reason } = parsed.data;
-
   try {
+    const body = await request.json();
+    const parsed = createUnavailableDatesSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const { dates, reason } = parsed.data;
     // Use createMany with skipDuplicates — if a date is already blocked, just skip it
     const result = await prisma.unavailableDate.createMany({
       data: dates.map((d) => ({
@@ -108,16 +106,15 @@ export async function DELETE(request: Request) {
     );
   }
 
-  const body = await request.json();
-  const parsed = deleteUnavailableDatesSchema.safeParse(body);
-
-  if (!parsed.success) {
-    return validationError(parsed.error);
-  }
-
-  const { dates } = parsed.data;
-
   try {
+    const body = await request.json();
+    const parsed = deleteUnavailableDatesSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const { dates } = parsed.data;
     const result = await prisma.unavailableDate.deleteMany({
       where: {
         date: {

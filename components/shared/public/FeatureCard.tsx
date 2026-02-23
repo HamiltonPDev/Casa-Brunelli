@@ -12,7 +12,7 @@ interface FeatureCardProps {
   icon: LucideIcon;
   title: string;
   description: string;
-  /** Tailwind gradient classes e.g. "from-[#E8F5E9] to-[#F5F3EF]" */
+  /** Tailwind gradient classes e.g. "from-mint-tint to-cream" */
   gradient?: string;
   delay?: number;
   className?: string;
@@ -22,7 +22,7 @@ export function FeatureCard({
   icon: Icon,
   title,
   description,
-  gradient = "from-[#F5F3EF] to-[#EEF4EE]",
+  gradient = "from-cream to-mint-pale",
   delay = 0,
   className,
 }: FeatureCardProps) {
@@ -35,7 +35,7 @@ export function FeatureCard({
       whileHover={{ scale: 1.03, y: -4 }}
       className={cn(
         "flex flex-col gap-4 p-6 rounded-2xl border cursor-default",
-        gradient && `bg-gradient-to-br ${gradient}`,
+        gradient && `bg-linear-to-br ${gradient}`,
         className
       )}
       style={{ borderColor: "rgba(139,157,131,0.2)" }}

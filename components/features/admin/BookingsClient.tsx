@@ -388,7 +388,7 @@ export function BookingsClient() {
                               ? "bg-admin-sage/5"
                               : idx % 2 === 0
                               ? "bg-white hover:bg-gray-50"
-                              : "bg-[#FAFAF9] hover:bg-gray-50"
+                              : "bg-admin-bg hover:bg-gray-50"
                           )}
                         >
                           <td className="px-6 py-4">

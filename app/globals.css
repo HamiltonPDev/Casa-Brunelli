@@ -33,6 +33,12 @@
   --cream: #f5f3ef; /* Main page background */
   --soft-beige: #e8e4dd; /* Card backgrounds */
 
+  /* ─── Gradient Tints (FeatureCard decorative bgs) ────────── */
+  --mint-pale: #eef4ee; /* Very pale mint green */
+  --mint-light: #f0f7f0; /* Light mint green */
+  --warm-honey: #fff8ed; /* Warm honey cream */
+  --warm-sand: #f0ede8; /* Soft warm sand */
+
   /* ─── Supporting Colors ──────────────────────────────────── */
   --deep-brown: #654321; /* Rich accents, footer backgrounds */
   --success-green: #3d7a4f; /* Success states, confirmations */
@@ -57,6 +63,11 @@
   --status-confirmed: #2e7d32;
   --status-cancelled: #c62828;
   --status-completed: #1565c0;
+
+  /* ─── Status Background Tints (badges, chips) ───────────── */
+  --status-confirmed-bg: #e9f5ec;
+  --status-cancelled-bg: #fef2f2; /* red-50 equivalent */
+  --status-completed-bg: #eff6ff; /* blue-50 equivalent */
 
   /* ─── Semantic Aliases ───────────────────────────────────── */
   --color-bg: var(--cream);
@@ -173,6 +184,10 @@
   --color-warm-gray: var(--warm-gray);
   --color-cream: var(--cream);
   --color-soft-beige: var(--soft-beige);
+  --color-mint-pale: var(--mint-pale);
+  --color-mint-light: var(--mint-light);
+  --color-warm-honey: var(--warm-honey);
+  --color-warm-sand: var(--warm-sand);
 
   --color-deep-brown: var(--deep-brown);
   --color-success-green: var(--success-green);
@@ -182,6 +197,10 @@
   --color-status-confirmed: var(--status-confirmed);
   --color-status-cancelled: var(--status-cancelled);
   --color-status-completed: var(--status-completed);
+  --color-status-confirmed-bg: var(--status-confirmed-bg);
+  --color-status-cancelled-bg: var(--status-cancelled-bg);
+  --color-status-completed-bg: var(--status-completed-bg);
+  --color-admin-bg: var(--admin-bg);
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);

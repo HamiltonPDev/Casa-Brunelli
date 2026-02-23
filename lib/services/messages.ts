@@ -23,14 +23,14 @@ interface PromoteMessageResult {
 /** Update a message's status (e.g. UNREAD → READ → REPLIED). */
 export function updateMessageStatus(
   id: string,
-  status: MessageStatus
+  status: MessageStatus,
 ): Promise<ApiResult<UpdateMessageResult>> {
   return apiPatch(`/api/admin/messages/${id}`, { status });
 }
 
 /** Promote a BOOKING_REQUEST message into a real Booking. */
 export function promoteMessage(
-  id: string
+  id: string,
 ): Promise<ApiResult<PromoteMessageResult>> {
   return apiPost(`/api/admin/messages/${id}/promote`, {});
 }

@@ -58,6 +58,14 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="antialiased">
+        {/* Skip Link — WCAG 2.4.1 Level A */}
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:rounded-lg focus:text-sm focus:font-medium focus:text-white focus:outline-none focus:ring-2 focus:ring-offset-2"
+          style={{ backgroundColor: "var(--dark-forest)" }}
+        >
+          Skip to main content
+        </a>
         {children}
         <Toaster position="top-right" richColors closeButton />
       </body>

@@ -55,12 +55,13 @@ interface FetchBookingsParams {
 
 /** Fetch paginated, filtered bookings list. */
 export function fetchBookings(
-  params: FetchBookingsParams
+  params: FetchBookingsParams,
 ): Promise<ApiResult<FetchBookingsResult>> {
   const searchParams = new URLSearchParams();
 
   if (params.search) searchParams.set("search", params.search);
-  if (params.status?.length) searchParams.set("status", params.status.join(","));
+  if (params.status?.length)
+    searchParams.set("status", params.status.join(","));
   if (params.dateFrom) searchParams.set("dateFrom", params.dateFrom);
   if (params.dateTo) searchParams.set("dateTo", params.dateTo);
   if (params.guests) searchParams.set("guests", params.guests);
@@ -72,7 +73,7 @@ export function fetchBookings(
 /** Bulk-update the status of multiple bookings. */
 export function bulkUpdateBookings(
   ids: string[],
-  status: string
+  status: string,
 ): Promise<ApiResult<BulkUpdateResult>> {
   return apiPatch("/api/admin/bookings", { ids, status });
 }
@@ -80,7 +81,7 @@ export function bulkUpdateBookings(
 /** Patch a single booking (status, depositPaid, balancePaid, etc.). */
 export function updateBooking(
   id: string,
-  data: Record<string, unknown>
+  data: Record<string, unknown>,
 ): Promise<ApiResult<UpdateBookingResult>> {
   return apiPatch(`/api/admin/bookings/${id}`, data);
 }

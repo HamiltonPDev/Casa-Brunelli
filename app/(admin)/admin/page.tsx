@@ -4,8 +4,8 @@ import { AdminCard } from "@/components/ui/admin/AdminCard";
 import { AdminBadge } from "@/components/ui/admin/AdminBadge";
 import { CalendarWidget } from "@/components/features/admin/CalendarWidget";
 import type { CalendarBooking } from "@/components/features/admin/CalendarWidget";
-import { formatCurrency, formatDateRange } from "@/lib/utils";
-import { BOOKING_STATUS } from "@/lib/constants";
+import { formatCurrency, formatDateRange, formatDateShort } from "@/lib/utils";
+import { BOOKING_STATUS, MESSAGE_STATUS } from "@/lib/constants";
 import {
   AlertCircle,
   Euro,
@@ -36,6 +36,8 @@ export default async function AdminDashboardPage() {
   );
   const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
 
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
   const [
     pendingMessages,
     confirmedBookings,
@@ -48,7 +50,7 @@ export default async function AdminDashboardPage() {
   ] = await Promise.all([
     // Pending unread messages
     prisma.contactMessage.count({
-      where: { status: "UNREAD" },
+      where: { status: MESSAGE_STATUS.UNREAD },
     }),
 
     // Active confirmed bookings
@@ -104,7 +106,7 @@ export default async function AdminDashboardPage() {
       where: {
         checkIn: {
           gte: today,
-          lte: new Date(today.getTime() + 30 * 24 * 60 * 60 * 1000),
+          lte: new Date(today.getTime() + THIRTY_DAYS_MS),
         },
         status: { in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.PENDING] },
       },
@@ -315,7 +317,8 @@ export default async function AdminDashboardPage() {
                 {upcomingCheckIns.map((booking) => (
                   <div
                     key={booking.id}
-                    className="p-4 bg-[#FAFAF9] rounded-lg border border-gray-200"
+                    className="p-4 rounded-lg border border-gray-200"
+                    style={{ backgroundColor: "#FAFAF9" }}
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="font-medium text-gray-900">
@@ -331,11 +334,7 @@ export default async function AdminDashboardPage() {
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span>
-                          {booking.checkIn.toLocaleDateString("en-GB", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
+                          {formatDateShort(booking.checkIn.toISOString())}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">
