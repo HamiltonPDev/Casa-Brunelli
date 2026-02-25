@@ -53,7 +53,7 @@ export const updateBookingSchema = z
     status: z
       .enum(Object.values(BOOKING_STATUS) as [string, ...string[]], {
         error: `Status must be one of: ${Object.values(BOOKING_STATUS).join(
-          ", "
+          ", ",
         )}`,
       })
       .optional(),
@@ -68,7 +68,7 @@ export const updateBookingSchema = z
     {
       error:
         "At least one field (status, depositPaid, or balancePaid) is required",
-    }
+    },
   );
 
 // ═══════════════════════════════════════════════════════════════
@@ -131,7 +131,7 @@ export const createUnavailableDatesSchema = z.object({
     .array(
       z
         .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Date must be yyyy-MM-dd" })
+        .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Date must be yyyy-MM-dd" }),
     )
     .min(1, { error: "At least one date is required" }),
   reason: z.string().max(200).optional(),
@@ -143,7 +143,7 @@ export const deleteUnavailableDatesSchema = z.object({
     .array(
       z
         .string()
-        .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Date must be yyyy-MM-dd" })
+        .regex(/^\d{4}-\d{2}-\d{2}$/, { error: "Date must be yyyy-MM-dd" }),
     )
     .min(1, { error: "At least one date is required" }),
 });
@@ -181,6 +181,18 @@ export const contactSchema = z.object({
 });
 
 // ═══════════════════════════════════════════════════════════════
+// STRIPE CHECKOUT
+// ═══════════════════════════════════════════════════════════════
+
+/** POST /api/stripe/checkout — create Stripe Checkout Session */
+export const createCheckoutSchema = z.object({
+  bookingId: z.uuid("Invalid booking ID"),
+  type: z.enum(["DEPOSIT", "BALANCE"], {
+    error: "Payment type must be DEPOSIT or BALANCE",
+  }),
+});
+
+// ═══════════════════════════════════════════════════════════════
 // HELPER — Standard error response from Zod issues
 // ═══════════════════════════════════════════════════════════════
 
@@ -195,6 +207,6 @@ export function validationError(error: z.ZodError): Response {
         message: i.message,
       })),
     },
-    { status: 400 }
+    { status: 400 },
   );
 }
