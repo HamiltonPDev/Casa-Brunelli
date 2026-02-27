@@ -7,8 +7,10 @@
  * - Returns 200 for ALL events (Stripe retries on non-200)
  *
  * Events handled:
- * - checkout.session.completed → Mark payment as COMPLETED, update booking status
- * - checkout.session.expired   → Mark payment as FAILED
+ * - checkout.session.completed              → Mark payment COMPLETED (cards) or PENDING (async methods like iDEAL)
+ * - checkout.session.async_payment_succeeded → Async method confirmed by bank → COMPLETED
+ * - checkout.session.async_payment_failed    → Async method rejected by bank → FAILED
+ * - checkout.session.expired                → Payment link expired (24h) → FAILED
  */
 
 import type Stripe from "stripe";
@@ -58,6 +60,18 @@ export async function POST(request: Request): Promise<Response> {
         );
         break;
 
+      case "checkout.session.async_payment_succeeded":
+        await handleAsyncPaymentSucceeded(
+          event.data.object as Stripe.Checkout.Session,
+        );
+        break;
+
+      case "checkout.session.async_payment_failed":
+        await handleAsyncPaymentFailed(
+          event.data.object as Stripe.Checkout.Session,
+        );
+        break;
+
       case "checkout.session.expired":
         await handleCheckoutExpired(
           event.data.object as Stripe.Checkout.Session,
@@ -82,11 +96,11 @@ export async function POST(request: Request): Promise<Response> {
 // ─── Event Handlers ────────────────────────────────────────────
 
 /**
- * checkout.session.completed — Payment succeeded
+ * checkout.session.completed — Checkout flow finished
  *
- * 1. Update PaymentTransaction: PENDING → COMPLETED
- * 2. Update Booking: depositPaid/balancePaid + status transition
- * 3. Future: trigger email notifications (Phase E)
+ * For **synchronous** methods (cards, wallets): payment_status = "paid" → mark COMPLETED
+ * For **asynchronous** methods (iDEAL, SEPA, Bancontact): payment_status = "unpaid"
+ *   → the payment is not confirmed yet, wait for async_payment_succeeded event
  */
 async function handleCheckoutCompleted(
   session: Stripe.Checkout.Session,
@@ -101,6 +115,110 @@ async function handleCheckoutCompleted(
     return;
   }
 
+  // Async payment methods (iDEAL, SEPA, Bancontact) fire completed with
+  // payment_status "unpaid" — the real confirmation comes later via
+  // checkout.session.async_payment_succeeded
+  if (session.payment_status !== "paid") {
+    console.log(
+      `[Stripe Webhook] ${metadata.paymentType} checkout completed but payment_status="${session.payment_status}" — waiting for async confirmation`,
+    );
+    return;
+  }
+
+  // Synchronous payment (cards) — process immediately
+  await fulfillPayment(session);
+}
+
+/**
+ * checkout.session.async_payment_succeeded — Bank confirmed the async payment
+ *
+ * Fired for iDEAL, SEPA Direct Debit, Bancontact, etc. after the bank confirms.
+ * Same logic as a completed card payment.
+ */
+async function handleAsyncPaymentSucceeded(
+  session: Stripe.Checkout.Session,
+): Promise<void> {
+  const metadata = session.metadata as unknown as SessionMetadata;
+
+  if (!metadata?.bookingId || !metadata?.paymentType) {
+    console.error(
+      "[Stripe Webhook] async_payment_succeeded missing metadata:",
+      session.id,
+    );
+    return;
+  }
+
+  await fulfillPayment(session);
+}
+
+/**
+ * checkout.session.async_payment_failed — Bank rejected the async payment
+ *
+ * Fired when iDEAL/SEPA/Bancontact payment fails after the initial redirect.
+ */
+async function handleAsyncPaymentFailed(
+  session: Stripe.Checkout.Session,
+): Promise<void> {
+  const metadata = session.metadata as unknown as SessionMetadata;
+
+  if (!metadata?.bookingId || !metadata?.paymentType) {
+    console.error(
+      "[Stripe Webhook] async_payment_failed missing metadata:",
+      session.id,
+    );
+    return;
+  }
+
+  const { bookingId, paymentType } = metadata;
+
+  const existingTx = await prisma.paymentTransaction.findUnique({
+    where: { stripePaymentId: session.id },
+  });
+
+  if (existingTx && existingTx.status === PAYMENT_STATUS.FAILED) {
+    return; // Already processed
+  }
+
+  if (existingTx) {
+    await prisma.$transaction([
+      prisma.paymentTransaction.update({
+        where: { id: existingTx.id },
+        data: { status: PAYMENT_STATUS.FAILED },
+      }),
+      prisma.auditLog.create({
+        data: {
+          adminUserId: null,
+          action: "PAYMENT_FAILED",
+          entityType: "Booking",
+          entityId: bookingId,
+          changes: JSON.stringify({
+            paymentType,
+            stripeSessionId: session.id,
+            reason: "async_payment_failed",
+          }),
+        },
+      }),
+    ]);
+  }
+
+  console.log(
+    `[Stripe Webhook] ✗ ${paymentType} async payment failed for booking ${bookingId}`,
+  );
+
+  // TODO (Phase E): Notify admin that payment failed
+}
+
+// ─── Shared Payment Fulfillment ────────────────────────────────
+
+/**
+ * Shared logic for marking a payment as COMPLETED.
+ * Used by both checkout.session.completed (cards) and
+ * checkout.session.async_payment_succeeded (iDEAL, SEPA, etc.)
+ */
+async function fulfillPayment(
+  session: Stripe.Checkout.Session,
+): Promise<void> {
+  const metadata = session.metadata as unknown as SessionMetadata;
   const { bookingId, paymentType } = metadata;
 
   // Idempotency: check if already processed
@@ -134,12 +252,11 @@ async function handleCheckoutCompleted(
       });
     } else {
       // Edge case: webhook arrived before our DB write
-      // Create the transaction record from scratch
       await tx.paymentTransaction.create({
         data: {
           bookingId,
           stripePaymentId: stripePaymentIntentId,
-          amount: (session.amount_total ?? 0) / 100, // Convert from cents
+          amount: (session.amount_total ?? 0) / 100,
           currency: session.currency ?? "eur",
           status: PAYMENT_STATUS.COMPLETED,
           type: paymentType,
@@ -158,7 +275,6 @@ async function handleCheckoutCompleted(
         },
       });
     } else if (paymentType === "BALANCE") {
-      // Check if deposit was also paid → COMPLETED
       const booking = await tx.booking.findUnique({
         where: { id: bookingId },
         select: { depositPaid: true },
@@ -175,10 +291,10 @@ async function handleCheckoutCompleted(
       });
     }
 
-    // Audit log
+    // Audit log — adminUserId is null for system-initiated events (webhooks)
     await tx.auditLog.create({
       data: {
-        adminUserId: "SYSTEM", // Webhook — no admin user
+        adminUserId: null,
         action: "PAYMENT_COMPLETED",
         entityType: "Booking",
         entityId: bookingId,
@@ -197,7 +313,6 @@ async function handleCheckoutCompleted(
   );
 
   // TODO (Phase E): Send confirmation email to guest
-  // await sendBookingConfirmationEmail(bookingId);
 }
 
 /**
@@ -239,10 +354,9 @@ async function handleCheckoutExpired(
         where: { id: existingTx.id },
         data: { status: PAYMENT_STATUS.FAILED },
       }),
-
       prisma.auditLog.create({
         data: {
-          adminUserId: "SYSTEM",
+          adminUserId: null,
           action: "PAYMENT_EXPIRED",
           entityType: "Booking",
           entityId: bookingId,

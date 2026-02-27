@@ -1,18 +1,19 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState, useTransition } from "react";
+import { useSyncExternalStore, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import {
   ArrowLeft,
-  Mail,
   CheckCircle,
   AlertCircle,
   Info,
   CreditCard,
   Copy,
   Clock,
+  Send,
+  Ban,
 } from "lucide-react";
 import { AdminCard } from "@/components/ui/admin/AdminCard";
 import { AdminBadge } from "@/components/ui/admin/AdminBadge";
@@ -21,6 +22,10 @@ import { formatCurrency } from "@/lib/utils";
 import { updateBooking } from "@/lib/services/bookings";
 import { createPaymentSession } from "@/lib/services/payments";
 import { PAYMENT_TYPE, PAYMENT_STATUS } from "@/lib/constants";
+import {
+  saveCheckoutUrl,
+  getCheckoutUrl,
+} from "@/lib/checkout-urls";
 import type { PaymentStatus, PaymentType } from "@/types";
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -65,7 +70,6 @@ interface BookingDetail {
 
 interface BookingDetailClientProps {
   booking: BookingDetail;
-  adminName: string;
 }
 
 // ─── Helpers ───────────────────────────────────────────────────
@@ -111,8 +115,6 @@ async function copyToClipboard(text: string, label: string): Promise<void> {
 // ─── Component ─────────────────────────────────────────────────
 export function BookingDetailClient({
   booking,
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars -- reserved for future "approved by" display
-  adminName,
 }: Readonly<BookingDetailClientProps>) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -128,6 +130,21 @@ export function BookingDetailClient({
   );
   const { depositPaid, balancePaid, payments } = booking;
 
+  // Cached checkout URLs — allows re-copying a previously sent link.
+  // useSyncExternalStore reads localStorage without hydration mismatch:
+  // server snapshot returns null, client reads the real value after hydration.
+  const noopSubscribe = (): (() => void) => () => {};
+  const depositUrl = useSyncExternalStore(
+    noopSubscribe,
+    () => getCheckoutUrl(booking.id, PAYMENT_TYPE.DEPOSIT),
+    () => null,
+  );
+  const balanceUrl = useSyncExternalStore(
+    noopSubscribe,
+    () => getCheckoutUrl(booking.id, PAYMENT_TYPE.BALANCE),
+    () => null,
+  );
+
   // ─── Handlers ──────────────────────────────────────────────
   function handleSendPaymentLink(type: PaymentType): void {
     startTransition(async () => {
@@ -135,7 +152,10 @@ export function BookingDetailClient({
       const result = await createPaymentSession(booking.id, type);
       if (result.success) {
         const { url } = result.data;
-        // Update local state to reflect the session was created
+        // Cache URL in localStorage for re-copy (24h TTL) — must happen
+        // BEFORE setting session ID so the next render reads it via useSyncExternalStore
+        saveCheckoutUrl(booking.id, type, url);
+        // Update local state — triggers re-render, useSyncExternalStore picks up the cached URL
         if (type === PAYMENT_TYPE.DEPOSIT) {
           setDepositSessionId(result.data.sessionId);
         } else {
@@ -149,6 +169,14 @@ export function BookingDetailClient({
       }
       setLoading(null);
     });
+  }
+
+  function handleRecopyLink(type: PaymentType): void {
+    const url =
+      type === PAYMENT_TYPE.DEPOSIT ? depositUrl : balanceUrl;
+    if (url) {
+      copyToClipboard(url, "Payment link");
+    }
   }
 
   function handleCancelBooking(): void {
@@ -221,42 +249,86 @@ export function BookingDetailClient({
           <p className="text-sm text-gray-500 mt-1">Booking ID: {booking.id}</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* Send Deposit Link — visible when deposit not paid and booking not cancelled */}
+          {/* ── Deposit Button ── */}
           {!depositPaid && status !== "CANCELLED" && (
-            <AdminButton
-              variant="primary"
-              size="sm"
-              loading={loading === PAYMENT_TYPE.DEPOSIT}
-              disabled={isPending}
-              icon={<CreditCard className="w-4 h-4" />}
-              onClick={() => handleSendPaymentLink(PAYMENT_TYPE.DEPOSIT)}
-            >
-              Send Deposit Link
-            </AdminButton>
+            (() => {
+              const linkSent = !!depositSessionId;
+              const canRecopy = linkSent && !!depositUrl;
+              return (
+                <AdminButton
+                  variant={linkSent ? "secondary" : "primary"}
+                  size="sm"
+                  loading={loading === PAYMENT_TYPE.DEPOSIT}
+                  disabled={isPending || (linkSent && !canRecopy)}
+                  icon={
+                    linkSent ? (
+                      canRecopy ? <Copy className="w-4 h-4" /> : <Send className="w-4 h-4" />
+                    ) : (
+                      <CreditCard className="w-4 h-4" />
+                    )
+                  }
+                  onClick={() =>
+                    canRecopy
+                      ? handleRecopyLink(PAYMENT_TYPE.DEPOSIT)
+                      : handleSendPaymentLink(PAYMENT_TYPE.DEPOSIT)
+                  }
+                >
+                  {linkSent
+                    ? canRecopy
+                      ? "Re-copy Deposit Link"
+                      : "Deposit Link Sent"
+                    : "Send Deposit Link"}
+                </AdminButton>
+              );
+            })()
           )}
-          {/* Send Balance Link — visible when deposit paid, balance not paid, not cancelled */}
-          {depositPaid && !balancePaid && status !== "CANCELLED" && (
-            <AdminButton
-              variant="primary"
-              size="sm"
-              loading={loading === PAYMENT_TYPE.BALANCE}
-              disabled={isPending}
-              icon={<CreditCard className="w-4 h-4" />}
-              onClick={() => handleSendPaymentLink(PAYMENT_TYPE.BALANCE)}
-            >
-              Send Balance Link
-            </AdminButton>
+          {/* ── Balance Button ── */}
+          {!balancePaid && status !== "CANCELLED" && (
+            (() => {
+              const linkSent = !!balanceSessionId;
+              const canRecopy = linkSent && !!balanceUrl;
+              // Balance is locked until deposit is paid
+              if (!depositPaid) {
+                return (
+                  <AdminButton
+                    variant="ghost"
+                    size="sm"
+                    disabled
+                    icon={<Ban className="w-4 h-4" />}
+                    className="cursor-not-allowed"
+                  >
+                    Pay Deposit First
+                  </AdminButton>
+                );
+              }
+              return (
+                <AdminButton
+                  variant={linkSent ? "secondary" : "primary"}
+                  size="sm"
+                  loading={loading === PAYMENT_TYPE.BALANCE}
+                  disabled={isPending || (linkSent && !canRecopy)}
+                  icon={
+                    linkSent ? (
+                      canRecopy ? <Copy className="w-4 h-4" /> : <Send className="w-4 h-4" />
+                    ) : (
+                      <CreditCard className="w-4 h-4" />
+                    )
+                  }
+                  onClick={() =>
+                    canRecopy
+                      ? handleRecopyLink(PAYMENT_TYPE.BALANCE)
+                      : handleSendPaymentLink(PAYMENT_TYPE.BALANCE)
+                  }
+                >
+                  {linkSent
+                    ? canRecopy
+                      ? "Re-copy Balance Link"
+                      : "Balance Link Sent"
+                    : "Send Balance Link"}
+                </AdminButton>
+              );
+            })()
           )}
-          <AdminButton
-            variant="secondary"
-            size="sm"
-            icon={<Mail className="w-4 h-4" />}
-            onClick={() => {
-              window.location.href = `mailto:${booking.guestEmail}`;
-            }}
-          >
-            Email Guest
-          </AdminButton>
         </div>
       </div>
 

@@ -148,9 +148,10 @@ ehthumbs.db
 Thumbs.db
 
 # ─── Prisma ───────────────────────────────────────────────────
-prisma/migrations/
-# Keep schema.prisma tracked, ignore generated client
-# (generated in node_modules, no need to ignore separately)
+# Migrations are tracked in git — they are the DB schema history.
+# Anyone cloning the repo can run `npx prisma migrate deploy` to
+# recreate the exact same database schema.
+# (generated client lives in node_modules, no need to ignore separately)
 
 # ─── Vercel ───────────────────────────────────────────────────
 .vercel

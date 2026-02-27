@@ -293,17 +293,17 @@ enum PaymentType {
 // Track all admin actions for security and compliance
 // ═══════════════════════════════════════════════════════════════
 model AuditLog {
-  id          String    @id @default(cuid())
-  adminUserId String
-  admin       AdminUser @relation(fields: [adminUserId], references: [id])
+  id          String     @id @default(cuid())
+  adminUserId String?
+  admin       AdminUser? @relation(fields: [adminUserId], references: [id])
   action      String
   entityType  String
   entityId    String
   /// JSON string with before/after values
-  changes     String?   @db.Text
+  changes     String?    @db.Text
   ipAddress   String?
   userAgent   String?
-  createdAt   DateTime  @default(now())
+  createdAt   DateTime   @default(now())
 
   @@index([adminUserId])
   @@index([entityType])
