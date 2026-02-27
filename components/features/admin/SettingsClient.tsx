@@ -1,7 +1,7 @@
 "use client";
 
 // ─── Imports ───────────────────────────────────────────────────
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { toast } from "sonner";
 import {
   Upload,
@@ -12,7 +12,10 @@ import {
   Trash2,
   UserPlus,
   CheckCircle,
+  AlertCircle,
   AlertTriangle,
+  ExternalLink,
+  Loader2,
   X,
   Construction,
 } from "lucide-react";
@@ -21,6 +24,7 @@ import { AdminButton } from "@/components/ui/admin/AdminButton";
 import { AdminField } from "@/components/ui/admin/AdminField";
 import { cn } from "@/lib/utils";
 import { ADMIN_ROLE } from "@/lib/constants";
+import { getStripeStatus } from "@/lib/services/payments";
 
 // ─── Types ─────────────────────────────────────────────────────
 type SettingsTab = "general" | "payments" | "email" | "access";
@@ -124,6 +128,23 @@ export function SettingsClient({
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [isPending, startTransition] = useTransition();
 
+  // Stripe connection status — null = loading, true/false = result
+  const [stripeConfigured, setStripeConfigured] = useState<boolean | null>(
+    null,
+  );
+
+  useEffect(() => {
+    async function checkStripe(): Promise<void> {
+      const result = await getStripeStatus();
+      if (result.success) {
+        setStripeConfigured(result.data.configured);
+      } else {
+        setStripeConfigured(false);
+      }
+    }
+    void checkStripe();
+  }, []);
+
   // Form state — grouped by tab
   const [generalForm, setGeneralForm] = useState<GeneralForm>(INITIAL_GENERAL);
   const [paymentsForm, setPaymentsForm] =
@@ -202,7 +223,7 @@ export function SettingsClient({
                 "pb-3 px-1 font-medium transition-colors border-b-2 text-sm",
                 activeTab === tab.id
                   ? "border-admin-sage text-admin-sage"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  : "border-transparent text-gray-500 hover:text-gray-700",
               )}
             >
               {tab.label}
@@ -322,31 +343,75 @@ export function SettingsClient({
 
           <AdminCard title="Stripe Integration">
             <div className="space-y-4">
-              {/* TODO: Connect real Stripe account status via Stripe API
-                 1. Create API route GET /api/admin/stripe/status
-                 2. Check if STRIPE_SECRET_KEY env var is set
-                 3. Call stripe.accounts.retrieve() to get real status
-                 4. Show connect/disconnect button based on real state */}
-              <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <CheckCircle className="w-5 h-5 text-green-700" />
-                  <div>
-                    <p className="font-medium text-gray-900">Not Connected</p>
-                    <p className="text-sm text-gray-600">
-                      Stripe integration pending setup
-                    </p>
+              {/* Dynamic Stripe connection status badge */}
+              {stripeConfigured === null ? (
+                /* Loading state */
+                <div className="flex items-center justify-between p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <Loader2 className="w-5 h-5 text-gray-400 animate-spin" />
+                    <div>
+                      <p className="font-medium text-gray-900">Checking…</p>
+                      <p className="text-sm text-gray-500">
+                        Verifying Stripe connection
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <AdminButton variant="secondary" size="sm" disabled>
-                  Connect Stripe
-                </AdminButton>
-              </div>
+              ) : stripeConfigured ? (
+                /* Connected state */
+                <div className="flex items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-700" />
+                    <div>
+                      <p className="font-medium text-gray-900">Connected</p>
+                      <p className="text-sm text-gray-600">
+                        Stripe is configured and ready to process payments
+                      </p>
+                    </div>
+                  </div>
+                  <AdminButton
+                    variant="secondary"
+                    size="sm"
+                    icon={<ExternalLink className="w-4 h-4" />}
+                    onClick={() =>
+                      window.open("https://dashboard.stripe.com", "_blank")
+                    }
+                  >
+                    Stripe Dashboard
+                  </AdminButton>
+                </div>
+              ) : (
+                /* Not connected state */
+                <div className="flex items-center justify-between p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="flex items-center gap-3">
+                    <AlertCircle className="w-5 h-5 text-red-600" />
+                    <div>
+                      <p className="font-medium text-gray-900">Not Connected</p>
+                      <p className="text-sm text-gray-600">
+                        Set STRIPE_SECRET_KEY in environment variables
+                      </p>
+                    </div>
+                  </div>
+                  <AdminButton
+                    variant="secondary"
+                    size="sm"
+                    icon={<ExternalLink className="w-4 h-4" />}
+                    onClick={() =>
+                      window.open(
+                        "https://dashboard.stripe.com/apikeys",
+                        "_blank",
+                      )
+                    }
+                  >
+                    Get API Key
+                  </AdminButton>
+                </div>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Webhook Secret
                 </label>
-                {/* TODO: Read webhook secret status from env (masked) */}
                 <div className="flex gap-2">
                   <input
                     type="text"
@@ -579,20 +644,20 @@ export function SettingsClient({
                             user.role === ADMIN_ROLE.SUPER_ADMIN ||
                               user.role === ADMIN_ROLE.ADMIN
                               ? "bg-admin-sage/10 text-admin-sage"
-                              : "bg-gray-100 text-gray-700"
+                              : "bg-gray-100 text-gray-700",
                           )}
                         >
                           {user.role === ADMIN_ROLE.SUPER_ADMIN
                             ? "Super Admin"
                             : user.role === ADMIN_ROLE.ADMIN
-                            ? "Admin"
-                            : "Viewer"}
+                              ? "Admin"
+                              : "Viewer"}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-500">
                         {user.lastLoginAt
                           ? new Date(user.lastLoginAt).toLocaleDateString(
-                              "en-GB"
+                              "en-GB",
                             )
                           : "Never"}
                       </td>
