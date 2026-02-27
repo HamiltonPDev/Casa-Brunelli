@@ -706,12 +706,10 @@ export function MessagesClient({
         description: `€${result.data.totalPrice.toLocaleString("en-GB")} · ${
           result.data.nights
         } nights`,
-        action: {
-          label: "View Booking",
-          onClick: () =>
-            router.push(`/admin/bookings/${result.data.bookingId}`),
-        },
       });
+
+      // Auto-redirect to the new booking detail page
+      router.push(`/admin/bookings/${result.data.bookingId}`);
     });
   }
 

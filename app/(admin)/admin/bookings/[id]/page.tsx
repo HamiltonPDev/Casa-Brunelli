@@ -58,6 +58,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
         balanceAmount,
         depositPaid: booking.depositPaid,
         balancePaid: booking.balancePaid,
+        depositSessionId: booking.depositSessionId ?? undefined,
+        balanceSessionId: booking.balanceSessionId ?? undefined,
         specialRequests: booking.specialRequests ?? undefined,
         approvedBy: booking.approvedBy ?? undefined,
         approvedAt: booking.approvedAt?.toISOString() ?? undefined,
@@ -65,6 +67,7 @@ export default async function BookingDetailPage({ params }: PageProps) {
         updatedAt: booking.updatedAt.toISOString(),
         payments: booking.payments.map((p) => ({
           id: p.id,
+          stripePaymentId: p.stripePaymentId,
           amount: Number(p.amount),
           currency: p.currency,
           status: p.status,

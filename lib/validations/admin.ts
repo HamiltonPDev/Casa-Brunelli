@@ -186,7 +186,7 @@ export const contactSchema = z.object({
 
 /** POST /api/stripe/checkout — create Stripe Checkout Session */
 export const createCheckoutSchema = z.object({
-  bookingId: z.uuid("Invalid booking ID"),
+  bookingId: z.string().min(1, "Booking ID is required"),
   type: z.enum(["DEPOSIT", "BALANCE"], {
     error: "Payment type must be DEPOSIT or BALANCE",
   }),
