@@ -1,5 +1,4 @@
 import { notFound } from "next/navigation";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BookingDetailClient } from "@/components/features/admin/BookingDetailClient";
 import type { Metadata } from "next";
@@ -24,7 +23,6 @@ export async function generateMetadata({
 export const dynamic = "force-dynamic";
 
 export default async function BookingDetailPage({ params }: PageProps) {
-  const session = await auth();
   const { id } = await params;
 
   const booking = await prisma.booking.findUnique({
@@ -83,7 +81,6 @@ export default async function BookingDetailPage({ params }: PageProps) {
             }
           : undefined,
       }}
-      adminName={session?.user?.name ?? "Admin"}
     />
   );
 }
