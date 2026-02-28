@@ -2,7 +2,11 @@ import { requireAuth, requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { BOOKING_STATUS } from "@/lib/constants";
 import type { BookingStatus } from "@/lib/constants";
-import { bulkUpdateBookingsSchema, validationError } from "@/lib/validations/admin";
+import {
+  bulkUpdateBookingsSchema,
+  bulkDeleteBookingsSchema,
+  validationError,
+} from "@/lib/validations/admin";
 
 // ─── GET /api/admin/bookings ───────────────────────────────────
 // Supports query params: search, status, dateFrom, dateTo, guests, page
@@ -23,7 +27,7 @@ export async function GET(request: Request) {
     ? status
         .split(",")
         .filter((s) =>
-          Object.values(BOOKING_STATUS).includes(s as BookingStatus)
+          Object.values(BOOKING_STATUS).includes(s as BookingStatus),
         )
     : [];
 
@@ -74,7 +78,7 @@ export async function GET(request: Request) {
     console.error("[API] GET /api/admin/bookings:", error);
     return Response.json(
       { success: false, error: "Failed to fetch bookings" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -105,7 +109,82 @@ export async function PATCH(request: Request) {
     console.error("[API] PATCH /api/admin/bookings:", error);
     return Response.json(
       { success: false, error: "Failed to update bookings" },
-      { status: 500 }
+      { status: 500 },
+    );
+  }
+}
+
+// ─── DELETE /api/admin/bookings ────────────────────────────────
+// Bulk delete: { ids: string[] }
+export async function DELETE(request: Request) {
+  const { session, denied } = await requireWrite();
+  if (denied) return denied;
+
+  try {
+    const body = await request.json();
+    const parsed = bulkDeleteBookingsSchema.safeParse(body);
+
+    if (!parsed.success) {
+      return validationError(parsed.error);
+    }
+
+    const { ids } = parsed.data;
+
+    // Fetch bookings for audit log before deleting
+    const bookings = await prisma.booking.findMany({
+      where: { id: { in: ids } },
+      select: {
+        id: true,
+        guestName: true,
+        guestEmail: true,
+        status: true,
+        totalPrice: true,
+      },
+    });
+
+    if (bookings.length === 0) {
+      return Response.json(
+        { success: false, error: "No bookings found" },
+        { status: 404 },
+      );
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Cascade: delete payments first, then bookings
+      await tx.paymentTransaction.deleteMany({
+        where: { bookingId: { in: ids } },
+      });
+      await tx.booking.deleteMany({
+        where: { id: { in: ids } },
+      });
+
+      // Audit log per booking
+      await tx.auditLog.createMany({
+        data: bookings.map((b) => ({
+          adminUserId: session.user.id,
+          action: "BOOKING_DELETED",
+          entityType: "Booking",
+          entityId: b.id,
+          changes: JSON.stringify({
+            guestName: b.guestName,
+            guestEmail: b.guestEmail,
+            status: b.status,
+            totalPrice: Number(b.totalPrice),
+            bulkDelete: true,
+          }),
+        })),
+      });
+    });
+
+    return Response.json({
+      success: true,
+      data: { deleted: bookings.length },
+    });
+  } catch (error) {
+    console.error("[API] DELETE /api/admin/bookings:", error);
+    return Response.json(
+      { success: false, error: "Failed to delete bookings" },
+      { status: 500 },
     );
   }
 }

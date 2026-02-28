@@ -106,3 +106,52 @@ export async function PATCH(request: Request, { params }: RouteParams) {
     );
   }
 }
+
+// ─── DELETE /api/admin/bookings/[id] ──────────────────────────
+// Hard delete a booking + cascade PaymentTransactions
+export async function DELETE(_request: Request, { params }: RouteParams) {
+  const { session, denied } = await requireWrite();
+  if (denied) return denied;
+
+  const { id } = await params;
+
+  try {
+    const existing = await prisma.booking.findUnique({ where: { id } });
+    if (!existing) {
+      return Response.json(
+        { success: false, error: "Booking not found" },
+        { status: 404 },
+      );
+    }
+
+    // Cascade: delete payments first (FK constraint), then booking
+    await prisma.$transaction(async (tx) => {
+      await tx.paymentTransaction.deleteMany({ where: { bookingId: id } });
+      await tx.booking.delete({ where: { id } });
+
+      // Audit log
+      await tx.auditLog.create({
+        data: {
+          adminUserId: session.user.id,
+          action: "BOOKING_DELETED",
+          entityType: "Booking",
+          entityId: id,
+          changes: JSON.stringify({
+            guestName: existing.guestName,
+            guestEmail: existing.guestEmail,
+            status: existing.status,
+            totalPrice: Number(existing.totalPrice),
+          }),
+        },
+      });
+    });
+
+    return Response.json({ success: true });
+  } catch (error) {
+    console.error("[API] DELETE /api/admin/bookings/[id]:", error);
+    return Response.json(
+      { success: false, error: "Failed to delete booking" },
+      { status: 500 },
+    );
+  }
+}

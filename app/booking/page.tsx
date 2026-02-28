@@ -27,13 +27,20 @@ function isValidDate(raw: string | undefined): raw is string {
 // ─── Page ──────────────────────────────────────────────────────
 
 interface BookingPageProps {
-  searchParams: Promise<{ checkIn?: string; checkOut?: string; guests?: string }>;
+  searchParams: Promise<{
+    checkIn?: string;
+    checkOut?: string;
+    guests?: string;
+  }>;
 }
 
 export default async function BookingPage({ searchParams }: BookingPageProps) {
   const params = await searchParams;
   const { checkIn, checkOut } = params;
-  const guests = Math.min(MAX_GUESTS, Math.max(MIN_GUESTS, Number(params.guests ?? 2) || 2));
+  const guests = Math.min(
+    MAX_GUESTS,
+    Math.max(MIN_GUESTS, Number(params.guests ?? 2) || 2),
+  );
 
   // If dates are missing or invalid, send back to calendar
   if (!isValidDate(checkIn) || !isValidDate(checkOut)) {
@@ -55,7 +62,11 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
     <>
       <PublicNav />
 
-      <main id="main-content" className="min-h-screen pt-16 md:pt-20" style={{ backgroundColor: "#F5F3EF" }}>
+      <main
+        id="main-content"
+        className="min-h-screen pt-16 md:pt-20"
+        style={{ backgroundColor: "#F5F3EF" }}
+      >
         {/* ─── Hero ────────────────────────────────────────────── */}
         <div
           className="border-b"
@@ -71,11 +82,15 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
             >
               Casa Brunelli · Tuscany
             </p>
-            <h1 className="font-serif text-3xl lg:text-4xl mb-2" style={{ color: "#2D3A2E" }}>
+            <h1
+              className="font-serif text-3xl lg:text-4xl mb-2"
+              style={{ color: "#2D3A2E" }}
+            >
               Request to Book
             </h1>
             <p className="text-sm" style={{ color: "rgba(61,82,67,0.7)" }}>
-              {nights} night{nights !== 1 ? "s" : ""} · {checkInLabel} – {checkOutLabel}
+              {nights} night{nights !== 1 ? "s" : ""} · {checkInLabel} –{" "}
+              {checkOutLabel}
             </p>
           </div>
         </div>

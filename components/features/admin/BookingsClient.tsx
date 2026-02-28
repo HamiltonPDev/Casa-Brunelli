@@ -13,6 +13,7 @@ import {
   X,
   Eye,
   FileX,
+  Trash2,
 } from "lucide-react";
 import { AdminCard } from "@/components/ui/admin/AdminCard";
 import { AdminBadge } from "@/components/ui/admin/AdminBadge";
@@ -21,7 +22,7 @@ import { AdminField } from "@/components/ui/admin/AdminField";
 import { formatCurrency, formatDateRange, cn } from "@/lib/utils";
 import {
   fetchBookings as fetchBookingsApi,
-  bulkUpdateBookings,
+  deleteBookings,
 } from "@/lib/services/bookings";
 
 // ─── Types ─────────────────────────────────────────────────────
@@ -73,6 +74,7 @@ export function BookingsClient() {
   const [pagination, setPagination] = useState<Pagination | null>(null);
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [bulkLoading, setBulkLoading] = useState(false);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
 
   const hasActiveFilters =
@@ -136,16 +138,17 @@ export function BookingsClient() {
     );
   }
 
-  async function handleBulkStatus(status: string) {
+  async function handleBulkDelete() {
     setBulkLoading(true);
 
-    const result = await bulkUpdateBookings(selectedRows, status);
+    const result = await deleteBookings(selectedRows);
 
     if (result.success) {
       toast.success(
-        `Updated ${result.data.updated} booking${result.data.updated !== 1 ? "s" : ""}`
+        `Deleted ${result.data.deleted} booking${result.data.deleted !== 1 ? "s" : ""}`,
       );
       setSelectedRows([]);
+      setConfirmBulkDelete(false);
       void loadBookings();
     } else {
       toast.error(result.error);
@@ -263,37 +266,46 @@ export function BookingsClient() {
           <div className="flex items-center gap-4">
             <span className="font-medium">{selectedRows.length} selected</span>
             <button
-              onClick={() => setSelectedRows([])}
+              onClick={() => {
+                setSelectedRows([]);
+                setConfirmBulkDelete(false);
+              }}
               className="text-sm hover:text-white/70 transition-colors"
             >
               Clear selection
             </button>
           </div>
           <div className="flex items-center gap-3">
-            <AdminButton
-              variant="secondary"
-              size="sm"
-              loading={bulkLoading}
-              onClick={() => handleBulkStatus("CONFIRMED")}
-            >
-              Confirm
-            </AdminButton>
-            <AdminButton
-              variant="secondary"
-              size="sm"
-              loading={bulkLoading}
-              onClick={() => handleBulkStatus("COMPLETED")}
-            >
-              Mark Completed
-            </AdminButton>
-            <AdminButton
-              variant="ghost"
-              size="sm"
-              loading={bulkLoading}
-              onClick={() => handleBulkStatus("CANCELLED")}
-            >
-              Cancel
-            </AdminButton>
+            {confirmBulkDelete ? (
+              <>
+                <span className="text-sm">Are you sure?</span>
+                <AdminButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmBulkDelete(false)}
+                >
+                  Cancel
+                </AdminButton>
+                <AdminButton
+                  variant="danger"
+                  size="sm"
+                  loading={bulkLoading}
+                  icon={<Trash2 className="w-4 h-4" />}
+                  onClick={handleBulkDelete}
+                >
+                  Yes, Delete {selectedRows.length}
+                </AdminButton>
+              </>
+            ) : (
+              <AdminButton
+                variant="danger"
+                size="sm"
+                icon={<Trash2 className="w-4 h-4" />}
+                onClick={() => setConfirmBulkDelete(true)}
+              >
+                Delete Selected
+              </AdminButton>
+            )}
           </div>
         </div>
       )}
@@ -454,7 +466,7 @@ export function BookingsClient() {
                               onClick={() =>
                                 router.push(`/admin/bookings/${booking.id}`)
                               }
-                              className="inline-flex items-center gap-1 text-sm text-admin-sage hover:text-admin-sage-hover font-medium"
+                              className="inline-flex items-center gap-1.5 text-sm text-admin-sage hover:text-admin-sage-hover font-medium px-3 py-1.5 rounded-lg hover:bg-admin-sage/10 transition-all duration-200 cursor-pointer"
                             >
                               <Eye className="w-4 h-4" />
                               View
