@@ -51,7 +51,7 @@ export function AdminButton({
         "transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed",
         VARIANT_STYLES[variant],
         SIZE_STYLES[size],
-        className
+        className,
       )}
     >
       {loading ? (

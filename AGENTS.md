@@ -35,6 +35,7 @@ npx prisma studio         # Visual DB browser
 | `next-auth` | ^5.0.0-beta.30 | Credentials only, no OAuth |
 | `prisma` | ^7.3.0 | DB url in `prisma.config.ts` — **NOT** `schema.prisma` |
 | `tailwindcss` | ^4 | `@import "tailwindcss"` — no `@tailwind` directives |
+| `shadcn/ui` | latest (3.8+) | Components in `components/ui/shadcn/`. Install: `npx shadcn@latest add <name>` |
 
 ### Next.js 16 — Async Params
 
@@ -56,7 +57,9 @@ app/                        ← Pages (Server Components) + API routes
   (auth)/admin/login/       ← Login page
   api/                      ← Public + admin API routes
 components/
-  ui/{public,admin}/        ← Atoms — single elements (Button, AdminCard, AdminBadge)
+  ui/public/                ← Atoms — custom public (Button, Card, Eyebrow)
+  ui/admin/                 ← Atoms — custom admin (AdminButton, AdminCard, AdminBadge)
+  ui/shadcn/                ← shadcn/ui components (button, dialog, etc.) — DO NOT move
   shared/public/            ← Molecules — 2-3 atoms composed (SectionHeader, FeatureCard)
   features/{public,admin}/  ← Organisms — complex sections (BookingForm, CalendarWidget)
   layouts/admin/            ← Templates — page scaffolding (AdminShell)
@@ -86,6 +89,8 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { BOOKING_STATUS } from "@/lib/constants";
 import { prisma } from "@/lib/prisma";
+import { Button } from "@/components/ui/shadcn/button";   // shadcn
+import { AdminCard } from "@/components/ui/admin/AdminCard"; // custom
 import type { Booking } from "@/types";
 // 4. Relative (only when necessary)
 import { SomeHelper } from "./helpers";
