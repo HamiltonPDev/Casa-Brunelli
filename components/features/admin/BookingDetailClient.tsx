@@ -14,12 +14,13 @@ import {
   Clock,
   Send,
   Ban,
+  Trash2,
 } from "lucide-react";
 import { AdminCard } from "@/components/ui/admin/AdminCard";
 import { AdminBadge } from "@/components/ui/admin/AdminBadge";
 import { AdminButton } from "@/components/ui/admin/AdminButton";
 import { formatCurrency } from "@/lib/utils";
-import { updateBooking } from "@/lib/services/bookings";
+import { updateBooking, deleteBooking } from "@/lib/services/bookings";
 import { createPaymentSession } from "@/lib/services/payments";
 import { PAYMENT_TYPE, PAYMENT_STATUS } from "@/lib/constants";
 import {
@@ -120,6 +121,7 @@ export function BookingDetailClient({
   const [isPending, startTransition] = useTransition();
   const [loading, setLoading] = useState<string | null>(null);
   const [status, setStatus] = useState(booking.status);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   // Optimistic state — session IDs update immediately after creating a payment link,
   // while paid flags and payments refresh via RSC on next navigation
   const [depositSessionId, setDepositSessionId] = useState(
@@ -190,6 +192,21 @@ export function BookingDetailClient({
         toast.error(result.error);
       }
       setLoading(null);
+    });
+  }
+
+  function handleDeleteBooking(): void {
+    startTransition(async () => {
+      setLoading("delete");
+      const result = await deleteBooking(booking.id);
+      if (result.success) {
+        toast.success("Booking deleted");
+        router.push("/admin/bookings");
+      } else {
+        toast.error(result.error);
+      }
+      setLoading(null);
+      setConfirmDelete(false);
     });
   }
 
@@ -585,25 +602,68 @@ export function BookingDetailClient({
       </div>
 
       {/* Danger Zone */}
-      {status !== "CANCELLED" && (
-        <AdminCard title="Danger Zone">
+      <AdminCard title="Danger Zone">
+        <div className="space-y-4">
+          {status !== "CANCELLED" && (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium text-gray-900 mb-1">
+                  Cancel Booking
+                </p>
+                <p className="text-sm text-gray-500">
+                  This action cannot be undone. The guest will be notified.
+                </p>
+              </div>
+              <AdminButton
+                variant="danger"
+                loading={loading === "cancel"}
+                onClick={handleCancelBooking}
+              >
+                Cancel Booking
+              </AdminButton>
+            </div>
+          )}
+          {status !== "CANCELLED" && (
+            <div className="border-t border-gray-200" />
+          )}
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-medium text-gray-900 mb-1">Cancel Booking</p>
+              <p className="font-medium text-gray-900 mb-1">Delete Booking</p>
               <p className="text-sm text-gray-500">
-                This action cannot be undone. The guest will be notified.
+                Permanently removes this booking and all payment records.
               </p>
             </div>
-            <AdminButton
-              variant="danger"
-              loading={loading === "cancel"}
-              onClick={handleCancelBooking}
-            >
-              Cancel Booking
-            </AdminButton>
+            {confirmDelete ? (
+              <div className="flex items-center gap-2">
+                <AdminButton
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setConfirmDelete(false)}
+                >
+                  Cancel
+                </AdminButton>
+                <AdminButton
+                  variant="danger"
+                  size="sm"
+                  loading={loading === "delete"}
+                  icon={<Trash2 className="w-4 h-4" />}
+                  onClick={handleDeleteBooking}
+                >
+                  Yes, Delete
+                </AdminButton>
+              </div>
+            ) : (
+              <AdminButton
+                variant="danger"
+                icon={<Trash2 className="w-4 h-4" />}
+                onClick={() => setConfirmDelete(true)}
+              >
+                Delete Booking
+              </AdminButton>
+            )}
           </div>
-        </AdminCard>
-      )}
+        </div>
+      </AdminCard>
     </div>
   );
 }

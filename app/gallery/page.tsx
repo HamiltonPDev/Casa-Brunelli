@@ -17,7 +17,11 @@ export default function GalleryPage() {
     <>
       <PublicNav />
 
-      <main id="main-content" className="min-h-screen pt-16 md:pt-20" style={{ backgroundColor: "#F5F3EF" }}>
+      <main
+        id="main-content"
+        className="min-h-screen pt-16 md:pt-20"
+        style={{ backgroundColor: "#F5F3EF" }}
+      >
         {/* ─── Hero ──────────────────────────────────────────── */}
         <div
           className="border-b"
@@ -61,7 +65,10 @@ export default function GalleryPage() {
                   >
                     {value}
                   </p>
-                  <p className="text-xs uppercase tracking-wider" style={{ color: "#8B9D83" }}>
+                  <p
+                    className="text-xs uppercase tracking-wider"
+                    style={{ color: "#8B9D83" }}
+                  >
                     {label}
                   </p>
                 </div>

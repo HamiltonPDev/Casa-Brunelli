@@ -2,7 +2,7 @@
 // ═══ Bookings Service — Fetch, Bulk Update & Patch ═══
 
 import type { ApiResult } from "./client";
-import { apiGet, apiPatch } from "./client";
+import { apiGet, apiPatch, apiDelete } from "./client";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -84,4 +84,16 @@ export function updateBooking(
   data: Record<string, unknown>,
 ): Promise<ApiResult<UpdateBookingResult>> {
   return apiPatch(`/api/admin/bookings/${id}`, data);
+}
+
+/** Delete a single booking (hard delete + cascade payments). */
+export function deleteBooking(id: string): Promise<ApiResult<void>> {
+  return apiDelete(`/api/admin/bookings/${id}`, {});
+}
+
+/** Bulk delete multiple bookings. */
+export function deleteBookings(
+  ids: string[],
+): Promise<ApiResult<{ deleted: number }>> {
+  return apiDelete("/api/admin/bookings", { ids });
 }

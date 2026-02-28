@@ -40,11 +40,18 @@ export const promoteMessageSchema = z.object({
 /** PATCH /api/admin/bookings — bulk status update */
 export const bulkUpdateBookingsSchema = z.object({
   ids: z
-    .array(z.uuid())
+    .array(z.string().min(1))
     .min(1, { error: "At least one booking ID is required" }),
   status: z.enum(Object.values(BOOKING_STATUS) as [string, ...string[]], {
     error: `Status must be one of: ${Object.values(BOOKING_STATUS).join(", ")}`,
   }),
+});
+
+/** DELETE /api/admin/bookings — bulk delete */
+export const bulkDeleteBookingsSchema = z.object({
+  ids: z
+    .array(z.string().min(1))
+    .min(1, { error: "At least one booking ID is required" }),
 });
 
 /** PATCH /api/admin/bookings/[id] — update single booking */

@@ -30,7 +30,7 @@ export default function AdminLoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; password?: string }>(
-    {}
+    {},
   );
 
   async function handleSubmit(e: React.FormEvent) {
@@ -166,7 +166,7 @@ export default function AdminLoginPage() {
                     "disabled:opacity-50 disabled:cursor-not-allowed transition-all",
                     errors.email
                       ? "border-red-400 focus:border-red-400 focus:ring-red-200"
-                      : "border-admin-sage/20"
+                      : "border-admin-sage/20",
                   )}
                 />
               </div>
@@ -211,7 +211,7 @@ export default function AdminLoginPage() {
                     "disabled:opacity-50 disabled:cursor-not-allowed transition-all",
                     errors.password
                       ? "border-red-400 focus:border-red-400 focus:ring-red-200"
-                      : "border-admin-sage/20"
+                      : "border-admin-sage/20",
                   )}
                 />
                 <button
@@ -273,7 +273,7 @@ export default function AdminLoginPage() {
                 "rounded-xl text-sm font-medium text-white",
                 "bg-admin-sage hover:bg-admin-sage-hover",
                 "shadow-md hover:shadow-lg transition-all duration-300",
-                "disabled:opacity-50 disabled:cursor-not-allowed"
+                "disabled:opacity-50 disabled:cursor-not-allowed",
               )}
             >
               {loading ? (

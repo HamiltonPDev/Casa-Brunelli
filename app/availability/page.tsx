@@ -17,7 +17,11 @@ export default function AvailabilityPage() {
     <>
       <PublicNav />
 
-      <main id="main-content" className="min-h-screen pt-16 md:pt-20" style={{ backgroundColor: "#F5F3EF" }}>
+      <main
+        id="main-content"
+        className="min-h-screen pt-16 md:pt-20"
+        style={{ backgroundColor: "#F5F3EF" }}
+      >
         {/* ─── Hero ──────────────────────────────────────────── */}
         <div
           className="border-b"
@@ -33,10 +37,16 @@ export default function AvailabilityPage() {
             >
               Casa Brunelli · Tuscany
             </p>
-            <h1 className="font-serif text-3xl lg:text-4xl mb-2" style={{ color: "#2D3A2E" }}>
+            <h1
+              className="font-serif text-3xl lg:text-4xl mb-2"
+              style={{ color: "#2D3A2E" }}
+            >
               Check Availability
             </h1>
-            <p className="text-base max-w-xl" style={{ color: "rgba(61,82,67,0.8)" }}>
+            <p
+              className="text-base max-w-xl"
+              style={{ color: "rgba(61,82,67,0.8)" }}
+            >
               Select your desired dates to reserve your Tuscan escape. Rates
               include all fees — no hidden charges.
             </p>
