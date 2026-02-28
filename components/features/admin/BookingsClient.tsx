@@ -112,7 +112,7 @@ export function BookingsClient() {
     setStatusFilters((prev) =>
       prev.includes(status)
         ? prev.filter((s) => s !== status)
-        : [...prev, status]
+        : [...prev, status],
     );
     setPage(1);
   }
@@ -128,13 +128,13 @@ export function BookingsClient() {
 
   function toggleRow(id: string) {
     setSelectedRows((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id],
     );
   }
 
   function toggleAll() {
     setSelectedRows(
-      selectedRows.length === bookings.length ? [] : bookings.map((b) => b.id)
+      selectedRows.length === bookings.length ? [] : bookings.map((b) => b.id),
     );
   }
 
@@ -196,7 +196,7 @@ export function BookingsClient() {
                       "px-3 py-1.5 text-xs rounded-lg border transition-all font-medium",
                       statusFilters.includes(s)
                         ? "bg-admin-sage text-white border-admin-sage"
-                        : "bg-white text-gray-700 border-gray-300 hover:border-admin-sage"
+                        : "bg-white text-gray-700 border-gray-300 hover:border-admin-sage",
                     )}
                   >
                     {s.charAt(0) + s.slice(1).toLowerCase()}
@@ -399,8 +399,8 @@ export function BookingsClient() {
                             isSelected
                               ? "bg-admin-sage/5"
                               : idx % 2 === 0
-                              ? "bg-white hover:bg-gray-50"
-                              : "bg-admin-bg hover:bg-gray-50"
+                                ? "bg-white hover:bg-gray-50"
+                                : "bg-admin-bg hover:bg-gray-50",
                           )}
                         >
                           <td className="px-6 py-4">
@@ -422,7 +422,7 @@ export function BookingsClient() {
                           <td className="px-6 py-4 text-sm text-gray-600">
                             {formatDateRange(
                               new Date(booking.checkIn),
-                              new Date(booking.checkOut)
+                              new Date(booking.checkOut),
                             )}
                           </td>
                           <td className="px-6 py-4 text-center text-sm text-gray-600">
@@ -486,7 +486,7 @@ export function BookingsClient() {
                 Showing {(pagination.page - 1) * pagination.perPage + 1} to{" "}
                 {Math.min(
                   pagination.page * pagination.perPage,
-                  pagination.total
+                  pagination.total,
                 )}{" "}
                 of {pagination.total} bookings
               </p>
@@ -500,7 +500,7 @@ export function BookingsClient() {
                 </button>
                 {Array.from(
                   { length: pagination.totalPages },
-                  (_, i) => i + 1
+                  (_, i) => i + 1,
                 ).map((p) => (
                   <button
                     key={p}
@@ -509,7 +509,7 @@ export function BookingsClient() {
                       "px-3 py-1.5 rounded-lg text-sm font-medium transition-colors",
                       p === page
                         ? "bg-admin-sage text-white"
-                        : "text-gray-700 hover:bg-gray-100"
+                        : "text-gray-700 hover:bg-gray-100",
                     )}
                   >
                     {p}

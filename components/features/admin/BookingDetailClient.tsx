@@ -4,6 +4,7 @@
 import { useSyncExternalStore, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ArrowLeft,
   CheckCircle,
@@ -130,7 +131,13 @@ export function BookingDetailClient({
   const [balanceSessionId, setBalanceSessionId] = useState(
     booking.balanceSessionId,
   );
-  const { depositPaid, balancePaid, payments } = booking;
+  const { depositPaid, balancePaid } = booking;
+  // Optimistic payments state — allows adding PENDING entries immediately after link creation
+  const [payments, setPayments] = useState<SerializedPayment[]>(booking.payments);
+  // Optimistic "link sent" events — separate from real payments (no stripePaymentId yet)
+  const [linkSentEvents, setLinkSentEvents] = useState<
+    { type: PaymentType; timestamp: string; sortDate: Date }[]
+  >([]);
 
   // Cached checkout URLs — allows re-copying a previously sent link.
   // useSyncExternalStore reads localStorage without hydration mismatch:
@@ -163,6 +170,16 @@ export function BookingDetailClient({
         } else {
           setBalanceSessionId(result.data.sessionId);
         }
+        // Optimistic: add "Link Sent" event to timeline
+        const now = new Date();
+        setLinkSentEvents((prev) => [
+          ...prev,
+          {
+            type,
+            timestamp: now.toLocaleString("en-GB"),
+            sortDate: now,
+          },
+        ]);
         // Copy URL to clipboard for admin to send to guest
         await copyToClipboard(url, "Payment link");
         toast.success("Payment link created and copied! Send it to the guest.");
@@ -210,13 +227,14 @@ export function BookingDetailClient({
     });
   }
 
-  // Build timeline from payments + booking events
+  // Build timeline from payments + booking events, sorted chronologically
   const timeline = [
     {
       type: "info" as const,
       label: "Booking Created",
       description: `Booking request submitted by ${booking.guestName}`,
       timestamp: new Date(booking.createdAt).toLocaleString("en-GB"),
+      sortDate: new Date(booking.createdAt),
     },
     ...(booking.approvedAt
       ? [
@@ -225,6 +243,7 @@ export function BookingDetailClient({
             label: "Booking Confirmed",
             description: `Approved by ${booking.approvedBy ?? "Admin"}`,
             timestamp: new Date(booking.approvedAt).toLocaleString("en-GB"),
+            sortDate: new Date(booking.approvedAt),
           },
         ]
       : []),
@@ -233,6 +252,15 @@ export function BookingDetailClient({
       label: `${p.type.charAt(0) + p.type.slice(1).toLowerCase()} Payment`,
       description: `${formatCurrency(p.amount)} — ${p.status.toLowerCase()}`,
       timestamp: new Date(p.processedAt ?? p.createdAt).toLocaleString("en-GB"),
+      sortDate: new Date(p.processedAt ?? p.createdAt),
+    })),
+    // Optimistic "link sent" events — shown immediately after admin creates a payment link
+    ...linkSentEvents.map((e) => ({
+      type: "info" as const,
+      label: `${e.type === PAYMENT_TYPE.DEPOSIT ? "Deposit" : "Balance"} Link Sent`,
+      description: "Payment link created and copied to clipboard",
+      timestamp: e.timestamp,
+      sortDate: e.sortDate,
     })),
     ...(status === "CANCELLED"
       ? [
@@ -241,10 +269,11 @@ export function BookingDetailClient({
             label: "Booking Cancelled",
             description: "Booking was cancelled",
             timestamp: new Date(booking.updatedAt).toLocaleString("en-GB"),
+            sortDate: new Date(booking.updatedAt),
           },
         ]
       : []),
-  ];
+  ].sort((a, b) => a.sortDate.getTime() - b.sortDate.getTime());
 
   return (
     <div className="space-y-6">
@@ -480,9 +509,15 @@ export function BookingDetailClient({
               </div>
             ) : (
               <div className="space-y-3">
+                <AnimatePresence initial={false}>
                 {payments.map((p) => (
-                  <div
+                  <motion.div
                     key={p.id}
+                    initial={{ opacity: 0, y: -8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeOut" as const }}
+                    layout
                     className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
                   >
                     <div className="flex items-center gap-3">
@@ -537,8 +572,9 @@ export function BookingDetailClient({
                         {formatCurrency(p.amount)}
                       </span>
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
+                </AnimatePresence>
               </div>
             )}
           </AdminCard>
@@ -580,22 +616,32 @@ export function BookingDetailClient({
         <div>
           <AdminCard title="Timeline" subtitle="Activity history">
             <div className="space-y-6">
-              {timeline.map((event, i) => (
-                <div key={i} className="flex gap-4">
-                  <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
-                    <TimelineIcon type={event.type} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-900 mb-0.5">
-                      {event.label}
-                    </p>
-                    <p className="text-sm text-gray-600 mb-1">
-                      {event.description}
-                    </p>
-                    <p className="text-xs text-gray-500">{event.timestamp}</p>
-                  </div>
-                </div>
-              ))}
+              <AnimatePresence initial={false}>
+                {timeline.map((event) => (
+                  <motion.div
+                    key={`${event.label}-${event.sortDate.getTime()}`}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.25, ease: "easeOut" as const }}
+                    layout
+                    className="flex gap-4"
+                  >
+                    <div className="shrink-0 w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+                      <TimelineIcon type={event.type} />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-900 mb-0.5">
+                        {event.label}
+                      </p>
+                      <p className="text-sm text-gray-600 mb-1">
+                        {event.description}
+                      </p>
+                      <p className="text-xs text-gray-500">{event.timestamp}</p>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           </AdminCard>
         </div>
