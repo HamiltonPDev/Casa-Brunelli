@@ -64,17 +64,17 @@ export const updateBookingSchema = z
         )}`,
       })
       .optional(),
-    depositPaid: z.boolean().optional(),
+    advancePaid: z.boolean().optional(),
     balancePaid: z.boolean().optional(),
   })
   .refine(
     (data) =>
       data.status !== undefined ||
-      data.depositPaid !== undefined ||
+      data.advancePaid !== undefined ||
       data.balancePaid !== undefined,
     {
       error:
-        "At least one field (status, depositPaid, or balancePaid) is required",
+        "At least one field (status, advancePaid, or balancePaid) is required",
     },
   );
 
@@ -194,8 +194,8 @@ export const contactSchema = z.object({
 /** POST /api/stripe/checkout — create Stripe Checkout Session */
 export const createCheckoutSchema = z.object({
   bookingId: z.string().min(1, "Booking ID is required"),
-  type: z.enum(["DEPOSIT", "BALANCE"], {
-    error: "Payment type must be DEPOSIT or BALANCE",
+  type: z.enum(["ADVANCE", "BALANCE"], {
+    error: "Payment type must be ADVANCE or BALANCE",
   }),
 });
 

@@ -121,7 +121,7 @@ AdminUser           — Admin authentication and role-based access
 UnavailableDate     — Manual calendar blocks by the owner
 GuestUser           — Repeat guest profiles and booking history
 EmailTemplate       — Canned responses for the Messages module
-PaymentTransaction  — Full payment history (deposit 30% + balance 70%)
+PaymentTransaction  — Full payment history (advance 30% + balance 70%)
 AuditLog            — All admin actions for security and compliance
 ```
 
@@ -172,7 +172,7 @@ proxy.ts                  Protects /admin/* routes (Next.js 16 proxy, NOT middle
 | Rule | Value |
 |------|-------|
 | Default nightly rate | €450 (when no season active) |
-| Deposit | 30% of total — paid via Stripe at booking |
+| Advance | 30% of total — paid via Stripe at booking |
 | Balance | 70% of total — sent 7 days before check-in |
 | Max guests | 8 |
 | Season conflict | Higher `priority` number wins |
@@ -183,8 +183,8 @@ proxy.ts                  Protects /admin/* routes (Next.js 16 proxy, NOT middle
 ```
 1. Guest submits contact form → ContactMessage created (type: BOOKING_REQUEST)
 2. Admin reviews in /admin/messages inbox
-3. Admin clicks "Approve" → Booking record created + Stripe deposit link sent
-4. Guest pays 30% → Stripe webhook → depositPaid: true, status: CONFIRMED
+3. Admin clicks "Approve" → Booking record created + Stripe advance payment link sent
+4. Guest pays 30% → Stripe webhook → advancePaid: true, status: CONFIRMED
 5. 7 days before check-in → balance link sent automatically
 6. Guest pays 70% → balancePaid: true
 ```

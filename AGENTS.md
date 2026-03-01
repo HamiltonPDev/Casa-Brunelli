@@ -1,7 +1,7 @@
 # Casa Brunelli — Agent Coding Guidelines
 
 Luxury Tuscan villa direct-booking platform. Next.js 16 · React 19 · Tailwind CSS 4 · Prisma 7 · NextAuth v5 · PostgreSQL.
-**Business model:** ALL inquiries → `ContactMessage` → admin promotes to `Booking`. No guest auth. Deposit 30%, balance 70%.
+**Business model:** ALL inquiries → `ContactMessage` → admin promotes to `Booking`. No guest auth. Advance 30%, balance 70%.
 
 ## Commands
 

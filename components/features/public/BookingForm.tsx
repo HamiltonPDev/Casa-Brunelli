@@ -29,8 +29,8 @@ interface BookingFormProps {
   nights: number;
   guests?: number; // pre-filled from availability selection
   totalPrice: number; // server-calculated total for the date range
-  depositAmount: number; // 30% deposit
-  balanceAmount: number; // 70% balance (totalPrice - depositAmount)
+  advanceAmount: number; // 30% advance
+  balanceAmount: number; // 70% balance (totalPrice - advanceAmount)
 }
 
 interface FormState {
@@ -57,7 +57,7 @@ type SubmitStatus = "idle" | "loading" | "success";
 // ─── Constants ─────────────────────────────────────────────────
 
 const PAYMENT_POLICIES = [
-  { strong: "Deposit:", text: "30% due at booking confirmation" },
+  { strong: "Advance (30%):", text: "Due at booking confirmation" },
   {
     strong: "Balance:",
     text: `Due ${BALANCE_DUE_DAYS_BEFORE_CHECKIN} days before check-in`,
@@ -119,7 +119,7 @@ export function BookingForm({
   nights,
   guests = 2,
   totalPrice,
-  depositAmount,
+  advanceAmount,
   balanceAmount,
 }: Readonly<BookingFormProps>) {
   const router = useRouter();
@@ -536,8 +536,8 @@ export function BookingForm({
                   </div>
                 </div>
                 <SummaryRow
-                  label="Deposit (30%)"
-                  value={formatEur(depositAmount)}
+                  label="Advance (30%)"
+                  value={formatEur(advanceAmount)}
                 />
                 <SummaryRow
                   label="Balance (70%)"

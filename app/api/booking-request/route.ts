@@ -8,7 +8,7 @@ import { calculateBookingTotal } from "@/lib/pricing";
 import {
   MESSAGE_TYPE,
   BOOKING_STATUS,
-  DEPOSIT_PERCENTAGE,
+  ADVANCE_PERCENTAGE,
 } from "@/lib/constants";
 import {
   bookingRequestSchema,
@@ -97,7 +97,7 @@ export async function POST(request: Request) {
       `Nights:    ${pricing.nights}`,
       `Guests:    ${guestCount}`,
       `Total:     €${pricing.totalPrice.toFixed(2)}`,
-      `Deposit (${DEPOSIT_PERCENTAGE * 100}%): €${pricing.depositAmount.toFixed(2)}`,
+      `Advance (${ADVANCE_PERCENTAGE * 100}%): €${pricing.advanceAmount.toFixed(2)}`,
       pricing.minStayRequired
         ? `Min stay: ${pricing.minStayRequired} nights`
         : null,
@@ -129,7 +129,7 @@ export async function POST(request: Request) {
           id: contactMessage.id,
           nights: pricing.nights,
           totalPrice: pricing.totalPrice,
-          depositAmount: pricing.depositAmount,
+          advanceAmount: pricing.advanceAmount,
           minStayRequired: pricing.minStayRequired,
           minStayValid: pricing.minStayValid,
         },

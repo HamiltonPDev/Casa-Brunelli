@@ -24,15 +24,15 @@ model Booking {
   guestEmail       String
   guestPhone       String?
   totalPrice       Decimal              @db.Decimal(10, 2)
-  depositAmount    Decimal              @db.Decimal(10, 2)
-  depositPaid      Boolean              @default(false)
+  advanceAmount    Decimal              @db.Decimal(10, 2)
+  advancePaid      Boolean              @default(false)
   balancePaid      Boolean              @default(false)
   status           BookingStatus        @default(PENDING)
   specialRequests  String?              @db.Text
   /// Most recent Stripe session ID
   stripeSessionId  String?              @unique
-  /// Stripe session for the 30% deposit payment
-  depositSessionId String?
+  /// Stripe session for the 30% advance payment
+  advanceSessionId String?
   /// Stripe session for the 70% balance payment
   balanceSessionId String?
   approvedBy       String?
@@ -246,7 +246,7 @@ model EmailTemplate {
 
 enum EmailCategory {
   BOOKING_CONFIRMATION
-  DEPOSIT_RECEIVED
+  ADVANCE_RECEIVED
   EARLY_CHECKIN
   PARKING
   REFUND
@@ -255,7 +255,7 @@ enum EmailCategory {
 
 // ═══════════════════════════════════════════════════════════════
 // TABLE 9 — PaymentTransaction
-// Separate payment history — tracks DEPOSIT (30%) and BALANCE (70%)
+// Separate payment history — tracks ADVANCE (30%) and BALANCE (70%)
 // Distinct from Booking to allow full payment history
 // ═══════════════════════════════════════════════════════════════
 model PaymentTransaction {
@@ -283,7 +283,7 @@ enum PaymentStatus {
 }
 
 enum PaymentType {
-  DEPOSIT
+  ADVANCE
   BALANCE
   REFUND
 }

@@ -103,7 +103,7 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
             nights={nights}
             guests={guests}
             totalPrice={pricing.totalPrice}
-            depositAmount={pricing.depositAmount}
+            advanceAmount={pricing.advanceAmount}
             balanceAmount={pricing.balanceAmount}
           />
         </div>

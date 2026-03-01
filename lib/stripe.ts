@@ -5,12 +5,12 @@
  * imports from here — never instantiate Stripe directly elsewhere.
  *
  * Key helper: `createCheckoutSession()` — generates a Checkout Session
- * for deposit (30%) or balance (70%) payments with 24h expiry.
+ * for advance (30%) or balance (70%) payments with 24h expiry.
  */
 
 import Stripe from "stripe";
 import {
-  DEPOSIT_PERCENTAGE,
+  ADVANCE_PERCENTAGE,
   BALANCE_PERCENTAGE,
   PAYMENT_LINK_EXPIRY_HOURS,
   APP_CONFIG,
@@ -44,7 +44,7 @@ if (process.env.NODE_ENV !== "production") globalForStripe.stripe = stripe;
 interface CheckoutSessionParams {
   /** The booking ID this payment belongs to */
   bookingId: string;
-  /** DEPOSIT (30%) or BALANCE (70%) */
+  /** ADVANCE (30%) or BALANCE (70%) */
   paymentType: PaymentType;
   /** Total booking price in EUR (used to calculate the amount) */
   totalPrice: number;
@@ -71,7 +71,7 @@ interface CheckoutSessionResult {
 /**
  * Creates a Stripe Checkout Session for a booking payment.
  *
- * - DEPOSIT: 30% of totalPrice
+ * - ADVANCE: 30% of totalPrice
  * - BALANCE: 70% of totalPrice
  * - Link expires in 24 hours (PAYMENT_LINK_EXPIRY_HOURS)
  * - Metadata includes bookingId + paymentType for the webhook
@@ -92,7 +92,7 @@ export async function createCheckoutSession(
 
   // Calculate payment amount based on type
   const percentage =
-    paymentType === "DEPOSIT" ? DEPOSIT_PERCENTAGE : BALANCE_PERCENTAGE;
+    paymentType === "ADVANCE" ? ADVANCE_PERCENTAGE : BALANCE_PERCENTAGE;
   const amount = Math.round(totalPrice * percentage * 100) / 100;
 
   // Stripe expects amounts in cents (smallest currency unit)
@@ -109,7 +109,7 @@ export async function createCheckoutSession(
 
   // Line item description
   const typeLabel =
-    paymentType === "DEPOSIT" ? "Deposit (30%)" : "Balance (70%)";
+    paymentType === "ADVANCE" ? "Advance (30%)" : "Balance (70%)";
   const description = [
     `${APP_CONFIG.name} — ${typeLabel}`,
     `${numberOfNights} nights: ${checkInStr} → ${checkOutStr}`,

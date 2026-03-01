@@ -61,7 +61,7 @@ export async function GET(request: Request) {
     const data = bookings.map((b) => ({
       ...b,
       totalPrice: Number(b.totalPrice),
-      depositAmount: Number(b.depositAmount),
+      advanceAmount: Number(b.advanceAmount),
     }));
 
     return Response.json({

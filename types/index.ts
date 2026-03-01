@@ -43,13 +43,13 @@ export interface Booking {
   guestEmail: string;
   guestPhone: string | null;
   totalPrice: number;
-  depositAmount: number;
-  depositPaid: boolean;
+  advanceAmount: number;
+  advancePaid: boolean;
   balancePaid: boolean;
   status: BookingStatus;
   specialRequests: string | null;
   stripeSessionId: string | null;
-  depositSessionId: string | null;
+  advanceSessionId: string | null;
   balanceSessionId: string | null;
   approvedBy: string | null;
   approvedAt: Date | null;
@@ -188,7 +188,7 @@ export interface EmailTemplate {
 // ═══════════════════════════════════════════════════════════════
 // TABLE 9 — PaymentTransaction
 // Detailed payment history — separate from Booking
-// Tracks both DEPOSIT (30%) and BALANCE (70%) payments
+// Tracks both ADVANCE (30%) and BALANCE (70%) payments
 // ═══════════════════════════════════════════════════════════════
 export interface PaymentTransaction {
   id: string;
@@ -261,7 +261,7 @@ export interface NightlyRateResult {
 export interface BookingPriceBreakdown {
   nights: number;
   totalPrice: number;
-  depositAmount: number;
+  advanceAmount: number;
   balanceAmount: number;
   breakdown: NightlyRateResult[];
   minStayRequired: number | null;
@@ -272,7 +272,7 @@ export interface BookingPriceBreakdown {
 export interface DashboardStats {
   pendingRequests: number;
   confirmedBookings: number;
-  depositsPaid: number;
+  advancesPaid: number;
   upcomingCheckIns: number;
   monthlyRevenue: number;
   occupancyRate: number;

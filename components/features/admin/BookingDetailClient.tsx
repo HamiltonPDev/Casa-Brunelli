@@ -55,11 +55,11 @@ interface BookingDetail {
   guestCount: number;
   status: string;
   totalPrice: number;
-  depositAmount: number;
+  advanceAmount: number;
   balanceAmount: number;
-  depositPaid: boolean;
+  advancePaid: boolean;
   balancePaid: boolean;
-  depositSessionId?: string;
+  advanceSessionId?: string;
   balanceSessionId?: string;
   specialRequests?: string;
   approvedBy?: string;
@@ -125,13 +125,13 @@ export function BookingDetailClient({
   const [confirmDelete, setConfirmDelete] = useState(false);
   // Optimistic state — session IDs update immediately after creating a payment link,
   // while paid flags and payments refresh via RSC on next navigation
-  const [depositSessionId, setDepositSessionId] = useState(
-    booking.depositSessionId,
+  const [advanceSessionId, setAdvanceSessionId] = useState(
+    booking.advanceSessionId,
   );
   const [balanceSessionId, setBalanceSessionId] = useState(
     booking.balanceSessionId,
   );
-  const { depositPaid, balancePaid } = booking;
+  const { advancePaid, balancePaid } = booking;
   // Optimistic payments state — allows adding PENDING entries immediately after link creation
   const [payments, setPayments] = useState<SerializedPayment[]>(booking.payments);
   // Optimistic "link sent" events — separate from real payments (no stripePaymentId yet)
@@ -143,9 +143,9 @@ export function BookingDetailClient({
   // useSyncExternalStore reads localStorage without hydration mismatch:
   // server snapshot returns null, client reads the real value after hydration.
   const noopSubscribe = (): (() => void) => () => {};
-  const depositUrl = useSyncExternalStore(
+  const advanceUrl = useSyncExternalStore(
     noopSubscribe,
-    () => getCheckoutUrl(booking.id, PAYMENT_TYPE.DEPOSIT),
+    () => getCheckoutUrl(booking.id, PAYMENT_TYPE.ADVANCE),
     () => null,
   );
   const balanceUrl = useSyncExternalStore(
@@ -165,8 +165,8 @@ export function BookingDetailClient({
         // BEFORE setting session ID so the next render reads it via useSyncExternalStore
         saveCheckoutUrl(booking.id, type, url);
         // Update local state — triggers re-render, useSyncExternalStore picks up the cached URL
-        if (type === PAYMENT_TYPE.DEPOSIT) {
-          setDepositSessionId(result.data.sessionId);
+        if (type === PAYMENT_TYPE.ADVANCE) {
+          setAdvanceSessionId(result.data.sessionId);
         } else {
           setBalanceSessionId(result.data.sessionId);
         }
@@ -192,7 +192,7 @@ export function BookingDetailClient({
 
   function handleRecopyLink(type: PaymentType): void {
     const url =
-      type === PAYMENT_TYPE.DEPOSIT ? depositUrl : balanceUrl;
+      type === PAYMENT_TYPE.ADVANCE ? advanceUrl : balanceUrl;
     if (url) {
       copyToClipboard(url, "Payment link");
     }
@@ -257,7 +257,7 @@ export function BookingDetailClient({
     // Optimistic "link sent" events — shown immediately after admin creates a payment link
     ...linkSentEvents.map((e) => ({
       type: "info" as const,
-      label: `${e.type === PAYMENT_TYPE.DEPOSIT ? "Deposit" : "Balance"} Link Sent`,
+      label: `${e.type === PAYMENT_TYPE.ADVANCE ? "Advance" : "Balance"} Link Sent`,
       description: "Payment link created and copied to clipboard",
       timestamp: e.timestamp,
       sortDate: e.sortDate,
@@ -295,16 +295,16 @@ export function BookingDetailClient({
           <p className="text-sm text-gray-500 mt-1">Booking ID: {booking.id}</p>
         </div>
         <div className="flex items-center gap-2">
-          {/* ── Deposit Button ── */}
-          {!depositPaid && status !== "CANCELLED" && (
+          {/* ── Advance Button ── */}
+          {!advancePaid && status !== "CANCELLED" && (
             (() => {
-              const linkSent = !!depositSessionId;
-              const canRecopy = linkSent && !!depositUrl;
+              const linkSent = !!advanceSessionId;
+              const canRecopy = linkSent && !!advanceUrl;
               return (
                 <AdminButton
                   variant={linkSent ? "secondary" : "primary"}
                   size="sm"
-                  loading={loading === PAYMENT_TYPE.DEPOSIT}
+                  loading={loading === PAYMENT_TYPE.ADVANCE}
                   disabled={isPending || (linkSent && !canRecopy)}
                   icon={
                     linkSent ? (
@@ -315,15 +315,15 @@ export function BookingDetailClient({
                   }
                   onClick={() =>
                     canRecopy
-                      ? handleRecopyLink(PAYMENT_TYPE.DEPOSIT)
-                      : handleSendPaymentLink(PAYMENT_TYPE.DEPOSIT)
+                      ? handleRecopyLink(PAYMENT_TYPE.ADVANCE)
+                      : handleSendPaymentLink(PAYMENT_TYPE.ADVANCE)
                   }
                 >
                   {linkSent
                     ? canRecopy
-                      ? "Re-copy Deposit Link"
-                      : "Deposit Link Sent"
-                    : "Send Deposit Link"}
+                      ? "Re-copy Advance Link"
+                      : "Advance Link Sent"
+                    : "Send Advance Link"}
                 </AdminButton>
               );
             })()
@@ -333,8 +333,8 @@ export function BookingDetailClient({
             (() => {
               const linkSent = !!balanceSessionId;
               const canRecopy = linkSent && !!balanceUrl;
-              // Balance is locked until deposit is paid
-              if (!depositPaid) {
+              // Balance is locked until advance is paid
+              if (!advancePaid) {
                 return (
                   <AdminButton
                     variant="ghost"
@@ -343,7 +343,7 @@ export function BookingDetailClient({
                     icon={<Ban className="w-4 h-4" />}
                     className="cursor-not-allowed"
                   >
-                    Pay Deposit First
+                    Pay Advance First
                   </AdminButton>
                 );
               }
@@ -446,23 +446,23 @@ export function BookingDetailClient({
               </div>
               <div className="pt-4 border-t border-gray-200 space-y-3">
                 {(() => {
-                  const depositBadge = getPaymentBadge(
-                    depositPaid,
-                    depositSessionId,
+                  const advanceBadge = getPaymentBadge(
+                    advancePaid,
+                    advanceSessionId,
                   );
                   return (
                     <div className="flex items-center justify-between">
-                      <span className="text-gray-600">Deposit (30%)</span>
+                      <span className="text-gray-600">Advance (30%)</span>
                       <div className="flex items-center gap-2">
                         <AdminBadge
-                          variant={depositBadge.variant}
-                          status={depositBadge.status}
+                          variant={advanceBadge.variant}
+                          status={advanceBadge.status}
                           size="sm"
                         >
-                          {depositBadge.label}
+                          {advanceBadge.label}
                         </AdminBadge>
                         <span className="font-medium text-gray-900">
-                          {formatCurrency(booking.depositAmount)}
+                          {formatCurrency(booking.advanceAmount)}
                         </span>
                       </div>
                     </div>
@@ -533,8 +533,8 @@ export function BookingDetailClient({
                       </div>
                       <div>
                         <p className="text-sm font-medium text-gray-900">
-                          {p.type === PAYMENT_TYPE.DEPOSIT
-                            ? "Deposit (30%)"
+                          {p.type === PAYMENT_TYPE.ADVANCE
+                            ? "Advance (30%)"
                             : p.type === PAYMENT_TYPE.BALANCE
                               ? "Balance (70%)"
                               : "Refund"}

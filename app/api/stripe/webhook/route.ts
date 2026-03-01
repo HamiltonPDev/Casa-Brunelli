@@ -22,7 +22,7 @@ import { BOOKING_STATUS, PAYMENT_STATUS } from "@/lib/constants";
 
 interface SessionMetadata {
   bookingId: string;
-  paymentType: "DEPOSIT" | "BALANCE";
+  paymentType: "ADVANCE" | "BALANCE";
 }
 
 // ─── Webhook Handler ───────────────────────────────────────────
@@ -266,25 +266,25 @@ async function fulfillPayment(
     }
 
     // Update booking flags + status
-    if (paymentType === "DEPOSIT") {
+    if (paymentType === "ADVANCE") {
       await tx.booking.update({
         where: { id: bookingId },
         data: {
-          depositPaid: true,
+          advancePaid: true,
           status: BOOKING_STATUS.CONFIRMED,
         },
       });
     } else if (paymentType === "BALANCE") {
       const booking = await tx.booking.findUnique({
         where: { id: bookingId },
-        select: { depositPaid: true },
+        select: { advancePaid: true },
       });
 
       await tx.booking.update({
         where: { id: bookingId },
         data: {
           balancePaid: true,
-          status: booking?.depositPaid
+          status: booking?.advancePaid
             ? BOOKING_STATUS.COMPLETED
             : BOOKING_STATUS.CONFIRMED,
         },

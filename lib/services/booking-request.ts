@@ -21,7 +21,7 @@ export interface BookingRequestResult {
   id: string;
   nights: number;
   totalPrice: number;
-  depositAmount: number;
+  advanceAmount: number;
   minStayRequired: number | null;
   minStayValid: boolean;
 }
