@@ -16,8 +16,8 @@ interface BookingListItem {
   guestCount: number;
   status: string;
   totalPrice: number;
-  depositAmount: number;
-  depositPaid: boolean;
+  advanceAmount: number;
+  advancePaid: boolean;
   balancePaid: boolean;
   updatedAt: string;
 }
@@ -78,7 +78,7 @@ export function bulkUpdateBookings(
   return apiPatch("/api/admin/bookings", { ids, status });
 }
 
-/** Patch a single booking (status, depositPaid, balancePaid, etc.). */
+/** Patch a single booking (status, advancePaid, balancePaid, etc.). */
 export function updateBooking(
   id: string,
   data: Record<string, unknown>,

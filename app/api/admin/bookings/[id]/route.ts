@@ -36,7 +36,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
     const data = {
       ...booking,
       totalPrice: Number(booking.totalPrice),
-      depositAmount: Number(booking.depositAmount),
+      advanceAmount: Number(booking.advanceAmount),
       payments: booking.payments.map((p) => ({
         ...p,
         amount: Number(p.amount),
@@ -55,7 +55,7 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
 // ─── PATCH /api/admin/bookings/[id] ───────────────────────────
 // Update booking status: { status: BookingStatus }
-// Or toggle payment flags: { depositPaid?: boolean, balancePaid?: boolean }
+// Or toggle payment flags: { advancePaid?: boolean, balancePaid?: boolean }
 export async function PATCH(request: Request, { params }: RouteParams) {
   const { denied } = await requireWrite();
   if (denied) return denied;
@@ -70,7 +70,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       return validationError(parsed.error);
     }
 
-    const { status, depositPaid, balancePaid } = parsed.data;
+    const { status, advancePaid, balancePaid } = parsed.data;
 
     // Check existence first — Prisma P2025 on update gives a generic 500
     const existing = await prisma.booking.findUnique({ where: { id } });
@@ -85,7 +85,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       where: { id },
       data: {
         ...(status && { status: status as BookingStatus }),
-        ...(depositPaid !== undefined && { depositPaid }),
+        ...(advancePaid !== undefined && { advancePaid }),
         ...(balancePaid !== undefined && { balancePaid }),
       },
     });
@@ -95,7 +95,7 @@ export async function PATCH(request: Request, { params }: RouteParams) {
       data: {
         ...updated,
         totalPrice: Number(updated.totalPrice),
-        depositAmount: Number(updated.depositAmount),
+        advanceAmount: Number(updated.advanceAmount),
       },
     });
   } catch (error) {

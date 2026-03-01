@@ -22,15 +22,15 @@ import { Button } from "@/components/ui/public/Button";
 
 interface PaymentDetails {
   guestFirstName: string;
-  paymentType: "DEPOSIT" | "BALANCE";
+  paymentType: "ADVANCE" | "BALANCE";
   amountPaid: string;
   totalPrice: string;
-  depositAmount: string;
+  advanceAmount: string;
   balanceAmount: string;
   dateRange: string;
   numberOfNights: number;
   guestCount: number;
-  depositPaid: boolean;
+  advancePaid: boolean;
   balancePaid: boolean;
   isAsyncPending: boolean;
 }
@@ -96,7 +96,7 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
     paymentType,
     amountPaid,
     totalPrice,
-    depositAmount,
+    advanceAmount,
     balanceAmount,
     dateRange,
     numberOfNights,
@@ -105,7 +105,7 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
     isAsyncPending,
   } = details;
 
-  const isDeposit = paymentType === "DEPOSIT";
+  const isAdvance = paymentType === "ADVANCE";
   const isFullyPaid = balancePaid;
 
   return (
@@ -184,9 +184,9 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
                 Thank you, <strong>{guestFirstName}</strong>. Your payment is being processed
                 by your bank. You&apos;ll receive a confirmation email once it&apos;s complete.
               </>
-            ) : isDeposit ? (
+            ) : isAdvance ? (
               <>
-                Thank you, <strong>{guestFirstName}</strong>! Your deposit has been received.
+                Thank you, <strong>{guestFirstName}</strong>! Your advance payment has been received.
                 Your stay in Tuscany is now secured.
               </>
             ) : (
@@ -214,7 +214,7 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
               className="text-xs tracking-[0.2em] uppercase font-semibold mb-2"
               style={{ color: "var(--sage-variant)" }}
             >
-              {isDeposit ? "Deposit Paid (30%)" : "Balance Paid (70%)"}
+              {isAdvance ? "Advance Paid (30%)" : "Balance Paid (70%)"}
             </div>
             <div
               className="font-serif text-3xl font-medium"
@@ -286,7 +286,7 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
                     No further action needed from your side
                   </NextStepItem>
                 </>
-              ) : isDeposit ? (
+              ) : isAdvance ? (
                 <>
                   <NextStepItem>
                     You&apos;ll receive a confirmation email with your booking details

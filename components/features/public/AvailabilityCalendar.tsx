@@ -881,7 +881,7 @@ export function AvailabilityCalendar() {
                 <li>Select your dates on the calendar</li>
                 <li>Fill in your details</li>
                 <li>We confirm within 24 h</li>
-                <li>Pay 30% deposit to secure dates</li>
+                <li>Pay 30% advance to secure dates</li>
                 <li>Balance due 7 days before check-in</li>
               </ol>
             </Card>

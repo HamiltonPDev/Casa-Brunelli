@@ -5,7 +5,7 @@
  * Admin-only (requireWrite) — generates a payment link that can be
  * sent to the guest via email (Phase E) or copied manually.
  *
- * Body: { bookingId: string, type: "DEPOSIT" | "BALANCE" }
+ * Body: { bookingId: string, type: "ADVANCE" | "BALANCE" }
  * Returns: { success: true, data: { sessionId, url } }
  */
 
@@ -59,9 +59,9 @@ export async function POST(request: Request): Promise<Response> {
     }
 
     // ── Prevent duplicate payments ──
-    if (type === "DEPOSIT" && booking.depositPaid) {
+    if (type === "ADVANCE" && booking.advancePaid) {
       return Response.json(
-        { success: false, error: "Deposit has already been paid" },
+        { success: false, error: "Advance has already been paid" },
         { status: 400 },
       );
     }
@@ -73,10 +73,10 @@ export async function POST(request: Request): Promise<Response> {
       );
     }
 
-    // Business rule: balance can only be paid after deposit
-    if (type === "BALANCE" && !booking.depositPaid) {
+    // Business rule: balance can only be paid after advance
+    if (type === "BALANCE" && !booking.advancePaid) {
       return Response.json(
-        { success: false, error: "Deposit must be paid before balance" },
+        { success: false, error: "Advance must be paid before balance" },
         { status: 400 },
       );
     }
@@ -115,8 +115,8 @@ export async function POST(request: Request): Promise<Response> {
       prisma.booking.update({
         where: { id: bookingId },
         data:
-          type === "DEPOSIT"
-            ? { depositSessionId: sessionId, stripeSessionId: sessionId }
+          type === "ADVANCE"
+            ? { advanceSessionId: sessionId, stripeSessionId: sessionId }
             : { balanceSessionId: sessionId, stripeSessionId: sessionId },
       }),
 
@@ -125,7 +125,7 @@ export async function POST(request: Request): Promise<Response> {
         data: {
           bookingId,
           stripePaymentId: sessionId,
-          amount: Number(booking.totalPrice) * (type === "DEPOSIT" ? 0.3 : 0.7),
+          amount: Number(booking.totalPrice) * (type === "ADVANCE" ? 0.3 : 0.7),
           currency: "EUR",
           status: PAYMENT_STATUS.PENDING,
           type,
@@ -143,7 +143,7 @@ export async function POST(request: Request): Promise<Response> {
             paymentType: type,
             sessionId,
             amount:
-              Number(booking.totalPrice) * (type === "DEPOSIT" ? 0.3 : 0.7),
+              Number(booking.totalPrice) * (type === "ADVANCE" ? 0.3 : 0.7),
           }),
         },
       }),

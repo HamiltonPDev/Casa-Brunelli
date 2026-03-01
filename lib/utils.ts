@@ -128,9 +128,9 @@ export function calculateNights(
 }
 
 /**
- * Calculates the 30% deposit amount from a total price.
+ * Calculates the 30% advance amount from a total price.
  */
-export function calculateDeposit(totalPrice: number): number {
+export function calculateAdvance(totalPrice: number): number {
   return Math.round(totalPrice * 0.3 * 100) / 100;
 }
 

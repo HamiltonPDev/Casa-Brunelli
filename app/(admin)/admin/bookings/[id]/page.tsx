@@ -36,8 +36,8 @@ export default async function BookingDetailPage({ params }: PageProps) {
   if (!booking) notFound();
 
   const totalPrice = Number(booking.totalPrice);
-  const depositAmount = Number(booking.depositAmount);
-  const balanceAmount = totalPrice - depositAmount;
+  const advanceAmount = Number(booking.advanceAmount);
+  const balanceAmount = totalPrice - advanceAmount;
 
   return (
     <BookingDetailClient
@@ -52,11 +52,11 @@ export default async function BookingDetailPage({ params }: PageProps) {
         guestCount: booking.guestCount,
         status: booking.status,
         totalPrice,
-        depositAmount,
+        advanceAmount,
         balanceAmount,
-        depositPaid: booking.depositPaid,
+        advancePaid: booking.advancePaid,
         balancePaid: booking.balancePaid,
-        depositSessionId: booking.depositSessionId ?? undefined,
+        advanceSessionId: booking.advanceSessionId ?? undefined,
         balanceSessionId: booking.balanceSessionId ?? undefined,
         specialRequests: booking.specialRequests ?? undefined,
         approvedBy: booking.approvedBy ?? undefined,

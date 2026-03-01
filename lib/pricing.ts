@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import {
   DEFAULT_NIGHTLY_RATE,
-  DEPOSIT_PERCENTAGE,
+  ADVANCE_PERCENTAGE,
   OVERRIDE_TYPE,
   SEASON_STATUS,
 } from "@/lib/constants";
@@ -80,7 +80,7 @@ export function calculateNightlyRate(
 // ─── calculateBookingTotal ─────────────────────────────────────
 // Calculates the full price breakdown for a date range.
 // Iterates each night from checkIn up to (not including) checkOut.
-// Returns breakdown per night + totals + deposit/balance split.
+// Returns breakdown per night + totals + advance/balance split.
 //
 // PERF: Single query fetches ALL overlapping seasons upfront.
 // Previously this was N+1 — one query per night in the range.
@@ -112,9 +112,9 @@ export async function calculateBookingTotal(
   }
 
   const totalPrice = nights.reduce((sum, n) => sum + n.rate, 0);
-  const depositAmount = Math.round(totalPrice * DEPOSIT_PERCENTAGE * 100) / 100;
-  // Derive balance from total - deposit to avoid rounding mismatch (deposit + balance must === total)
-  const balanceAmount = Math.round((totalPrice - depositAmount) * 100) / 100;
+  const advanceAmount = Math.round(totalPrice * ADVANCE_PERCENTAGE * 100) / 100;
+  // Derive balance from total - advance to avoid rounding mismatch (advance + balance must === total)
+  const balanceAmount = Math.round((totalPrice - advanceAmount) * 100) / 100;
 
   // Min stay: use the highest minStay from seasons actually used in the range
   const usedSeasonIds = new Set(nights.map((n) => n.seasonId).filter(Boolean));
@@ -131,7 +131,7 @@ export async function calculateBookingTotal(
   return {
     nights: numberOfNights,
     totalPrice,
-    depositAmount,
+    advanceAmount,
     balanceAmount,
     breakdown: nights,
     minStayRequired,

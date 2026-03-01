@@ -8,8 +8,8 @@
 /** Default nightly rate when no season is active */
 export const DEFAULT_NIGHTLY_RATE = 450;
 
-/** Deposit percentage (30%) */
-export const DEPOSIT_PERCENTAGE = 0.3;
+/** Advance percentage (30%) */
+export const ADVANCE_PERCENTAGE = 0.3;
 
 /** Balance percentage (70%) */
 export const BALANCE_PERCENTAGE = 0.7;
@@ -94,7 +94,7 @@ export type AdminRole = (typeof ADMIN_ROLE)[keyof typeof ADMIN_ROLE];
 
 export const EMAIL_CATEGORY = {
   BOOKING_CONFIRMATION: "BOOKING_CONFIRMATION",
-  DEPOSIT_RECEIVED: "DEPOSIT_RECEIVED",
+  ADVANCE_RECEIVED: "ADVANCE_RECEIVED",
   EARLY_CHECKIN: "EARLY_CHECKIN",
   PARKING: "PARKING",
   REFUND: "REFUND",
@@ -119,7 +119,7 @@ export type PaymentStatus =
 // ─── Payment Types ─────────────────────────────────────────────
 
 export const PAYMENT_TYPE = {
-  DEPOSIT: "DEPOSIT",
+  ADVANCE: "ADVANCE",
   BALANCE: "BALANCE",
   REFUND: "REFUND",
 } as const;
@@ -250,7 +250,7 @@ export const QUICK_REPLIES = [
   {
     value: "cancellation",
     label: "Cancellation Policy",
-    body: "We offer free cancellation up to 14 days before check-in. Cancellations within 14 days will forfeit the 30% deposit. The remaining balance is not charged for cancellations made at least 7 days before arrival.",
+    body: "We offer free cancellation up to 14 days before check-in. Cancellations within 14 days will forfeit the 30% advance payment. The remaining balance is not charged for cancellations made at least 7 days before arrival.",
   },
   {
     value: "pricing",

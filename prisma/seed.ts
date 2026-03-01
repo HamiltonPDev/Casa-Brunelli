@@ -125,7 +125,7 @@ Stay Details:
 - Guests: {{guestCount}}
 - Total: {{totalPrice}}
 
-Your deposit of {{depositAmount}} has been received. The remaining balance of {{balanceAmount}} will be due 7 days before your arrival.
+Your advance payment of {{advanceAmount}} has been received. The remaining balance of {{balanceAmount}} will be due 7 days before your arrival.
 
 We look forward to welcoming you to Tuscany!
 
@@ -134,11 +134,11 @@ The Casa Brunelli Team`,
     category: "BOOKING_CONFIRMATION" as const,
   },
   {
-    name: "Deposit Received",
-    subject: "Deposit received — Casa Brunelli",
+    name: "Advance Received",
+    subject: "Advance payment received — Casa Brunelli",
     body: `Dear {{guestName}},
 
-We have received your deposit payment of {{depositAmount}}. Your reservation is now secured.
+We have received your advance payment of {{advanceAmount}}. Your reservation is now secured.
 
 Your balance of {{balanceAmount}} will be due on {{balanceDueDate}}.
 
@@ -146,7 +146,7 @@ See you in Tuscany!
 
 Warm regards,
 The Casa Brunelli Team`,
-    category: "DEPOSIT_RECEIVED" as const,
+    category: "ADVANCE_RECEIVED" as const,
   },
   {
     name: "Early Check-in Info",

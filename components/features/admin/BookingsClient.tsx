@@ -36,8 +36,8 @@ interface Booking {
   guestCount: number;
   status: string;
   totalPrice: number;
-  depositAmount: number;
-  depositPaid: boolean;
+  advanceAmount: number;
+  advancePaid: boolean;
   balancePaid: boolean;
   updatedAt: string;
 }
@@ -362,7 +362,7 @@ export function BookingsClient() {
                     Guests
                   </th>
                   <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
-                    Deposit
+                    Advance
                   </th>
                   <th className="px-6 py-3 text-center text-sm font-semibold text-gray-700">
                     Balance
@@ -434,11 +434,11 @@ export function BookingsClient() {
                           <td className="px-6 py-4 text-center">
                             <AdminBadge
                               variant={
-                                booking.depositPaid ? "success" : "default"
+                                booking.advancePaid ? "success" : "default"
                               }
                               size="sm"
                             >
-                              {booking.depositPaid ? "Paid" : "Pending"}
+                              {booking.advancePaid ? "Paid" : "Pending"}
                             </AdminBadge>
                           </td>
                           <td className="px-6 py-4 text-center">

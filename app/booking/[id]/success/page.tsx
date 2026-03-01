@@ -32,15 +32,15 @@ export const metadata: Metadata = {
 
 interface PaymentDetails {
   guestFirstName: string;
-  paymentType: "DEPOSIT" | "BALANCE";
+  paymentType: "ADVANCE" | "BALANCE";
   amountPaid: string;
   totalPrice: string;
-  depositAmount: string;
+  advanceAmount: string;
   balanceAmount: string;
   dateRange: string;
   numberOfNights: number;
   guestCount: number;
-  depositPaid: boolean;
+  advancePaid: boolean;
   balancePaid: boolean;
   isAsyncPending: boolean;
 }
@@ -61,10 +61,10 @@ async function getPaymentDetails(
         numberOfNights: true,
         guestCount: true,
         totalPrice: true,
-        depositAmount: true,
-        depositPaid: true,
+        advanceAmount: true,
+        advancePaid: true,
         balancePaid: true,
-        depositSessionId: true,
+        advanceSessionId: true,
         balanceSessionId: true,
       },
     });
@@ -72,7 +72,7 @@ async function getPaymentDetails(
     if (!booking) return null;
 
     // ─── 2. Determine payment type from session ──────────────
-    let paymentType: "DEPOSIT" | "BALANCE" = PAYMENT_TYPE.DEPOSIT;
+    let paymentType: "ADVANCE" | "BALANCE" = PAYMENT_TYPE.ADVANCE;
     let isAsyncPending = false;
 
     if (sessionId) {
@@ -104,22 +104,22 @@ async function getPaymentDetails(
 
     // ─── 3. Calculate amounts ────────────────────────────────
     const totalPrice = Number(booking.totalPrice);
-    const depositAmount = Number(booking.depositAmount);
-    const balanceAmount = Math.round((totalPrice - depositAmount) * 100) / 100;
+    const advanceAmount = Number(booking.advanceAmount);
+    const balanceAmount = Math.round((totalPrice - advanceAmount) * 100) / 100;
     const amountPaid =
-      paymentType === PAYMENT_TYPE.DEPOSIT ? depositAmount : balanceAmount;
+      paymentType === PAYMENT_TYPE.ADVANCE ? advanceAmount : balanceAmount;
 
     return {
       guestFirstName: booking.guestName.split(" ")[0],
       paymentType,
       amountPaid: formatCurrency(amountPaid),
       totalPrice: formatCurrency(totalPrice),
-      depositAmount: formatCurrency(depositAmount),
+      advanceAmount: formatCurrency(advanceAmount),
       balanceAmount: formatCurrency(balanceAmount),
       dateRange: formatDateRange(booking.checkIn, booking.checkOut),
       numberOfNights: booking.numberOfNights,
       guestCount: booking.guestCount,
-      depositPaid: booking.depositPaid,
+      advancePaid: booking.advancePaid,
       balancePaid: booking.balancePaid,
       isAsyncPending,
     };

@@ -19,7 +19,7 @@ import {
   MESSAGE_TYPE,
   MESSAGE_STATUS,
   BOOKING_STATUS,
-  DEPOSIT_PERCENTAGE,
+  ADVANCE_PERCENTAGE,
 } from "@/lib/constants";
 import { promoteMessageSchema, validationError } from "@/lib/validations/admin";
 
@@ -114,8 +114,8 @@ export async function POST(request: Request, { params }: RouteParams) {
 
     // Admin can override the total price (e.g., discount for repeat guest)
     const totalPrice = parsed.data.totalPriceOverride ?? pricing.totalPrice;
-    const depositAmount =
-      Math.round(totalPrice * DEPOSIT_PERCENTAGE * 100) / 100;
+    const advanceAmount =
+      Math.round(totalPrice * ADVANCE_PERCENTAGE * 100) / 100;
 
     // ── 6. Transaction: upsert GuestUser + create Booking + mark message ─
     // GuestUser upsert is INSIDE the transaction to prevent orphans if
@@ -148,7 +148,7 @@ export async function POST(request: Request, { params }: RouteParams) {
           guestEmail: message.email,
           guestPhone: message.phone,
           totalPrice,
-          depositAmount,
+          advanceAmount,
           specialRequests: parsed.data.notes ?? null,
           approvedBy: session.user.id,
           approvedAt: new Date(),
@@ -175,7 +175,7 @@ export async function POST(request: Request, { params }: RouteParams) {
           bookingId: result.booking.id,
           guestUserId: result.guestUser.id,
           totalPrice: Number(result.booking.totalPrice),
-          depositAmount: Number(result.booking.depositAmount),
+          advanceAmount: Number(result.booking.advanceAmount),
           nights,
           minStayValid: pricing.minStayValid,
         },

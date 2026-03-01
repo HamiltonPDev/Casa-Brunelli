@@ -60,7 +60,7 @@ interface GeneralForm {
 }
 
 interface PaymentsForm {
-  depositPercentage: string;
+  advancePercentage: string;
   refundWindow: string;
   taxRate: string;
 }
@@ -88,7 +88,7 @@ const INITIAL_GENERAL: GeneralForm = {
 };
 
 const INITIAL_PAYMENTS: PaymentsForm = {
-  depositPercentage: "30",
+  advancePercentage: "30",
   refundWindow: "14",
   taxRate: "10",
 };
@@ -438,9 +438,9 @@ export function SettingsClient({
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
                 <AdminField
-                  label="Deposit Percentage"
-                  value={paymentsForm.depositPercentage}
-                  onChange={(v) => updatePayments("depositPercentage", v)}
+                  label="Advance Percentage"
+                  value={paymentsForm.advancePercentage}
+                  onChange={(v) => updatePayments("advancePercentage", v)}
                 />
                 <p className="text-sm text-gray-500 mt-1">Default: 30%</p>
               </div>

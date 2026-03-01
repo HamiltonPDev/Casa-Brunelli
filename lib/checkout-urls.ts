@@ -4,7 +4,7 @@
  * Stores Stripe Checkout URLs in localStorage with a TTL so the admin
  * can re-copy a payment link without creating a duplicate session.
  *
- * Key format: `checkout:{bookingId}:{DEPOSIT|BALANCE}`
+ * Key format: `checkout:{bookingId}:{ADVANCE|BALANCE}`
  * Value: JSON `{ url: string; expiresAt: number }`
  *
  * TTL matches PAYMENT_LINK_EXPIRY_HOURS (24h) from constants.
