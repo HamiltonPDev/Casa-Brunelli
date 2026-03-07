@@ -18,7 +18,8 @@ interface PageProps {
 
 export const metadata: Metadata = {
   title: "Payment Cancelled — Casa Brunelli",
-  description: "Your payment was not completed. You can try again using the link provided.",
+  description:
+    "Your payment was not completed. You can try again using the link provided.",
 };
 
 // ─── Page ──────────────────────────────────────────────────────

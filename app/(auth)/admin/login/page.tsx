@@ -33,7 +33,7 @@ export default function AdminLoginPage() {
     {},
   );
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
 
     // Client-side validation
@@ -90,7 +90,7 @@ export default function AdminLoginPage() {
           alt="Tuscan countryside"
           className="w-full h-full object-cover scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black/80 backdrop-blur-sm" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/40 via-black/60 to-black/80 backdrop-blur-sm" />
       </div>
 
       {/* ── Floating particles — z-20 so they sit above overlay ─ */}
