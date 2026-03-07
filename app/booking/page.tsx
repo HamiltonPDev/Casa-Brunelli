@@ -75,7 +75,7 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
             borderColor: "rgba(139,157,131,0.1)",
           }}
         >
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-8 lg:py-12">
+          <div className="max-w-350 mx-auto px-6 lg:px-8 py-8 lg:py-12">
             <p
               className="text-xs tracking-[0.3em] uppercase font-semibold mb-3"
               style={{ color: "#C0AF7E" }}
@@ -96,7 +96,7 @@ export default async function BookingPage({ searchParams }: BookingPageProps) {
         </div>
 
         {/* ─── Form ────────────────────────────────────────────── */}
-        <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-10">
+        <div className="max-w-350 mx-auto px-6 lg:px-8 py-10">
           <BookingForm
             checkIn={checkIn}
             checkOut={checkOut}

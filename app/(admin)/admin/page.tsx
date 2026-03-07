@@ -4,7 +4,12 @@ import { AdminCard } from "@/components/ui/admin/AdminCard";
 import { AdminBadge } from "@/components/ui/admin/AdminBadge";
 import { CalendarWidget } from "@/components/features/admin/CalendarWidget";
 import type { CalendarBooking } from "@/components/features/admin/CalendarWidget";
-import { formatCurrency, formatDateRange, formatDateShort } from "@/lib/utils";
+import {
+  formatCurrency,
+  formatDateRange,
+  formatDateShort,
+  toLocalDateStr,
+} from "@/lib/utils";
 import { BOOKING_STATUS, MESSAGE_STATUS } from "@/lib/constants";
 import {
   AlertCircle,
@@ -32,7 +37,7 @@ export default async function AdminDashboardPage() {
   const startOfLastMonth = new Date(
     today.getFullYear(),
     today.getMonth() - 1,
-    1
+    1,
   );
   const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0);
 
@@ -82,11 +87,18 @@ export default async function AdminDashboardPage() {
       _sum: { totalPrice: true },
     }),
 
-    // All bookings for calendar (next 12 months)
+    // All bookings for calendar (next 12 months) — include COMPLETED
+    // so fully-paid stays remain visible until checkout date passes
     prisma.booking.findMany({
       where: {
         checkOut: { gte: startOfMonth },
-        status: { in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.PENDING] },
+        status: {
+          in: [
+            BOOKING_STATUS.CONFIRMED,
+            BOOKING_STATUS.PENDING,
+            BOOKING_STATUS.COMPLETED,
+          ],
+        },
       },
       select: {
         id: true,
@@ -101,14 +113,21 @@ export default async function AdminDashboardPage() {
       },
     }),
 
-    // Upcoming check-ins (next 30 days)
+    // Upcoming check-ins (next 30 days) — include COMPLETED
+    // so fully-paid stays still show until checkout date passes
     prisma.booking.findMany({
       where: {
         checkIn: {
           gte: today,
           lte: new Date(today.getTime() + THIRTY_DAYS_MS),
         },
-        status: { in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.PENDING] },
+        status: {
+          in: [
+            BOOKING_STATUS.CONFIRMED,
+            BOOKING_STATUS.PENDING,
+            BOOKING_STATUS.COMPLETED,
+          ],
+        },
       },
       orderBy: { checkIn: "asc" },
       take: 5,
@@ -142,7 +161,7 @@ export default async function AdminDashboardPage() {
 
   // Serialize UnavailableDates for CalendarWidget
   const blockedDates = unavailableDates.map((ud) => ({
-    date: ud.date.toISOString().split("T")[0],
+    date: toLocalDateStr(ud.date),
     note: ud.reason ?? undefined,
   }));
 
@@ -161,7 +180,7 @@ export default async function AdminDashboardPage() {
       change:
         revenueTrend !== null
           ? `${revenueTrend > 0 ? "+" : ""}${revenueTrend.toFixed(
-              0
+              0,
             )}% vs last month`
           : null,
       trend: revenueTrend !== null && revenueTrend >= 0 ? "up" : "down",
@@ -229,7 +248,10 @@ export default async function AdminDashboardPage() {
       </div>
 
       {/* Calendar Widget — Full Width */}
-      <CalendarWidget bookings={calendarData} initialBlockedDates={blockedDates} />
+      <CalendarWidget
+        bookings={calendarData}
+        initialBlockedDates={blockedDates}
+      />
 
       {/* Bottom row: Recent Bookings + Today sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -334,7 +356,7 @@ export default async function AdminDashboardPage() {
                       <div className="flex items-center gap-2">
                         <Calendar className="w-4 h-4 text-gray-400" />
                         <span>
-                          {formatDateShort(booking.checkIn.toISOString())}
+                          {formatDateShort(toLocalDateStr(booking.checkIn))}
                         </span>
                       </div>
                       <div className="flex items-center justify-between">

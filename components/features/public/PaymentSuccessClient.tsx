@@ -90,7 +90,9 @@ const sparkleVariants = {
 
 // ─── Component ───────────────────────────────────────────────
 
-export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientProps>) {
+export function PaymentSuccessClient({
+  details,
+}: Readonly<PaymentSuccessClientProps>) {
   const {
     guestFirstName,
     paymentType,
@@ -124,7 +126,8 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
         <div
           className="relative px-8 pt-10 pb-8 text-center"
           style={{
-            background: "linear-gradient(135deg, rgba(46,125,50,0.06) 0%, rgba(192,175,126,0.06) 100%)",
+            background:
+              "linear-gradient(135deg, rgba(46,125,50,0.06) 0%, rgba(192,175,126,0.06) 100%)",
           }}
         >
           {/* Sparkle decoration */}
@@ -181,18 +184,19 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
           >
             {isAsyncPending ? (
               <>
-                Thank you, <strong>{guestFirstName}</strong>. Your payment is being processed
-                by your bank. You&apos;ll receive a confirmation email once it&apos;s complete.
+                Thank you, <strong>{guestFirstName}</strong>. Your payment is
+                being processed by your bank. You&apos;ll receive a confirmation
+                email once it&apos;s complete.
               </>
             ) : isAdvance ? (
               <>
-                Thank you, <strong>{guestFirstName}</strong>! Your advance payment has been received.
-                Your stay in Tuscany is now secured.
+                Thank you, <strong>{guestFirstName}</strong>! Your advance
+                payment has been received. Your stay in Tuscany is now secured.
               </>
             ) : (
               <>
-                Wonderful, <strong>{guestFirstName}</strong>! Your booking is fully paid.
-                We can&apos;t wait to welcome you to Casa Brunelli.
+                Wonderful, <strong>{guestFirstName}</strong>! Your booking is
+                fully paid. We can&apos;t wait to welcome you to Casa Brunelli.
               </>
             )}
           </motion.p>
@@ -256,10 +260,7 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
         </motion.div>
 
         {/* ─── Next Steps ─────────────────────────────────── */}
-        <motion.div
-          variants={itemVariants}
-          className="px-8 pb-8"
-        >
+        <motion.div variants={itemVariants} className="px-8 pb-8">
           <div
             className="rounded-xl p-5 border"
             style={{
@@ -273,14 +274,19 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
             >
               What happens next?
             </h2>
-            <ul className="space-y-2.5 text-sm" style={{ color: "rgba(61,82,67,0.75)" }}>
+            <ul
+              className="space-y-2.5 text-sm"
+              style={{ color: "rgba(61,82,67,0.75)" }}
+            >
               {isAsyncPending ? (
                 <>
                   <NextStepItem>
-                    Your bank is processing the payment — this usually takes 1–2 business days
+                    Your bank is processing the payment — this usually takes 1–2
+                    business days
                   </NextStepItem>
                   <NextStepItem>
-                    You&apos;ll receive a confirmation email once the payment is verified
+                    You&apos;ll receive a confirmation email once the payment is
+                    verified
                   </NextStepItem>
                   <NextStepItem>
                     No further action needed from your side
@@ -289,17 +295,23 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
               ) : isAdvance ? (
                 <>
                   <NextStepItem>
-                    You&apos;ll receive a confirmation email with your booking details
+                    You&apos;ll receive a confirmation email with your booking
+                    details
                   </NextStepItem>
                   <NextStepItem>
-                    The remaining balance of <strong style={{ color: "var(--dark-forest)" }}>{balanceAmount}</strong> will
-                    be due before check-in
+                    The remaining balance of{" "}
+                    <strong style={{ color: "var(--dark-forest)" }}>
+                      {balanceAmount}
+                    </strong>{" "}
+                    will be due before check-in
                   </NextStepItem>
                   <NextStepItem>
-                    We&apos;ll send you a payment link for the balance closer to your arrival date
+                    We&apos;ll send you a payment link for the balance closer to
+                    your arrival date
                   </NextStepItem>
                   <NextStepItem>
-                    A welcome guide with check-in details will follow 24 hours before arrival
+                    A welcome guide with check-in details will follow 24 hours
+                    before arrival
                   </NextStepItem>
                 </>
               ) : (
@@ -308,11 +320,10 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
                     Your booking is fully paid — no further payments required
                   </NextStepItem>
                   <NextStepItem>
-                    A welcome guide with check-in details will be sent 24 hours before arrival
+                    A welcome guide with check-in details will be sent 24 hours
+                    before arrival
                   </NextStepItem>
-                  <NextStepItem>
-                    Check-in is from 3:00 PM onwards
-                  </NextStepItem>
+                  <NextStepItem>Check-in is from 3:00 PM onwards</NextStepItem>
                 </>
               )}
             </ul>
@@ -320,19 +331,13 @@ export function PaymentSuccessClient({ details }: Readonly<PaymentSuccessClientP
         </motion.div>
 
         {/* ─── CTA ────────────────────────────────────────── */}
-        <motion.div
-          variants={itemVariants}
-          className="px-8 pb-10 text-center"
-        >
+        <motion.div variants={itemVariants} className="px-8 pb-10 text-center">
           <Button href="/" size="lg">
             Back to Casa Brunelli
             <ArrowRight size={16} className="ml-2 inline" />
           </Button>
 
-          <p
-            className="mt-4 text-xs"
-            style={{ color: "var(--sage-variant)" }}
-          >
+          <p className="mt-4 text-xs" style={{ color: "var(--sage-variant)" }}>
             Questions? Contact us at{" "}
             <a
               href="mailto:info@casabrunelli.com"
@@ -363,17 +368,11 @@ function DetailItem({
 }>) {
   return (
     <div className="flex gap-3">
-      <div
-        className="mt-0.5 shrink-0"
-        style={{ color: "var(--sage-variant)" }}
-      >
+      <div className="mt-0.5 shrink-0" style={{ color: "var(--sage-variant)" }}>
         {icon}
       </div>
       <div>
-        <div
-          className="text-xs mb-0.5"
-          style={{ color: "rgba(61,82,67,0.5)" }}
-        >
+        <div className="text-xs mb-0.5" style={{ color: "rgba(61,82,67,0.5)" }}>
           {label}
         </div>
         <div

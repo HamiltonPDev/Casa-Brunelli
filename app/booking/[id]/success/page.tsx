@@ -25,7 +25,8 @@ interface PageProps {
 
 export const metadata: Metadata = {
   title: "Payment Confirmed — Casa Brunelli",
-  description: "Your payment has been received. Thank you for choosing Casa Brunelli.",
+  description:
+    "Your payment has been received. Thank you for choosing Casa Brunelli.",
 };
 
 // ─── Helper — Fetch & validate booking + session ───────────────
@@ -130,7 +131,10 @@ async function getPaymentDetails(
 
 // ─── Page ──────────────────────────────────────────────────────
 
-export default async function PaymentSuccessPage({ params, searchParams }: PageProps) {
+export default async function PaymentSuccessPage({
+  params,
+  searchParams,
+}: PageProps) {
   const { id } = await params;
   const { session_id } = await searchParams;
 

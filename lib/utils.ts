@@ -34,6 +34,18 @@ export function formatDate(date: Date | string): string {
 }
 
 /**
+ * Extracts a yyyy-MM-dd string from a Date using local timezone.
+ * Avoids the UTC shift that `.toISOString().split("T")[0]` causes.
+ * @example toLocalDateStr(new Date("2025-06-25T00:00:00Z")) → "2025-06-24" (in UTC-5)
+ */
+export function toLocalDateStr(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+/**
  * Formats a date as a short European string from an ISO yyyy-MM-dd string.
  * Appends T00:00:00 to avoid timezone shifts.
  * @example formatDateShort("2025-06-15") → "15 Jun 2025"
@@ -79,7 +91,7 @@ export function formatEur(amount: number): string {
  */
 export function formatDateRange(
   checkIn: Date | string,
-  checkOut: Date | string
+  checkOut: Date | string,
 ): string {
   const start = new Date(checkIn);
   const end = new Date(checkOut);
@@ -103,7 +115,7 @@ export function formatDateRange(
 
   return (
     new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(
-      start
+      start,
     ) +
     " – " +
     new Intl.DateTimeFormat("en-US", {
@@ -119,7 +131,7 @@ export function formatDateRange(
  */
 export function calculateNights(
   checkIn: Date | string,
-  checkOut: Date | string
+  checkOut: Date | string,
 ): number {
   const start = new Date(checkIn);
   const end = new Date(checkOut);
@@ -231,7 +243,7 @@ export function dateRangesOverlap(
   start1: Date,
   end1: Date,
   start2: Date,
-  end2: Date
+  end2: Date,
 ): boolean {
   return start1 < end2 && end1 > start2;
 }

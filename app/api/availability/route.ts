@@ -65,10 +65,17 @@ export async function GET(request: Request) {
     // ─── Fetch blocked data in parallel ──────────────────────
 
     const [bookedRanges, unavailableDates, activeSeasons] = await Promise.all([
-      // Confirmed OR pending bookings that overlap the range
+      // Active bookings that overlap the range — include COMPLETED
+      // so fully-paid stays block dates until checkout passes
       prisma.booking.findMany({
         where: {
-          status: { in: [BOOKING_STATUS.CONFIRMED, BOOKING_STATUS.PENDING] },
+          status: {
+            in: [
+              BOOKING_STATUS.CONFIRMED,
+              BOOKING_STATUS.PENDING,
+              BOOKING_STATUS.COMPLETED,
+            ],
+          },
           checkIn: { lt: clampedTo },
           checkOut: { gt: clampedFrom },
         },

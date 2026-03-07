@@ -30,7 +30,7 @@ export default function ContactPage() {
             borderColor: "rgba(139,157,131,0.1)",
           }}
         >
-          <div className="max-w-[1400px] mx-auto px-6 lg:px-8 py-12 lg:py-16">
+          <div className="max-w-350 mx-auto px-6 lg:px-8 py-12 lg:py-16">
             <h1
               className="font-serif text-4xl lg:text-5xl mb-4"
               style={{ color: "#2D3A2E" }}
@@ -48,7 +48,7 @@ export default function ContactPage() {
         </div>
 
         {/* ─── Main Content ──────────────────────────────────── */}
-        <section className="max-w-[1400px] mx-auto px-6 lg:px-8 py-12 lg:py-16">
+        <section className="max-w-350 mx-auto px-6 lg:px-8 py-12 lg:py-16">
           <ContactForm />
         </section>
 

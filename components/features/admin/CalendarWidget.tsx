@@ -55,7 +55,10 @@ const YEARS = [2025, 2026, 2027];
 
 // ─── Helpers ───────────────────────────────────────────────────
 function toDateStr(date: Date): string {
-  return date.toISOString().split("T")[0];
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function isSameDay(a: Date, b: Date): boolean {
@@ -229,8 +232,8 @@ export function CalendarWidget({
                   new Date(
                     currentDate.getFullYear(),
                     currentDate.getMonth() - 1,
-                    1
-                  )
+                    1,
+                  ),
                 )
               }
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -242,7 +245,11 @@ export function CalendarWidget({
               value={currentDate.getMonth()}
               onChange={(e) =>
                 setCurrentDate(
-                  new Date(currentDate.getFullYear(), Number(e.target.value), 1)
+                  new Date(
+                    currentDate.getFullYear(),
+                    Number(e.target.value),
+                    1,
+                  ),
                 )
               }
               className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-admin-sage/20"
@@ -258,7 +265,7 @@ export function CalendarWidget({
               value={currentDate.getFullYear()}
               onChange={(e) =>
                 setCurrentDate(
-                  new Date(Number(e.target.value), currentDate.getMonth(), 1)
+                  new Date(Number(e.target.value), currentDate.getMonth(), 1),
                 )
               }
               className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-admin-sage/20"
@@ -276,8 +283,8 @@ export function CalendarWidget({
                   new Date(
                     currentDate.getFullYear(),
                     currentDate.getMonth() + 1,
-                    1
-                  )
+                    1,
+                  ),
                 )
               }
               className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
@@ -341,7 +348,7 @@ export function CalendarWidget({
                       state === "today" &&
                         "ring-2 ring-admin-sage ring-offset-2",
                       isSelected && "ring-2 ring-blue-500 ring-offset-2",
-                      inDrag && "ring-2 ring-admin-sage bg-admin-sage/10"
+                      inDrag && "ring-2 ring-admin-sage bg-admin-sage/10",
                     )}
                   >
                     {/* Diagonal hatch for blocked */}
@@ -374,7 +381,7 @@ export function CalendarWidget({
                       className={cn(
                         "text-sm font-medium z-10",
                         state === "booked" ? "text-white" : "text-gray-900",
-                        state === "blocked" && "text-gray-600"
+                        state === "blocked" && "text-gray-600",
                       )}
                     >
                       {date.getDate()}
@@ -457,8 +464,8 @@ export function CalendarWidget({
                   {selectedBooking
                     ? "Booking Details"
                     : selectedBlocked
-                    ? "Blocked Date"
-                    : "Available Date"}
+                      ? "Blocked Date"
+                      : "Available Date"}
                 </p>
               </div>
               <button
@@ -495,7 +502,7 @@ export function CalendarWidget({
                       <div className="text-xs text-gray-500 mb-1">Check-in</div>
                       <div className="font-medium text-gray-900 text-sm">
                         {new Date(selectedBooking.checkIn).toLocaleDateString(
-                          "en-GB"
+                          "en-GB",
                         )}
                       </div>
                     </div>
@@ -505,7 +512,7 @@ export function CalendarWidget({
                       </div>
                       <div className="font-medium text-gray-900 text-sm">
                         {new Date(selectedBooking.checkOut).toLocaleDateString(
-                          "en-GB"
+                          "en-GB",
                         )}
                       </div>
                     </div>
