@@ -17,6 +17,9 @@ export const BALANCE_PERCENTAGE = 0.7;
 /** Days before check-in to send balance payment link */
 export const BALANCE_DUE_DAYS_BEFORE_CHECKIN = 7;
 
+/** Days before check-in to send first balance reminder */
+export const BALANCE_REMINDER_DAYS_BEFORE_CHECKIN = 30;
+
 /** Maximum number of guests */
 export const MAX_GUESTS = 8;
 
@@ -25,6 +28,9 @@ export const MIN_GUESTS = 1;
 
 /** Stripe payment link expiry in hours */
 export const PAYMENT_LINK_EXPIRY_HOURS = 24;
+
+/** Villa physical address — used in emails and booking confirmations */
+export const VILLA_ADDRESS = "Località Brunelli, 52044 Cortona (AR), Tuscany, Italy";
 
 // ─── Booking Status ────────────────────────────────────────────
 
@@ -95,6 +101,10 @@ export type AdminRole = (typeof ADMIN_ROLE)[keyof typeof ADMIN_ROLE];
 export const EMAIL_CATEGORY = {
   BOOKING_CONFIRMATION: "BOOKING_CONFIRMATION",
   ADVANCE_RECEIVED: "ADVANCE_RECEIVED",
+  ADVANCE_PAYMENT_LINK: "ADVANCE_PAYMENT_LINK",
+  BALANCE_REMINDER: "BALANCE_REMINDER",
+  ADMIN_NEW_BOOKING: "ADMIN_NEW_BOOKING",
+  CONTACT_REPLY: "CONTACT_REPLY",
   EARLY_CHECKIN: "EARLY_CHECKIN",
   PARKING: "PARKING",
   REFUND: "REFUND",
@@ -258,6 +268,14 @@ export const QUICK_REPLIES = [
     body: "Thank you for your interest in Casa Brunelli. I'd be happy to provide a personalised quote for your requested dates. Could you please let me know your preferred check-in/check-out dates and the number of guests in your party?",
   },
 ] as const;
+
+// ─── Email Defaults ────────────────────────────────────────────
+
+/** Default "from" address for Resend emails (sandbox — update to casabrunelli.com in production) */
+export const RESEND_FROM_DEFAULT = "Casa Brunelli <onboarding@resend.dev>";
+
+/** Default "reply-to" address for Resend emails (sandbox — update to casabrunelli.com in production) */
+export const RESEND_REPLY_TO_DEFAULT = "onboarding@resend.dev";
 
 // ─── App Config ────────────────────────────────────────────────
 

@@ -289,3 +289,121 @@ export interface AvailabilityDay {
   seasonName: string | null;
   minStay: number | null;
 }
+
+// ═══════════════════════════════════════════════════════════════
+// EMAIL TYPES
+// ═══════════════════════════════════════════════════════════════
+
+/** Result of sending an email via Resend */
+export type EmailResult =
+  | { success: true; data: { id: string } }
+  | { success: false; error: string };
+
+/** Parameters for sendEmail() */
+export interface SendEmailParams {
+  to: string | string[];
+  subject: string;
+  react: React.ReactElement;
+  replyTo?: string;
+}
+
+// ─── Email Template Props ─────────────────────────────────────
+
+export interface BookingConfirmationEmailProps {
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfNights: number;
+  totalPaid: number;
+  balanceRemaining: number;
+  villaAddress: string;
+  appUrl: string;
+  bookingId: string;
+}
+
+export interface AdvancePaymentLinkEmailProps {
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfNights: number;
+  totalPrice: number;
+  advanceAmount: number;
+  checkoutUrl: string;
+}
+
+export interface BalanceReminderEmailProps {
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+  balanceAmount: number;
+  checkoutUrl: string;
+  daysUntilCheckIn: number;
+}
+
+export interface AdminNewBookingEmailProps {
+  guestName: string;
+  guestEmail: string;
+  checkIn: string;
+  checkOut: string;
+  guestCount: number;
+  totalPrice: number;
+  specialRequests: string | null;
+  dashboardUrl: string;
+  messageId: string;
+}
+
+export interface ContactReplyEmailProps {
+  guestName: string;
+  replyText: string;
+  originalSubject: string;
+}
+
+export interface BaseLayoutProps {
+  preview: string;
+  children: React.ReactNode;
+}
+
+// ─── Notification Dispatcher Params ───────────────────────────
+
+export interface BookingConfirmationParams {
+  guestEmail: string;
+  guestName: string;
+  bookingId: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfNights: number;
+  totalPaid: number;
+  balanceRemaining: number;
+}
+
+export interface AdvancePaymentLinkParams {
+  guestEmail: string;
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+  numberOfNights: number;
+  totalPrice: number;
+  advanceAmount: number;
+  checkoutUrl: string;
+}
+
+export interface BalanceReminderParams {
+  guestEmail: string;
+  guestName: string;
+  checkIn: string;
+  checkOut: string;
+  balanceAmount: number;
+  checkoutUrl: string;
+  daysUntilCheckIn: number;
+}
+
+export interface AdminNewBookingParams {
+  guestName: string;
+  guestEmail: string;
+  checkIn: string;
+  checkOut: string;
+  guestCount: number;
+  totalPrice: number;
+  specialRequests: string | null;
+  messageId: string;
+}
