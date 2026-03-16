@@ -166,7 +166,7 @@ export function AdminNewBookingEmail({
       {/* ─── CTA ─── */}
       <Section style={{ textAlign: "center" as const, marginTop: "32px" }}>
         <Button
-          href={`${dashboardUrl}/admin/messages/${messageId}`}
+          href={`${dashboardUrl}/admin/messages`}
           style={{
             backgroundColor: BRAND.darkForest,
             color: BRAND.cream,

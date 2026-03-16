@@ -285,7 +285,7 @@ export const APP_CONFIG = {
   locale: "it-IT",
   timezone: "Europe/Rome",
   contactEmail: "info@casabrunelli.com",
-  adminEmail: "admin@casabrunelli.com",
+  adminEmail: process.env.ADMIN_NOTIFICATION_EMAIL ?? "admin@casabrunelli.com",
 } as const;
 
 // ─── API Response Format ───────────────────────────────────────

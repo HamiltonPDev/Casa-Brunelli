@@ -13,7 +13,9 @@ import { requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createCheckoutSession } from "@/lib/stripe";
 import { createCheckoutSchema, validationError } from "@/lib/validations/admin";
-import { BOOKING_STATUS, PAYMENT_STATUS } from "@/lib/constants";
+import { BOOKING_STATUS, PAYMENT_STATUS, PAYMENT_TYPE } from "@/lib/constants";
+import { sendAdvancePaymentLink } from "@/lib/notifications";
+import { toLocalDateStr } from "@/lib/utils";
 
 export async function POST(request: Request): Promise<Response> {
   // ── Auth: admin with write permissions ──
@@ -148,6 +150,25 @@ export async function POST(request: Request): Promise<Response> {
         },
       }),
     ]);
+
+    // Auto-send advance payment link email (non-blocking)
+    if (type === PAYMENT_TYPE.ADVANCE) {
+      sendAdvancePaymentLink({
+        guestEmail: booking.guestEmail,
+        guestName: booking.guestName,
+        checkIn: toLocalDateStr(booking.checkIn),
+        checkOut: toLocalDateStr(booking.checkOut),
+        numberOfNights: booking.numberOfNights,
+        totalPrice: Number(booking.totalPrice),
+        advanceAmount: Number(booking.advanceAmount),
+        checkoutUrl: url,
+      }).catch((err) =>
+        console.error(
+          "[Checkout] Failed to send advance link email:",
+          err,
+        ),
+      );
+    }
 
     return Response.json({
       success: true,
