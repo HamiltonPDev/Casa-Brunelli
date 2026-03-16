@@ -17,6 +17,8 @@ import type Stripe from "stripe";
 import { constructWebhookEvent } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
 import { BOOKING_STATUS, PAYMENT_STATUS } from "@/lib/constants";
+import { sendBookingConfirmation } from "@/lib/notifications";
+import { toLocalDateStr } from "@/lib/utils";
 
 // ─── Types ─────────────────────────────────────────────────────
 
@@ -267,13 +269,42 @@ async function fulfillPayment(
 
     // Update booking flags + status
     if (paymentType === "ADVANCE") {
-      await tx.booking.update({
+      const updatedBooking = await tx.booking.update({
         where: { id: bookingId },
         data: {
           advancePaid: true,
           status: BOOKING_STATUS.CONFIRMED,
         },
+        select: {
+          id: true,
+          guestEmail: true,
+          guestName: true,
+          checkIn: true,
+          checkOut: true,
+          numberOfNights: true,
+          advanceAmount: true,
+          totalPrice: true,
+        },
       });
+
+      // Send booking confirmation email (non-blocking)
+      sendBookingConfirmation({
+        guestEmail: updatedBooking.guestEmail,
+        guestName: updatedBooking.guestName,
+        bookingId: updatedBooking.id,
+        checkIn: toLocalDateStr(updatedBooking.checkIn),
+        checkOut: toLocalDateStr(updatedBooking.checkOut),
+        numberOfNights: updatedBooking.numberOfNights,
+        totalPaid: Number(updatedBooking.advanceAmount),
+        balanceRemaining:
+          Number(updatedBooking.totalPrice) -
+          Number(updatedBooking.advanceAmount),
+      }).catch((err) =>
+        console.error(
+          "[Webhook] Failed to send confirmation email:",
+          err,
+        ),
+      );
     } else if (paymentType === "BALANCE") {
       const booking = await tx.booking.findUnique({
         where: { id: bookingId },
@@ -311,8 +342,6 @@ async function fulfillPayment(
   console.log(
     `[Stripe Webhook] ✓ ${paymentType} payment completed for booking ${bookingId}`,
   );
-
-  // TODO (Phase E): Send confirmation email to guest
 }
 
 /**

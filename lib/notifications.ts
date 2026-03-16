@@ -20,6 +20,7 @@ import { BookingConfirmationEmail } from "@/lib/email-templates/BookingConfirmat
 import { AdvancePaymentLinkEmail } from "@/lib/email-templates/AdvancePaymentLinkEmail";
 import { BalanceReminderEmail } from "@/lib/email-templates/BalanceReminderEmail";
 import { AdminNewBookingEmail } from "@/lib/email-templates/AdminNewBookingEmail";
+import { AdminNewContactEmail } from "@/lib/email-templates/AdminNewContactEmail";
 import { ContactReplyEmail } from "@/lib/email-templates/ContactReplyEmail";
 import { VILLA_ADDRESS } from "@/lib/constants";
 import type {
@@ -28,6 +29,7 @@ import type {
   AdvancePaymentLinkParams,
   BalanceReminderParams,
   AdminNewBookingParams,
+  AdminNewContactParams,
 } from "@/types";
 
 // ─── Dispatchers ─────────────────────────────────────────────
@@ -148,6 +150,29 @@ export async function sendContactReply(
       guestName,
       replyText,
       originalSubject,
+    }),
+  });
+}
+
+/**
+ * Sends a notification to the admin when a general contact
+ * form is submitted (not a booking request).
+ */
+export async function sendAdminNewContactNotification(
+  params: AdminNewContactParams,
+): Promise<EmailResult> {
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+
+  return sendEmail({
+    to: APP_CONFIG.adminEmail,
+    subject: `New Contact Message: ${params.subject} — ${params.guestName}`,
+    react: AdminNewContactEmail({
+      guestName: params.guestName,
+      guestEmail: params.guestEmail,
+      subject: params.subject,
+      message: params.message,
+      dashboardUrl: appUrl,
+      messageId: params.messageId,
     }),
   });
 }

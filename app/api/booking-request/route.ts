@@ -14,6 +14,7 @@ import {
   bookingRequestSchema,
   validationError,
 } from "@/lib/validations/admin";
+import { sendAdminNewBookingNotification } from "@/lib/notifications";
 
 // ─── POST /api/booking-request ─────────────────────────────────
 
@@ -121,6 +122,23 @@ export async function POST(request: Request) {
         totalPrice: pricing.totalPrice,
       },
     });
+
+    // Notify admin of new booking request (non-blocking)
+    sendAdminNewBookingNotification({
+      guestName: parsed.data.name,
+      guestEmail: parsed.data.email,
+      checkIn: parsed.data.checkIn,
+      checkOut: parsed.data.checkOut,
+      guestCount: parsed.data.guestCount,
+      totalPrice: pricing.totalPrice,
+      specialRequests: parsed.data.specialRequests ?? null,
+      messageId: contactMessage.id,
+    }).catch((err) =>
+      console.error(
+        "[BookingRequest] Failed to send admin notification:",
+        err,
+      ),
+    );
 
     return Response.json(
       {

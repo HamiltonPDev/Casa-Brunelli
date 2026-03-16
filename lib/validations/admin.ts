@@ -18,11 +18,13 @@ import {
 // MESSAGES
 // ═══════════════════════════════════════════════════════════════
 
-/** PATCH /api/admin/messages/[id] — update message status */
+/** PATCH /api/admin/messages/[id] — update message status (+ optional reply) */
 export const updateMessageSchema = z.object({
   status: z.enum(Object.values(MESSAGE_STATUS) as [string, ...string[]], {
     error: `Status must be one of: ${Object.values(MESSAGE_STATUS).join(", ")}`,
   }),
+  /** Required when status is REPLIED — the text to send to the guest */
+  replyText: z.string().min(1).max(5000).optional(),
 });
 
 /** POST /api/admin/messages/[id]/promote — promote message to booking */

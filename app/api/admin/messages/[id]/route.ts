@@ -2,9 +2,11 @@ import { requireWrite } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_STATUS } from "@/lib/constants";
 import { updateMessageSchema, validationError } from "@/lib/validations/admin";
+import { sendContactReply } from "@/lib/notifications";
 
 // ─── PATCH /api/admin/messages/[id] ────────────────────────────
 // Updates the status of a ContactMessage (READ | REPLIED).
+// When status is REPLIED and replyText is provided, sends the reply via email.
 // Protected: admin write access required. Validated with Zod.
 
 export async function PATCH(
@@ -24,7 +26,16 @@ export async function PATCH(
       return validationError(parsed.error);
     }
 
-    const { status } = parsed.data;
+    const { status, replyText } = parsed.data;
+
+    // Require replyText when marking as REPLIED
+    if (status === MESSAGE_STATUS.REPLIED && !replyText) {
+      return Response.json(
+        { success: false, error: "replyText is required when status is REPLIED" },
+        { status: 400 },
+      );
+    }
+
     const updated = await prisma.contactMessage.update({
       where: { id },
       data: {
@@ -34,14 +45,43 @@ export async function PATCH(
           repliedAt: new Date(),
         }),
       },
+      select: {
+        id: true,
+        type: true,
+        name: true,
+        email: true,
+        phone: true,
+        subject: true,
+        message: true,
+        status: true,
+        checkIn: true,
+        checkOut: true,
+        guestCount: true,
+        totalPrice: true,
+        repliedBy: true,
+        repliedAt: true,
+        createdAt: true,
+      },
     });
+
+    // Send reply email to guest (non-blocking)
+    if (status === MESSAGE_STATUS.REPLIED && replyText) {
+      sendContactReply(
+        updated.email,
+        updated.name,
+        replyText,
+        updated.subject,
+      ).catch((err) =>
+        console.error("[Messages] Failed to send reply email:", err),
+      );
+    }
 
     return Response.json({ success: true, data: updated });
   } catch (error) {
     console.error(`[API] PATCH /admin/messages/${id} failed:`, error);
     return Response.json(
       { success: false, error: "Failed to update message" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

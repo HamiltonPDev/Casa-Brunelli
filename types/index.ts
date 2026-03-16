@@ -407,3 +407,11 @@ export interface AdminNewBookingParams {
   specialRequests: string | null;
   messageId: string;
 }
+
+export interface AdminNewContactParams {
+  guestName: string;
+  guestEmail: string;
+  subject: string;
+  message: string;
+  messageId: string;
+}

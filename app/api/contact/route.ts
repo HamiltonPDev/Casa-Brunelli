@@ -5,6 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import { MESSAGE_TYPE } from "@/lib/constants";
 import { contactSchema, validationError } from "@/lib/validations/admin";
+import { sendAdminNewContactNotification } from "@/lib/notifications";
 
 // ─── POST /api/contact ─────────────────────────────────────────
 
@@ -29,6 +30,17 @@ export async function POST(request: Request) {
         message,
       },
     });
+
+    // Notify admin of new contact message (non-blocking)
+    sendAdminNewContactNotification({
+      guestName: name,
+      guestEmail: email,
+      subject,
+      message,
+      messageId: contactMessage.id,
+    }).catch((err: unknown) =>
+      console.error("[Contact] Failed to send admin notification:", err),
+    );
 
     return Response.json(
       { success: true, data: { id: contactMessage.id } },
